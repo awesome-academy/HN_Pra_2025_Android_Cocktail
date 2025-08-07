@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("io.gitlab.arturbosch.detekt") version "1.22.0-RC2"
+    id("com.google.gms.google-services")
 }
 
 detekt {
@@ -64,7 +65,11 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    
+    implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth:22.3.1")
+    implementation("com.google.firebase:firebase-firestore:24.11.0")
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
     // Ktlint dependency với version cũ hơn tương thích với Java 17
     "ktlint"("com.pinterest:ktlint:0.45.2")
 }
