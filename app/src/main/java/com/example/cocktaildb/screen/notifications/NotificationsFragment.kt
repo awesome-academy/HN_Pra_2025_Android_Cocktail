@@ -36,3 +36,4 @@ class NotificationsFragment : BaseFragment<FragmentNotificationsBinding>(), Noti
         viewBinding.textNotifications.text = "Notifications loaded successfully"
     }
 }
+

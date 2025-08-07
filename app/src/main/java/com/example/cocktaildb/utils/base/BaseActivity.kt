@@ -23,3 +23,4 @@ abstract class BaseActivity<viewBinding : ViewBinding> : AppCompatActivity() {
         initData()
     }
 }
+

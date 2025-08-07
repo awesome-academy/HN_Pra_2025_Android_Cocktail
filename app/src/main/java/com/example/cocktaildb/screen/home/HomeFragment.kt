@@ -40,3 +40,4 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         viewBinding.textHome.text = "Found ${cocktails.size} cocktails"
     }
 }
+

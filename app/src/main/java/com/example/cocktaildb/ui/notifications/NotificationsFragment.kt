@@ -40,3 +40,4 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 }
+

@@ -11,3 +11,4 @@ interface DashboardContract {
         fun loadDashboardData()
     }
 }
+

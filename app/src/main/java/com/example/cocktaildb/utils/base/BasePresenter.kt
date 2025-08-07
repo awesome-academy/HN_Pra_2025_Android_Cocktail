@@ -5,3 +5,4 @@ interface BasePresenter<T> {
     fun onStop()
     fun setView(view: T?)
 }
+

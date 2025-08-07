@@ -40,3 +40,4 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 }
+

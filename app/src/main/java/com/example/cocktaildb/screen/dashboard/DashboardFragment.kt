@@ -36,3 +36,4 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
         viewBinding.textDashboard.text = "Dashboard loaded successfully"
     }
 }
+

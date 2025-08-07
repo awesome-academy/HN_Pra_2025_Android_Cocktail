@@ -31,3 +31,4 @@ class NotificationsPresenter : NotificationsContract.Presenter {
         }
     }
 }
+

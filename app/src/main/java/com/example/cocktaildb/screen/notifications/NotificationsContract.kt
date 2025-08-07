@@ -11,3 +11,4 @@ interface NotificationsContract {
         fun loadNotifications()
     }
 }
+
