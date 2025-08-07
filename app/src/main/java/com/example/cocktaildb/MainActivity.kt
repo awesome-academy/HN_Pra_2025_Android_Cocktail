@@ -35,4 +35,3 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         // TODO: Initialize data if needed
     }
 }
-
