@@ -5,4 +5,4 @@ data class Cocktail(
     val name: String,
     val description: String? = null,
     val imageUrl: String? = null
-) 
+)

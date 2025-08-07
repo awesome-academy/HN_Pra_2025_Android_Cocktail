@@ -22,4 +22,4 @@ abstract class BaseActivity<viewBinding : ViewBinding> : AppCompatActivity() {
         initView()
         initData()
     }
-} 
+}

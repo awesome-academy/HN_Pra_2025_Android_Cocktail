@@ -5,4 +5,4 @@ import com.example.cocktaildb.data.model.Cocktail
 interface CocktailDataSource {
     fun getCocktails(): List<Cocktail>
     fun getCocktailById(id: String): Cocktail?
-} 
+}
