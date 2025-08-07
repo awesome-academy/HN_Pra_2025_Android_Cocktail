@@ -6,3 +6,4 @@ data class Cocktail(
     val description: String? = null,
     val imageUrl: String? = null
 )
+
