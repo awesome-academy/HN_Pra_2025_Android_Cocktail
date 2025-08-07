@@ -41,4 +41,4 @@ abstract class BaseFragment<viewBinding : ViewBinding> : Fragment() {
     fun hideLoading() {
         // TODO: Hide loading indicator
     }
-} 
+}
