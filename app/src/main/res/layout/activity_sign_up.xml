@@ -4,12 +4,12 @@
     android:id="@+id/signUpLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp"
+    android:padding="@dimen/margin_xxlarge"
     android:background="@color/white">
 
     <TextView
         android:id="@+id/tvTitle"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/layout_small"
         android:layout_height="wrap_content"
         android:text="Create an account"
         android:textSize="22sp"
@@ -21,7 +21,7 @@
 
     <TextView
         android:id="@+id/tvSubtitle"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/layout_small"
         android:layout_height="wrap_content"
         android:text="Let's help you set up your account,\nit won't take long."
         android:textSize="14sp"
@@ -29,55 +29,55 @@
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"/>
+        android:layout_marginTop="@dimen/margin_medium"/>
 
     <EditText
         android:id="@+id/etName"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/button_height"
         android:hint="Enter Name"
         android:background="@drawable/edit_text_background"
-        android:paddingHorizontal="12dp"
+        android:paddingHorizontal="@dimen/padding_medium"
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="@dimen/margin_xxlarge"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <EditText
         android:id="@+id/etEmail"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/button_height"
         android:hint="Enter Email"
         android:background="@drawable/edit_text_background"
-        android:paddingHorizontal="12dp"
+        android:paddingHorizontal="@dimen/padding_medium"
         android:inputType="textEmailAddress"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/margin_large"
         app:layout_constraintTop_toBottomOf="@id/etName"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <EditText
         android:id="@+id/etPassword"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/button_height"
         android:hint="Enter Password"
         android:background="@drawable/edit_text_background"
-        android:paddingHorizontal="12dp"
+        android:paddingHorizontal="@dimen/padding_medium"
         android:inputType="textPassword"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/margin_large"
         app:layout_constraintTop_toBottomOf="@id/etEmail"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <EditText
         android:id="@+id/etConfirmPassword"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/button_height"
         android:hint="Retype Password"
         android:background="@drawable/edit_text_background"
-        android:paddingHorizontal="12dp"
+        android:paddingHorizontal="@dimen/padding_medium"
         android:inputType="textPassword"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/margin_large"
         app:layout_constraintTop_toBottomOf="@id/etPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -88,20 +88,20 @@
         android:layout_height="wrap_content"
         android:text="Accept terms &amp; Condition"
         android:textColor="@color/orange"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/margin_large"
         app:layout_constraintTop_toBottomOf="@id/etConfirmPassword"
         app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/btnSignUp"
-        android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/button_height"
         android:text="Sign Up"
         android:textColor="@color/white"
         android:backgroundTint="@color/teal"
         android:drawableRight="@drawable/ic_arrow_right"
-        android:drawablePadding="8dp"
-        android:layout_marginTop="16dp"
+        android:drawablePadding="@dimen/padding_small"
+        android:layout_marginTop="@dimen/margin_xlarge"
         android:textStyle="bold"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/cbTerms"
@@ -110,10 +110,10 @@
 
     <View
         android:id="@+id/divider"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/layout_medium"
         android:textColor="@color/gray"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="@dimen/margin_xxlarge"
         app:layout_constraintTop_toBottomOf="@id/btnSignUp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -124,24 +124,24 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/margin_xlarge"
         app:layout_constraintTop_toBottomOf="@id/divider"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <ImageView
             android:id="@+id/btnGoogle"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_google"
-            android:layout_marginEnd="16dp"
+            android:layout_marginEnd="@dimen/padding_large"
             android:contentDescription="Google Sign In"
             android:clickable="true"
             android:focusable="true" />
 
         <ImageView
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="@dimen/icon_size"
+            android:layout_height="@dimen/icon_size"
             android:src="@drawable/ic_facebook" />
     </LinearLayout>
 
@@ -152,7 +152,7 @@
         android:text="Already a member? Sign in"
         android:textSize="14sp"
         android:textColor="@color/black"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="@dimen/margin_xxlarge"
         app:layout_constraintTop_toBottomOf="@id/socialContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

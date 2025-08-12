@@ -10,8 +10,8 @@
 
     <ImageView
         android:id="@+id/heroImage"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/layout_small"
         android:scaleType="centerCrop"
         android:src="@mipmap/chocolate_milk"
         app:layout_constraintTop_toTopOf="parent"
@@ -21,8 +21,8 @@
 
     <View
         android:id="@+id/gradientOverlay"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
+        android:layout_width="@dimen/layout_small"
+        android:layout_height="@dimen/padding_xxxlarge"
         android:background="@drawable/gradient_overlay"
         app:layout_constraintBottom_toBottomOf="@id/heroImage"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,7 +40,7 @@
         app:layout_constraintBottom_toTopOf="@+id/subText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="60dp"/>
+        android:layout_marginBottom="@dimen/margin_xxxlarge"/>
 
     <TextView
         android:id="@+id/subText"
@@ -50,23 +50,23 @@
         android:textColor="@color/white"
         android:textSize="14sp"
         android:gravity="center"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
+        android:paddingStart="@dimen/padding_xlarge"
+        android:paddingEnd="@dimen/padding_xlarge"
         app:layout_constraintBottom_toTopOf="@+id/btnNavigateToCocktails"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="24dp" />
+        android:layout_marginBottom="@dimen/margin_xxlarge" />
 
     <Button
         android:id="@+id/btnNavigateToCocktails"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/padding_xxxlarge"
+        android:layout_height="@dimen/button_height"
         android:text="Start"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:backgroundTint="@color/primary_pink"
-        android:layout_marginBottom="32dp"
-        app:cornerRadius="24dp"
+        android:layout_marginBottom="@dimen/margin_xxlarge"
+        app:cornerRadius="@dimen/margin_xxlarge"
         android:background="@drawable/rounded_button"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
