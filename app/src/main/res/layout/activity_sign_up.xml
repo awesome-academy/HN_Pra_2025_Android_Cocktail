@@ -5,9 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="#FFFFFF">
+    android:background="@color/white">
 
-    <!-- Tiêu đề -->
     <TextView
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
@@ -15,25 +14,23 @@
         android:text="Create an account"
         android:textSize="22sp"
         android:textStyle="bold"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Mô tả phụ -->
     <TextView
         android:id="@+id/tvSubtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Let's help you set up your account,\nit won't take long."
         android:textSize="14sp"
-        android:textColor="#666666"
+        android:textColor="@color/gray"
         app:layout_constraintTop_toBottomOf="@id/tvTitle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"/>
 
-    <!-- Name -->
     <EditText
         android:id="@+id/etName"
         android:layout_width="0dp"
@@ -46,7 +43,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Email -->
     <EditText
         android:id="@+id/etEmail"
         android:layout_width="0dp"
@@ -60,7 +56,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Password -->
     <EditText
         android:id="@+id/etPassword"
         android:layout_width="0dp"
@@ -74,7 +69,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Confirm Password -->
     <EditText
         android:id="@+id/etConfirmPassword"
         android:layout_width="0dp"
@@ -88,25 +82,23 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Checkbox -->
     <CheckBox
         android:id="@+id/cbTerms"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Accept terms &amp; Condition"
-        android:textColor="#FF9800"
+        android:textColor="@color/orange"
         android:layout_marginTop="12dp"
         app:layout_constraintTop_toBottomOf="@id/etConfirmPassword"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Sign Up button -->
     <Button
         android:id="@+id/btnSignUp"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:text="Sign Up"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#009688"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/teal"
         android:drawableRight="@drawable/ic_arrow_right"
         android:drawablePadding="8dp"
         android:layout_marginTop="16dp"
@@ -116,18 +108,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Divider -->
     <View
         android:id="@+id/divider"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:background="#DDDDDD"
+        android:textColor="@color/gray"
         android:layout_marginTop="24dp"
         app:layout_constraintTop_toBottomOf="@id/btnSignUp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Social icons -->
     <LinearLayout
         android:id="@+id/socialContainer"
         android:layout_width="wrap_content"
@@ -155,14 +145,13 @@
             android:src="@drawable/ic_facebook" />
     </LinearLayout>
 
-    <!-- Footer -->
     <TextView
         android:id="@+id/tvLoginLink"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Already a member? Sign in"
         android:textSize="14sp"
-        android:textColor="#000000"
+        android:textColor="@color/black"
         android:layout_marginTop="24dp"
         app:layout_constraintTop_toBottomOf="@id/socialContainer"
         app:layout_constraintStart_toStartOf="parent"

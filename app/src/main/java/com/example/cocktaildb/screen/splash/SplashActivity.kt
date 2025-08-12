@@ -2,51 +2,42 @@ package com.example.cocktaildb.screen.splash
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.example.cocktaildb.MainActivity
-import com.example.cocktaildb.R
 import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.databinding.ActivityFrontPageBinding
 import com.example.cocktaildb.screen.auth.SignInActivity
+import com.example.cocktaildb.utils.base.BaseActivity
 
-class SplashActivity : AppCompatActivity(), SplashContract.View {
+class SplashActivity : BaseActivity<ActivityFrontPageBinding>(), SplashContract.View {
 
     private lateinit var presenter: SplashPresenter
-    private lateinit var btnStart: Button
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        supportActionBar?.hide()
-        setContentView(R.layout.activity_front_page)
-        
-        initPresenter()
-        initViews()
+    override fun inflateViewBinding(): ActivityFrontPageBinding {
+        return ActivityFrontPageBinding.inflate(layoutInflater)
     }
 
-    private fun initPresenter() {
+    override fun initView() {
+        supportActionBar?.hide()
+        viewBinding.btnNavigateToCocktails.setOnClickListener {
+            presenter.onStartButtonClicked()
+        }
+    }
+
+    override fun initData() {
         val authRepository = AuthRepository()
         presenter = SplashPresenter(authRepository)
         presenter.setView(this)
         presenter.onStart()
     }
 
-    private fun initViews() {
-        btnStart = findViewById(R.id.btnNavigateToCocktails)
-        btnStart.setOnClickListener {
-            presenter.onStartButtonClicked()
-        }
-    }
-
     override fun navigateToHome() {
-        val intent = Intent(this, MainActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, MainActivity::class.java))
         finish()
     }
 
     override fun navigateToAuth() {
-        val intent = Intent(this, SignInActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(this, SignInActivity::class.java))
         finish()
     }
 
@@ -54,8 +45,8 @@ class SplashActivity : AppCompatActivity(), SplashContract.View {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 
-    override fun onDestroy() {
+    override fun onStop() {
         presenter.onStop()
-        super.onDestroy()
+        super.onStop()
     }
 }

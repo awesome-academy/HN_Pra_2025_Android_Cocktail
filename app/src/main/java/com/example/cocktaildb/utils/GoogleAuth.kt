@@ -3,7 +3,6 @@ package com.example.cocktaildb.utils
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.example.cocktaildb.R
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -43,7 +42,7 @@ class GoogleAuth(private val context: Context) {
             val account = task.getResult(ApiException::class.java)
             firebaseAuthWithGoogle(account, onSuccess, onFailure)
         } catch (e: Exception) {
-            onFailure(e.localizedMessage ?: "Google sign-in failed")
+            onFailure(e.localizedMessage ?: context.getString(R.string.msg_google_signin_failed))
         }
     }
 
@@ -57,7 +56,7 @@ class GoogleAuth(private val context: Context) {
             if (task.isSuccessful) {
                 onSuccess(account)
             } else {
-                onFailure(task.exception?.message ?: "Firebase authentication failed")
+                onFailure(task.exception?.message ?: context.getString(R.string.msg_firebase_auth_failed))
             }
         }
     }

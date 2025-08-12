@@ -5,22 +5,20 @@
     android:id="@+id/frontPageLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#f2f2f2"
+    android:background="@color/background_gray"
     tools:context=".MainActivity">
 
-    <!-- Ảnh chính -->
     <ImageView
         android:id="@+id/heroImage"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="centerCrop"
         android:src="@mipmap/chocolate_milk"
-    app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Gradient đen mờ dưới -->
     <View
         android:id="@+id/gradientOverlay"
         android:layout_width="0dp"
@@ -30,13 +28,12 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Tiêu đề -->
     <TextView
         android:id="@+id/titleText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="What do you want to cook today?"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:textSize="22sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -45,13 +42,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="60dp"/>
 
-    <!-- Phụ đề -->
     <TextView
         android:id="@+id/subText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Let's make a delicious dish with the best recipe for the family"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:textSize="14sp"
         android:gravity="center"
         android:paddingStart="24dp"
@@ -61,15 +57,14 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="24dp" />
 
-    <!-- Nút Start -->
     <Button
         android:id="@+id/btnNavigateToCocktails"
         android:layout_width="200dp"
         android:layout_height="48dp"
         android:text="Start"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:textStyle="bold"
-        android:backgroundTint="#EF476F"
+        android:backgroundTint="@color/primary_pink"
         android:layout_marginBottom="32dp"
         app:cornerRadius="24dp"
         android:background="@drawable/rounded_button"

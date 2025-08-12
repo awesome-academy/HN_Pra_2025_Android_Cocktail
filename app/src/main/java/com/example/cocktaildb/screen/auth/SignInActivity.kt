@@ -2,25 +2,17 @@ package com.example.cocktaildb.screen.auth
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import com.example.cocktaildb.MainActivity
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.databinding.ActivityLoginBinding
+import com.example.cocktaildb.utils.base.BaseActivity
 
-class SignInActivity : AppCompatActivity(), AuthContract.View {
+class SignInActivity : BaseActivity<ActivityLoginBinding>(), AuthContract.View {
 
     private lateinit var presenter: AuthPresenter
-    private lateinit var etEmail: EditText
-    private lateinit var etPassword: EditText
-    private lateinit var btnSignIn: TextView
-    private lateinit var tvForgotPassword: TextView
-    private lateinit var btnGoogle: ImageView
-    private lateinit var tvSignUp: TextView
 
     private val googleSignInLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -28,18 +20,21 @@ class SignInActivity : AppCompatActivity(), AuthContract.View {
                 presenter.handleGoogleSignInResult(result.data)
             } else {
                 hideLoading()
-                showMessage("Google Sign-In bị hủy")
+                showMessage(getString(R.string.msg_google_signin_failed))
             }
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun inflateViewBinding(): ActivityLoginBinding {
+        return ActivityLoginBinding.inflate(layoutInflater)
+    }
+
+    override fun initView() {
         supportActionBar?.hide()
-        setContentView(R.layout.activity_login)
-        
-        initPresenter()
-        initViews()
         setupClickListeners()
+    }
+
+    override fun initData() {
+        initPresenter()
         presenter.onStart()
     }
 
@@ -49,32 +44,23 @@ class SignInActivity : AppCompatActivity(), AuthContract.View {
         presenter.setView(this)
     }
 
-    private fun initViews() {
-        etEmail = findViewById(R.id.etEmail)
-        etPassword = findViewById(R.id.etPassword)
-        btnSignIn = findViewById(R.id.btnSignIn)
-        tvForgotPassword = findViewById(R.id.tvForgotPassword)
-        btnGoogle = findViewById(R.id.btnGoogle)
-        tvSignUp = findViewById(R.id.tvSignUp)
-    }
-
     private fun setupClickListeners() {
-        btnSignIn.setOnClickListener {
-            val email = etEmail.text.toString().trim()
-            val password = etPassword.text.toString().trim()
+        viewBinding.btnSignIn.setOnClickListener {
+            val email = viewBinding.etEmail.text.toString().trim()
+            val password = viewBinding.etPassword.text.toString().trim()
             presenter.loginWithEmail(email, password)
         }
 
-        tvForgotPassword.setOnClickListener {
-            val email = etEmail.text.toString().trim()
+        viewBinding.tvForgotPassword.setOnClickListener {
+            val email = viewBinding.etEmail.text.toString().trim()
             presenter.forgotPassword(email)
         }
 
-        btnGoogle.setOnClickListener {
+        viewBinding.btnGoogle.setOnClickListener {
             presenter.loginWithGoogle()
         }
 
-        tvSignUp.setOnClickListener {
+        viewBinding.tvSignUp.setOnClickListener {
             val intent = Intent(this, SignUpActivity::class.java)
             startActivity(intent)
         }
@@ -106,8 +92,8 @@ class SignInActivity : AppCompatActivity(), AuthContract.View {
         googleSignInLauncher.launch(intent)
     }
 
-    override fun onDestroy() {
+    override fun onStop() {
         presenter.onStop()
-        super.onDestroy()
+        super.onStop()
     }
 }
