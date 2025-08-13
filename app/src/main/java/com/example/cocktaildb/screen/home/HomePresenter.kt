@@ -3,6 +3,10 @@ package com.example.cocktaildb.screen.home
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.utils.base.BaseFragment
 import com.example.cocktaildb.utils.base.BasePresenter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class HomePresenter(
     private val repository: CocktailRepository
@@ -24,13 +28,18 @@ class HomePresenter(
 
     override fun loadCocktails() {
         (view as? BaseFragment<*>)?.showLoading()
-        try {
-            val cocktails = repository.getCocktails()
-            view?.showCocktails(cocktails)
-        } catch (e: Exception) {
-            (view as? BaseFragment<*>)?.showError(e.message ?: "Unknown error")
-        } finally {
-            (view as? BaseFragment<*>)?.hideLoading()
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val cocktails = withContext(Dispatchers.IO) {
+                    repository.fetchCocktailsFromApi()
+                }
+                view?.showCocktails(cocktails)
+            } catch (e: Exception) {
+                (view as? BaseFragment<*>)?.showError(e.message ?: "Unknown error")
+            } finally {
+                (view as? BaseFragment<*>)?.hideLoading()
+            }
         }
     }
 }

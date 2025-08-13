@@ -14,5 +14,10 @@ class CocktailLocalDataSource : CocktailDataSource {
         // TODO: Implement local data source
         return null
     }
+    
+    override suspend fun fetchCocktailsFromApi(): List<Cocktail> {
+        // TODO: Implement API call
+        return emptyList()
+    }
 }
 
