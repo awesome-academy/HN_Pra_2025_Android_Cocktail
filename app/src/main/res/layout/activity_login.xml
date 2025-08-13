@@ -5,7 +5,7 @@
     android:id="@+id/loginLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/padding_xlarge"
+    android:padding="@dimen/dp_24"
     android:background="@color/white"
     tools:context=".cocktail.presentation.view.LoginActivity">
 
@@ -29,7 +29,7 @@
         android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/tvHello"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="@dimen/margin_small" />
+        android:layout_marginTop="@dimen/dp_4" />
 
     <TextView
         android:id="@+id/tvEmailLabel"
@@ -39,20 +39,20 @@
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/tvWelcome"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="@dimen/margin_xxlarge" />
+        android:layout_marginTop="@dimen/dp_24" />
 
     <EditText
         android:id="@+id/etEmail"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/button_height"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_48"
         android:hint="Enter Email"
         android:inputType="textEmailAddress"
         android:background="@drawable/bg_input_field"
-        android:paddingStart="@dimen/padding_medium"
+        android:paddingStart="@dimen/dp_12"
         app:layout_constraintTop_toBottomOf="@id/tvEmailLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_medium" />
+        android:layout_marginTop="@dimen/dp_8" />
 
     <TextView
         android:id="@+id/tvPasswordLabel"
@@ -62,20 +62,20 @@
         android:textSize="14sp"
         app:layout_constraintTop_toBottomOf="@id/etEmail"
         app:layout_constraintStart_toStartOf="parent"
-        android:layout_marginTop="@dimen/margin_xlarge" />
+        android:layout_marginTop="@dimen/dp_16" />
 
     <EditText
         android:id="@+id/etPassword"
-        android:layout_width="@dimen/layout_small"
-        android:layout_height="@dimen/button_height"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_48"
         android:hint="Enter Password"
         android:inputType="textPassword"
         android:background="@drawable/bg_input_field"
-        android:paddingStart="@dimen/padding_medium"
+        android:paddingStart="@dimen/dp_12"
         app:layout_constraintTop_toBottomOf="@id/tvPasswordLabel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_medium" />
+        android:layout_marginTop="@dimen/dp_8" />
 
     <TextView
         android:id="@+id/tvForgotPassword"
@@ -86,20 +86,20 @@
         android:textSize="13sp"
         app:layout_constraintTop_toBottomOf="@id/etPassword"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_medium" />
+        android:layout_marginTop="@dimen/dp_8" />
 
     <Button
         android:id="@+id/btnSignIn"
-        android:layout_width="@dimen/layout_small"
-        android:layout_height="@dimen/button_height"
-        android:layout_marginTop="@dimen/margin_xlarge"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_48"
+        android:layout_marginTop="@dimen/dp_16"
         android:backgroundTint="@color/teal_primary"
         android:text="@string/SignIn"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:gravity="center"
         android:drawableRight="@drawable/ic_arrow_right"
-        android:drawablePadding="@dimen/padding_small"
+        android:drawablePadding="@dimen/dp_8"
         app:layout_constraintTop_toBottomOf="@id/tvForgotPassword"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -114,7 +114,7 @@
         app:layout_constraintTop_toBottomOf="@id/btnSignIn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_xxlarge" />
+        android:layout_marginTop="@dimen/dp_24" />
 
     <LinearLayout
         android:id="@+id/socialButtons"
@@ -124,27 +124,27 @@
         app:layout_constraintTop_toBottomOf="@id/tvOr"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_large">
+        android:layout_marginTop="@dimen/dp_12">
 
         <ImageView
             android:id="@+id/btnGoogle"
-            android:layout_width="@dimen/icon_size"
-            android:layout_height="@dimen/icon_size"
+            android:layout_width="@dimen/dp_48"
+            android:layout_height="@dimen/dp_48"
             android:src="@drawable/ic_google"
             android:background="@drawable/bg_social"
-            android:padding="@dimen/padding_xsmall"
-            android:layout_marginEnd="@dimen/margin_xlarge"
+            android:padding="@dimen/dp_10"
+            android:layout_marginEnd="@dimen/dp_16"
             android:contentDescription="Google Sign In"
             android:clickable="true"
             android:focusable="true" />
 
         <ImageView
             android:id="@+id/btnFacebook"
-            android:layout_width="@dimen/icon_size"
-            android:layout_height="@dimen/icon_size"
+            android:layout_width="@dimen/dp_48"
+            android:layout_height="@dimen/dp_48"
             android:src="@drawable/ic_facebook"
             android:background="@drawable/bg_social"
-            android:padding="@dimen/padding_xsmall" />
+            android:padding="@dimen/dp_10" />
     </LinearLayout>
 
     <TextView
@@ -153,7 +153,7 @@
         android:layout_height="wrap_content"
         android:text="@string/SignUp_des"
         android:textSize="13sp"
-        android:layout_marginTop="@dimen/margin_xxlarge"
+        android:layout_marginTop="@dimen/dp_24"
         android:textColor="@color/black"
         app:layout_constraintTop_toBottomOf="@id/socialButtons"
         app:layout_constraintBottom_toBottomOf="parent"
