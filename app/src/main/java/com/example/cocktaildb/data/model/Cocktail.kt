@@ -18,39 +18,33 @@ data class Cocktail(
     val strInstructionsZH_HANS: String? = null,
     val strInstructionsZH_HANT: String? = null,
     val strDrinkThumb: String? = null,
-    val strIngredient1: String? = null,
-    val strIngredient2: String? = null,
-    val strIngredient3: String? = null,
-    val strIngredient4: String? = null,
-    val strIngredient5: String? = null,
-    val strIngredient6: String? = null,
-    val strIngredient7: String? = null,
-    val strIngredient8: String? = null,
-    val strIngredient9: String? = null,
-    val strIngredient10: String? = null,
-    val strIngredient11: String? = null,
-    val strIngredient12: String? = null,
-    val strIngredient13: String? = null,
-    val strIngredient14: String? = null,
-    val strIngredient15: String? = null,
-    val strMeasure1: String? = null,
-    val strMeasure2: String? = null,
-    val strMeasure3: String? = null,
-    val strMeasure4: String? = null,
-    val strMeasure5: String? = null,
-    val strMeasure6: String? = null,
-    val strMeasure7: String? = null,
-    val strMeasure8: String? = null,
-    val strMeasure9: String? = null,
-    val strMeasure10: String? = null,
-    val strMeasure11: String? = null,
-    val strMeasure12: String? = null,
-    val strMeasure13: String? = null,
-    val strMeasure14: String? = null,
-    val strMeasure15: String? = null,
+    val ingredients: List<String> = emptyList(),
+    val measures: List<String> = emptyList(),
     val strImageSource: String? = null,
     val strImageAttribution: String? = null,
     val strCreativeCommonsConfirmed: String? = null,
     val dateModified: String? = null
-)
+) {
+    // Helper function to get ingredients with measures
+    fun getIngredientsWithMeasures(): List<Pair<String?, String?>> {
+        return ingredients.mapIndexed { index, ingredient ->
+            val measure = if (index < measures.size) measures[index] else null
+            ingredient to measure
+        }
+    }
+
+    // Helper function to get all instructions
+    fun getAllInstructions(): Map<String, String> {
+        return mapOf(
+            "EN" to strInstructions,
+            "ES" to strInstructionsES,
+            "DE" to strInstructionsDE,
+            "FR" to strInstructionsFR,
+            "IT" to strInstructionsIT,
+            "ZH_HANS" to strInstructionsZH_HANS,
+            "ZH_HANT" to strInstructionsZH_HANT
+        ).filterValues { it != null }
+            .mapValues { it.value!! } // Convert String? to String
+    }
+}
 

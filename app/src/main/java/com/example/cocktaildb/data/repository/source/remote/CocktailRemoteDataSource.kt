@@ -87,6 +87,24 @@ class CocktailRemoteDataSource : CocktailDataSource {
     }
     
     private fun parseCocktailFromJson(jsonObject: JSONObject): Cocktail {
+        // Parse ingredients
+        val ingredients = mutableListOf<String>()
+        for (i in 1..15) {
+            val ingredient = jsonObject.optString("strIngredient$i")
+            if (ingredient.isNotEmpty()) {
+                ingredients.add(ingredient)
+            }
+        }
+
+        // Parse measures
+        val measures = mutableListOf<String>()
+        for (i in 1..15) {
+            val measure = jsonObject.optString("strMeasure$i")
+            if (measure.isNotEmpty()) {
+                measures.add(measure)
+            }
+        }
+
         return Cocktail(
             idDrink = jsonObject.optString("idDrink", ""),
             strDrink = jsonObject.optString("strDrink", ""),
@@ -105,36 +123,8 @@ class CocktailRemoteDataSource : CocktailDataSource {
             strInstructionsZH_HANS = jsonObject.optString("strInstructionsZH-HANS"),
             strInstructionsZH_HANT = jsonObject.optString("strInstructionsZH-HANT"),
             strDrinkThumb = jsonObject.optString("strDrinkThumb"),
-            strIngredient1 = jsonObject.optString("strIngredient1"),
-            strIngredient2 = jsonObject.optString("strIngredient2"),
-            strIngredient3 = jsonObject.optString("strIngredient3"),
-            strIngredient4 = jsonObject.optString("strIngredient4"),
-            strIngredient5 = jsonObject.optString("strIngredient5"),
-            strIngredient6 = jsonObject.optString("strIngredient6"),
-            strIngredient7 = jsonObject.optString("strIngredient7"),
-            strIngredient8 = jsonObject.optString("strIngredient8"),
-            strIngredient9 = jsonObject.optString("strIngredient9"),
-            strIngredient10 = jsonObject.optString("strIngredient10"),
-            strIngredient11 = jsonObject.optString("strIngredient11"),
-            strIngredient12 = jsonObject.optString("strIngredient12"),
-            strIngredient13 = jsonObject.optString("strIngredient13"),
-            strIngredient14 = jsonObject.optString("strIngredient14"),
-            strIngredient15 = jsonObject.optString("strIngredient15"),
-            strMeasure1 = jsonObject.optString("strMeasure1"),
-            strMeasure2 = jsonObject.optString("strMeasure2"),
-            strMeasure3 = jsonObject.optString("strMeasure3"),
-            strMeasure4 = jsonObject.optString("strMeasure4"),
-            strMeasure5 = jsonObject.optString("strMeasure5"),
-            strMeasure6 = jsonObject.optString("strMeasure6"),
-            strMeasure7 = jsonObject.optString("strMeasure7"),
-            strMeasure8 = jsonObject.optString("strMeasure8"),
-            strMeasure9 = jsonObject.optString("strMeasure9"),
-            strMeasure10 = jsonObject.optString("strMeasure10"),
-            strMeasure11 = jsonObject.optString("strMeasure11"),
-            strMeasure12 = jsonObject.optString("strMeasure12"),
-            strMeasure13 = jsonObject.optString("strMeasure13"),
-            strMeasure14 = jsonObject.optString("strMeasure14"),
-            strMeasure15 = jsonObject.optString("strMeasure15"),
+            ingredients = ingredients,
+            measures = measures,
             strImageSource = jsonObject.optString("strImageSource"),
             strImageAttribution = jsonObject.optString("strImageAttribution"),
             strCreativeCommonsConfirmed = jsonObject.optString("strCreativeCommonsConfirmed"),

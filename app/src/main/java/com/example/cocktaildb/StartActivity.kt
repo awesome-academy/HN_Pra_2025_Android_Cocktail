@@ -6,7 +6,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityOptionsCompat
 import com.example.cocktaildb.databinding.ActivityStartBinding
-import com.example.cocktaildb.screen.auth.SignInActivity
 
 class StartActivity : AppCompatActivity() {
 
