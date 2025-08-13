@@ -44,4 +44,5 @@
     <string name="Start">Start</string>
     <string name="Accept_condition">Accept terms &amp; Condition</string>
     <string name="Cre_account">Create an account</string>
+    <string name="Search">Search cocktails</string>
 </resources>

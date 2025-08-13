@@ -16,7 +16,6 @@ class NotificationsFragment : BaseFragment<FragmentNotificationsBinding>(), Noti
     }
 
     override fun initView() {
-        // Initialize presenter
         presenter = NotificationsPresenter()
         presenter.setView(this)
     }
