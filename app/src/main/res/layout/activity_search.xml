@@ -44,6 +44,7 @@
             android:background="@drawable/circle_bg"
             android:src="@drawable/ic_filter_list"
             android:scaleType="centerInside"
+            android:padding="@dimen/dp_12"
             />
     </LinearLayout>
 
@@ -51,5 +52,7 @@
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/dp_12" />
+        android:layout_marginTop="@dimen/dp_12"
+        android:clipToPadding="false"
+        android:paddingBottom="@dimen/dp_16" />
 </LinearLayout>
