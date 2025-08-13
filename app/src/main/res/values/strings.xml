@@ -3,4 +3,45 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="default_web_client_id">938670152663-1hdfpaes40s4roacp9jq7r42rj5nd5pu.apps.googleusercontent.com</string>
+
+    <string name="msg_enter_email">Please enter your email</string>
+    <string name="msg_enter_password">Please enter your password</string>
+    <string name="msg_email_or_password_incorrect">Email or password is incorrect</string>
+
+    <string name="msg_enter_name">Please enter your name</string>
+    <string name="msg_confirm_password">Please confirm your password</string>
+    <string name="msg_password_mismatch">Passwords do not match</string>
+    <string name="msg_accept_terms">Please accept the terms and conditions</string>
+    <string name="msg_signup_failed">Sign up failed</string>
+
+    <string name="msg_google_login_unavailable">Google login is not available</string>
+    <string name="msg_google_login_not_initialized">Google login has not been initialized</string>
+    <string name="msg_failed_to_save_user">Failed to save user information: %1$s</string>
+    <string name="msg_firebase_user_not_exist">Firebase user does not exist</string>
+    <string name="msg_google_signin_failed">Google Sign-In failed: %1$s</string>
+
+    <string name="msg_check_inbox_reset_password">Please check your inbox to reset your password</string>
+    <string name="msg_unable_to_send_email">Unable to send email: %1$s</string>
+    <string name="msg_unavailable">Message unavailable</string>
+    <string name="Welcome">Welcome</string>
+    <string name="Welcome_back">Welcome Back</string>
+
+    <string name="msg_firebase_auth_failed">Firebase authentication failed</string>
+
+    <string name="sub_text">Lets make a delicious dish with the best recipe for the family</string>
+    <string name="SignUp_des">Dont have an account? Sign up</string>
+    <string name="Help_setUp">Lets help you set up your account,it wont take long.</string>
+    <string name="sub">What do you want to cook today?</string>
+    <string name="SignIn_des">Already a member? Sign in</string>
+    <string name="SignIn_sub">Or Sign in With</string>
+    <string name="SignIn">SignIn</string>
+    <string name="SignUp">Sign Up</string>
+    <string name="Forgot_Password">Forgot Password?</string>
+    <string name="Enter_Password">Enter Password?</string>
+    <string name="Email">Email</string>
+    <string name="Hello">Hello</string>
+    <string name="Start">Start</string>
+    <string name="Accept_condition">Accept terms &amp; Condition</string>
+    <string name="Cre_account">Create an account</string>
 </resources>
