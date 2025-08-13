@@ -41,4 +41,4 @@ class CocktailAdapter(
     }
 
     override fun getItemCount(): Int = cocktails.size
-} 
+}

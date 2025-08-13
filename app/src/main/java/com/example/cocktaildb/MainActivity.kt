@@ -21,17 +21,17 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     override fun initView() {
-        // Ẩn action bar
+        // Hide action bar
         supportActionBar?.hide()
         
-        // Thiết lập status bar trong suốt
+        // Set transparent status bar
         WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = android.graphics.Color.TRANSPARENT
         
-        // Thiết lập navigation bar trong suốt
+        // Set transparent navigation bar
         window.navigationBarColor = android.graphics.Color.TRANSPARENT
         
-        // Đảm bảo content không bị đè vào system UI
+        // Ensure content doesn't overlap with system UI
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                 or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION)
@@ -50,7 +50,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 R.id.navigation_profile,
             )
         )
-        // Xóa setupActionBarWithNavController vì không còn action bar
+        // Remove setupActionBarWithNavController since there's no action bar
         navView.setupWithNavController(navController)
     }
 
