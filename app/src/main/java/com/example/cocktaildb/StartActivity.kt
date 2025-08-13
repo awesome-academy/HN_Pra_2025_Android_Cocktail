@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityOptionsCompat
 import com.example.cocktaildb.databinding.ActivityStartBinding
 import com.example.cocktaildb.screen.auth.SignInActivity
+import android.view.animation.AnimationUtils
 
 class StartActivity : AppCompatActivity() {
 
@@ -19,9 +20,14 @@ class StartActivity : AppCompatActivity() {
 
         // Theme already hides action bar
 
+        // Start animations after view is laid out
+        binding.root.post {
+            startEntranceAnimations()
+        }
+
         // Set up click listener for start button
         binding.btnStart.setOnClickListener {
-            // Navigate to SignInActivity with animation
+            // Navigate to login screen with animation
             val intent = Intent(this, SignInActivity::class.java)
             val options = ActivityOptionsCompat.makeCustomAnimation(
                 this,
@@ -31,6 +37,33 @@ class StartActivity : AppCompatActivity() {
             startActivity(intent, options.toBundle())
             finish() // Close StartActivity so user can't go back
         }
+    }
+
+    private fun startEntranceAnimations() {
+        // Animate title with scale and bounce effect
+        binding.tvTitle.startAnimation(AnimationUtils.loadAnimation(this, R.anim.scale_in))
+
+        // Animate subtitle with fade in
+        binding.tvSubtitle.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fade_in))
+
+        // Animate start button with slide up and scale
+        binding.btnStart.startAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_up))
+
+        // Add staggered delay for better visual effect
+        binding.tvSubtitle.alpha = 0f
+        binding.btnStart.alpha = 0f
+
+        binding.tvSubtitle.animate()
+            .alpha(1f)
+            .setStartDelay(300)
+            .setDuration(800)
+            .start()
+
+        binding.btnStart.animate()
+            .alpha(1f)
+            .setStartDelay(600)
+            .setDuration(800)
+            .start()
     }
 }
 
