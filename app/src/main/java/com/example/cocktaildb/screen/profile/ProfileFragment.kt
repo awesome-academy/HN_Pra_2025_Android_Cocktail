@@ -1,24 +1,30 @@
 package com.example.cocktaildb.screen.profile
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
 import com.example.cocktaildb.databinding.FragmentProfileBinding
 import com.example.cocktaildb.databinding.ItemCocktailCardBinding
 import com.example.cocktaildb.databinding.ItemProfileHeaderBinding
+import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.utils.base.BaseFragment
 
 /**
  * Fragment for displaying user profile and cocktail list
  */
-class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View {
+class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
 
     private lateinit var presenter: ProfileContract.Presenter
     private val profileAdapter = ProfileAdapter()
@@ -27,9 +33,25 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         return FragmentProfileBinding.inflate(inflater)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // Apply window insets to handle navigation bar correctly
+        ViewCompat.setOnApplyWindowInsetsListener(viewBinding.root) { _, insets ->
+            val navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
+
+            // Apply bottom margin to account for both navigation bar and bottom nav
+            viewBinding.profileRecyclerView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                bottomMargin = navigationBarInsets.bottom + bottomNavHeight
+            }
+
+            insets
+        }
+    }
+
     override fun initView() {
-        // Set up RecyclerView with GridLayoutManager to show 2 items per row
-        // The span count for header is full width (2), and for cocktail items is 1 (2 per row)
+        // Set up RecyclerView with GridLayoutManager showing 2 items per row
         val layoutManager = GridLayoutManager(context, 2)
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
@@ -40,21 +62,54 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         viewBinding.profileRecyclerView.apply {
             this.layoutManager = layoutManager
             adapter = profileAdapter
-
-            // Add fixed bottom padding to prevent content from being hidden by bottom navigation
-            // Using a fixed value that matches the standard bottom nav height (56dp)
-            val bottomNavHeight = resources.getDimensionPixelSize(R.dimen.bottom_nav_height)
-            setPadding(paddingLeft, paddingTop, paddingRight, bottomNavHeight)
             clipToPadding = false  // Allow scrolling into the padding area
         }
+
+        // Set up loading view
+        viewBinding.loadingView.visibility = View.GONE
     }
 
     override fun initData() {
-        // Initialize presenter with repository
+        // Initialize presenter with repositories
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
-        presenter = ProfilePresenter(repository)
-        presenter.setView(this)
+        val authRepository = AuthRepository()
+        presenter = ProfilePresenter(repository, authRepository)
+        presenter.setView(object : ProfileContract.View {
+            override fun showUserProfile(userName: String, userBio: String, profileImageUrl: String?) {
+                profileAdapter.setUserProfile(userName, userBio, profileImageUrl)
+            }
+
+            override fun showUserCocktails(cocktails: List<Cocktail>) {
+                profileAdapter.setCocktails(cocktails)
+            }
+
+            override fun navigateToMyRecipes() {
+                try {
+                    // Navigate to the MyRecipe screen using the Navigation Component
+                    val navController = androidx.navigation.Navigation.findNavController(
+                        requireActivity(),
+                        R.id.nav_host_fragment_activity_main
+                    )
+                    navController.navigate(R.id.navigation_my_recipe)
+                } catch (e: Exception) {
+                    // Fallback in case navigation fails
+                    Toast.makeText(
+                        context,
+                        "My Recipes feature coming soon!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun displayLoading(show: Boolean) {
+                viewBinding.loadingView.visibility = if (show) View.VISIBLE else View.GONE
+            }
+
+            override fun displayError(message: String) {
+                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     override fun onResume() {
@@ -65,28 +120,6 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
     override fun onPause() {
         presenter.onStop()
         super.onPause()
-    }
-
-    override fun showUserProfile(userName: String, userBio: String, profileImageUrl: String?) {
-        profileAdapter.setUserProfile(userName, userBio, profileImageUrl)
-    }
-
-    override fun showUserCocktails(cocktails: List<Cocktail>) {
-        profileAdapter.setCocktails(cocktails)
-    }
-
-    override fun displayLoading(show: Boolean) {
-        viewBinding.loadingView.visibility = if (show) View.VISIBLE else View.GONE
-    }
-
-    override fun displayError(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-    }
-
-    override fun navigateToMyRecipes() {
-        // Navigate to the MyRecipe screen using the Navigation Component
-        val navController = androidx.navigation.Navigation.findNavController(requireActivity(), R.id.nav_host_fragment_activity_main)
-        navController.navigate(R.id.navigation_my_recipe)
     }
 
     /**
@@ -163,11 +196,26 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
             }
 
             fun bind(name: String, bio: String, imageUrl: String?) {
-                binding.userName.text = name
-                binding.userBio.text = bio
+                // Ensure we have some text to display
+                binding.userName.text = if (name.isNotEmpty()) name else "User"
+                binding.userBio.text = if (bio.isNotEmpty()) bio else "Email not available"
 
-                // Use the profile placeholder image instead of the icon
-                binding.profileImageView.setImageResource(R.drawable.profile_placeholder)
+                // Use our custom ImageLoader to load the profile image if available
+                if (imageUrl != null && imageUrl.isNotEmpty()) {
+                    try {
+                        ImageLoader.loadImage(
+                            url = imageUrl,
+                            imageView = binding.profileImageView,
+                            placeholderResId = R.drawable.profile_placeholder
+                        )
+                    } catch (e: Exception) {
+                        // If image loading fails, use placeholder
+                        binding.profileImageView.setImageResource(R.drawable.profile_placeholder)
+                    }
+                } else {
+                    // Use the profile placeholder if no image URL is provided
+                    binding.profileImageView.setImageResource(R.drawable.profile_placeholder)
+                }
             }
         }
 
@@ -181,11 +229,16 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
                 binding.cocktailCategoryTextView.text = cocktail.description ?: "Cocktail"
 
                 // Load the cocktail image using our custom ImageLoader
-                com.example.cocktaildb.utils.ImageLoader.loadImage(
-                    url = cocktail.imageUrl,
-                    imageView = binding.cocktailImageView,
-                    placeholderResId = R.drawable.ic_launcher_background
-                )
+                try {
+                    ImageLoader.loadImage(
+                        url = cocktail.imageUrl,
+                        imageView = binding.cocktailImageView,
+                        placeholderResId = R.drawable.ic_launcher_background
+                    )
+                } catch (e: Exception) {
+                    // If image loading fails, use placeholder
+                    binding.cocktailImageView.setImageResource(R.drawable.ic_launcher_background)
+                }
 
                 // Set rating
                 binding.ratingChip.text = "★ 4.5"
