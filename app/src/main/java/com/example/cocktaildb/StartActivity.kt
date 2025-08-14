@@ -32,4 +32,5 @@ class StartActivity : AppCompatActivity() {
             finish() // Close StartActivity so user can't go back
         }
     }
-} 
+}
+
