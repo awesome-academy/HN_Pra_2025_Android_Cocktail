@@ -75,8 +75,8 @@
             android:backgroundTint="@color/profile_button_green"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             android:text="@string/my_recipe_button"
             app:cornerRadius="16dp" />
 
@@ -88,8 +88,8 @@
             android:backgroundTint="@color/profile_button_green"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             android:text="@string/history_button"
             app:cornerRadius="16dp" />
     </LinearLayout>
