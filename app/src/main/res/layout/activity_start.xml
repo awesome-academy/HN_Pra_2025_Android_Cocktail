@@ -32,11 +32,11 @@
     <!-- Main Title -->
     <TextView
         android:id="@+id/tv_title"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="@dimen/dp_32"
+        android:layout_marginEnd="@dimen/dp_32"
+        android:layout_marginBottom="@dimen/dp_16"
         android:text="@string/start_title"
         android:textAlignment="center"
         android:textColor="@color/white"
@@ -49,11 +49,11 @@
     <!-- Subtitle -->
     <TextView
         android:id="@+id/tv_subtitle"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="48dp"
+        android:layout_marginStart="@dimen/dp_32"
+        android:layout_marginEnd="@dimen/dp_32"
+        android:layout_marginBottom="@dimen/dp_48"
         android:text="@string/start_subtitle"
         android:textAlignment="center"
         android:textColor="@color/white"
@@ -65,11 +65,11 @@
     <!-- Start Button -->
     <Button
         android:id="@+id/btn_start"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="64dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_56"
+        android:layout_marginStart="@dimen/dp_32"
+        android:layout_marginEnd="@dimen/dp_32"
+        android:layout_marginBottom="@dimen/dp_64"
         android:background="@drawable/button_start_background"
         android:text="@string/start_button"
         android:textColor="@color/white"
