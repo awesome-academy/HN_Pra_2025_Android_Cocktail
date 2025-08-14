@@ -9,7 +9,7 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config = files()
-            ignoreFailures = true // Temporarily allow build to succeed despite detekt errors
+            ignoreFailures = true
 }
 
 android {
@@ -81,7 +81,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:22.3.1")
     implementation("com.google.firebase:firebase-firestore:24.11.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
-    // Ktlint dependency with older version compatible with Java 17
     "ktlint"("com.pinterest:ktlint:0.45.2")
 }
 
@@ -101,3 +100,4 @@ tasks.register<JavaExec>("ktlintFormat") {
     mainClass.set("com.pinterest.ktlint.Main")
     args("-F", "src/**/*.kt")
 }
+

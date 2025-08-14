@@ -3,4 +3,5 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">thecocktaildb.com</domain>
     </domain-config>
-</network-security-config> 
+</network-security-config>
+

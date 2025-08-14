@@ -44,7 +44,7 @@ data class Cocktail(
             "ZH_HANS" to strInstructionsZH_HANS,
             "ZH_HANT" to strInstructionsZH_HANT
         ).filterValues { it != null }
-            .mapValues { it.value!! } // Convert String? to String
+            .mapValues { it.value!! }
     }
 }
 

@@ -21,10 +21,7 @@ class CocktailAdapter(
             // Generate random rating between 4.0 and 5.0
             val rating = (Random.nextDouble(4.0, 5.0) * 10).toInt() / 10.0
             binding.tvRating.text = rating.toString()
-            
-            // TODO: Load image using image loading library
-            // For now, using placeholder image
-            
+
             itemView.setOnClickListener {
                 onCocktailClick(cocktail)
             }
@@ -42,3 +39,5 @@ class CocktailAdapter(
 
     override fun getItemCount(): Int = cocktails.size
 }
+
+
