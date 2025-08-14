@@ -26,7 +26,7 @@
         <activity android:name=".MainActivity" />
         <activity android:name=".screen.auth.SignInActivity"  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".screen.auth.SignUpActivity"  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
-
+        <activity android:name=".screen.search.SearchActivity"  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
     </application>
 
 </manifest>

@@ -7,7 +7,6 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <!-- Additional colors -->
     <color name="background_gray">#f2f2f2</color>
     <color name="primary_pink">#EF476F</color>
     <color name="orange_accent">#FFA500</color>
@@ -22,9 +21,10 @@
     <color name="White_smoke">#F5F5F5</color>
     <color name="dark_gray">#2C2C2C</color>
     <color name="light_yellow">#FFF9C4</color>
-
-    <!-- Pink colors for cocktail app -->
+    <color name="green_gray">#4CAF50</color>
+    <color name="dim_gray">#666666</color>
     <color name="pink_primary">#FF6B81</color>
     <color name="pink_light">#FF8A92</color>
+    <color name="transparent">#FEFFC4</color>
 </resources>
 

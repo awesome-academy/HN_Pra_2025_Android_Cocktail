@@ -51,8 +51,55 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/dp_0"
+        android:layout_weight="1"
         android:layout_marginTop="@dimen/dp_12"
         android:clipToPadding="false"
-        android:paddingBottom="@dimen/dp_16" />
+        android:paddingBottom="@dimen/dp_72" />
+
+    <LinearLayout
+        android:id="@+id/layoutPagination"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_60"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:padding="@dimen/dp_12"
+        android:background="@color/white"
+        android:elevation="@dimen/dp_4"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/btnPrevious"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
+            android:src="@drawable/ic_arrow_left"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="@dimen/dp_8"
+            android:enabled="false"
+            android:alpha="0.5"
+            android:layout_marginEnd="@dimen/dp_8"
+            android:scaleType="centerInside" />
+
+        <LinearLayout
+            android:id="@+id/layoutPageNumbers"
+            android:layout_width="@dimen/dp_0"
+            android:layout_weight="1"
+            android:layout_height="@dimen/dp_36"
+            android:orientation="horizontal"
+            android:gravity="center" />
+
+        <ImageView
+            android:id="@+id/btnNext"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
+            android:src="@drawable/ic_arrow_right"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="@dimen/dp_8"
+            android:enabled="false"
+            android:alpha="0.5"
+            android:layout_marginStart="@dimen/dp_8"
+            android:scaleType="centerInside" />
+
+    </LinearLayout>
+
 </LinearLayout>

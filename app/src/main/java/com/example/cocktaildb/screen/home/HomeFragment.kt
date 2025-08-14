@@ -1,5 +1,6 @@
 package com.example.cocktaildb.screen.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentHomeBinding
+import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.base.BaseFragment
 import com.bumptech.glide.Glide
 import kotlin.random.Random
@@ -26,6 +28,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         val repository = CocktailRepository(CocktailRemoteDataSource())
         presenter = HomePresenter(repository)
         presenter.setView(this)
+
+        viewBinding.cardSearch.setOnClickListener {
+            val intent = Intent(requireContext(), SearchActivity::class.java)
+            startActivity(intent)
+        }
     }
 
     override fun initData() {
@@ -43,7 +50,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             Toast.makeText(context, "No cocktails found", Toast.LENGTH_SHORT).show()
             return
         }
-        
+
         // Skip first 3 cocktails and show from 4th onwards, limit to 4 cocktails
         val filteredCocktails = if (cocktails.size > 3) {
             val startIndex = 3
@@ -53,19 +60,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             // If less than 4 cocktails, show all
             cocktails
         }
-        
+
         if (filteredCocktails.isEmpty()) {
             Toast.makeText(context, "No cocktails available after filtering", Toast.LENGTH_SHORT).show()
             return
         }
-        
+
         // Update UI with filtered cocktails
         updateCocktailGrid(filteredCocktails)
-        
+
         // Show success message
         Toast.makeText(context, "Loaded ${filteredCocktails.size} cocktails", Toast.LENGTH_SHORT).show()
     }
-    
+
     private fun updateCocktailGrid(cocktails: List<Cocktail>) {
         // Update first cocktail
         if (cocktails.isNotEmpty()) {
@@ -77,7 +84,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
                 cocktails[0]
             )
         }
-        
+
         // Update second cocktail
         if (cocktails.size > 1) {
             updateCocktailCard(
@@ -88,7 +95,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
                 cocktails[1]
             )
         }
-        
+
         // Update third cocktail
         if (cocktails.size > 2) {
             updateCocktailCard(
@@ -99,7 +106,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
                 cocktails[2]
             )
         }
-        
+
         // Update fourth cocktail
         if (cocktails.size > 3) {
             updateCocktailCard(
@@ -111,7 +118,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             )
         }
     }
-    
+
     private fun updateCocktailCard(
         nameTextView: android.widget.TextView,
         categoryTextView: android.widget.TextView,
@@ -121,11 +128,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
     ) {
         nameTextView.text = cocktail.strDrink
         categoryTextView.text = cocktail.strCategory ?: "Cocktail"
-        
+
         // Generate random rating between 4.0 and 5.0
         val rating = (Random.nextDouble(4.0, 5.0) * 10).toInt() / 10.0
         ratingTextView.text = rating.toString()
-        
+
         // Load cocktail image using Glide
         if (!cocktail.strDrinkThumb.isNullOrEmpty()) {
             Glide.with(this)
@@ -137,7 +144,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             // Use placeholder if no image URL
             imageView.setImageResource(com.example.cocktaildb.R.drawable.imgstart)
         }
-        
+
         // Set click listener for the card
         (imageView.parent as? android.view.View)?.setOnClickListener {
             Toast.makeText(context, "Selected: ${cocktail.strDrink}", Toast.LENGTH_SHORT).show()
