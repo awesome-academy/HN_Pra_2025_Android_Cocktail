@@ -86,5 +86,6 @@ lint/tmp/
 # lint/reports/
 
 
-#gg-service
+# Google Services (e.g. APIs or Firebase)
+google-services.json
 app/google-services.json
