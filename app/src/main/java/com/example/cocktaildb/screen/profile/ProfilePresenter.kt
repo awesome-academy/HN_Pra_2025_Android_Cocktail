@@ -41,17 +41,17 @@ class ProfilePresenter(
 
         if (currentUser != null) {
             try {
-                // Lấy uid của người dùng hiện tại
+                // Get uid of the current user
                 val uid = currentUser.uid
 
-                // Truy vấn Firestore để lấy thông tin chi tiết của người dùng
+                // Fetch user profile data from Firestore
                 val firestore = FirebaseFirestore.getInstance()
                 firestore.collection("users").document(uid)
                     .get()
                     .addOnSuccessListener { document ->
                         view?.displayLoading(false)
                         if (document != null && document.exists()) {
-                            // Chuyển đổi dữ liệu Firestore thành đối tượng User
+                            // Change user data to user object
                             val userData = document.data
                             if (userData != null) {
                                 val userName = userData["name"] as? String ?: "User"
@@ -64,7 +64,7 @@ class ProfilePresenter(
                                     profileImageUrl = profileImage
                                 )
                             } else {
-                                // Nếu không có dữ liệu, hiển thị mặc định
+                                // if user data is null, show default profile
                                 view?.showUserProfile(
                                     userName = "User",
                                     userBio = "No profile information",
@@ -72,7 +72,7 @@ class ProfilePresenter(
                                 )
                             }
                         } else {
-                            // Nếu không tìm thấy document
+                            // if document does not exist, show default profile
                             view?.showUserProfile(
                                 userName = "User",
                                 userBio = "No profile information",
@@ -83,7 +83,7 @@ class ProfilePresenter(
                     .addOnFailureListener { e ->
                         view?.displayLoading(false)
                         view?.displayError("Error loading profile: ${e.message}")
-                        // Hiển thị thông tin mặc định khi có lỗi
+                        // Display default profile information on error
                         view?.showUserProfile(
                             userName = "User",
                             userBio = "Could not load profile",
@@ -93,7 +93,7 @@ class ProfilePresenter(
             } catch (e: Exception) {
                 view?.displayLoading(false)
                 view?.displayError("Error accessing user data: ${e.message}")
-                // Hiển thị thông tin mặc định khi có lỗi
+                // Display default profile information on exception
                 view?.showUserProfile(
                     userName = "User",
                     userBio = "Error loading profile",
