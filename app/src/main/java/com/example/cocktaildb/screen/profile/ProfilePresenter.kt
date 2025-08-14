@@ -176,28 +176,28 @@ class ProfilePresenter(
     private fun createMockCocktails(): List<Cocktail> {
         return listOf(
             Cocktail(
-                id = "1",
-                name = "Mojito",
-                description = "Refreshing rum cocktail with mint and lime",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg"
+                idDrink = "1",
+                strDrink = "Mojito",
+                strCategory = "Refreshing rum cocktail with mint and lime",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg"
             ),
             Cocktail(
-                id = "2",
-                name = "Margarita",
-                description = "Classic tequila cocktail with lime",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg"
+                idDrink = "2",
+                strDrink = "Margarita",
+                strCategory = "Classic tequila cocktail with lime",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg"
             ),
             Cocktail(
-                id = "3",
-                name = "Piña Colada",
-                description = "Tropical rum cocktail with coconut and pineapple",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/cpf4j51504371346.jpg"
+                idDrink = "3",
+                strDrink = "Piña Colada",
+                strCategory = "Tropical rum cocktail with coconut and pineapple",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/cpf4j51504371346.jpg"
             ),
             Cocktail(
-                id = "4",
-                name = "Virgin Mojito",
-                description = "Non-alcoholic version of the classic Mojito",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/vr6kle1504886114.jpg"
+                idDrink = "4",
+                strDrink = "Virgin Mojito",
+                strCategory = "Non-alcoholic version of the classic Mojito",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/vr6kle1504886114.jpg"
             )
         )
     }

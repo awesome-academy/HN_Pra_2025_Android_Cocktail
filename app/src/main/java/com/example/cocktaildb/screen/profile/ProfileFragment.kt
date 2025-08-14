@@ -1,6 +1,7 @@
 package com.example.cocktaildb.screen.profile
 
 import android.content.Intent
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,7 +18,7 @@ import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
 import com.example.cocktaildb.databinding.FragmentProfileBinding
-import com.example.cocktaildb.databinding.ItemCocktailCardBinding
+import com.example.cocktaildb.databinding.ItemCocktailBinding
 import com.example.cocktaildb.databinding.ItemProfileHeaderBinding
 import com.example.cocktaildb.screen.auth.SignInActivity
 import com.example.cocktaildb.utils.ImageLoader
@@ -61,10 +62,45 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
             }
         }
 
+        // Apply proper item spacing decoration
+        val spacingInPixels = resources.getDimensionPixelSize(R.dimen.dp_8)
+        viewBinding.profileRecyclerView.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: Rect,
+                view: View,
+                parent: RecyclerView,
+                state: RecyclerView.State
+            ) {
+                val position = parent.getChildAdapterPosition(view)
+                if (position > 0) { // Skip header
+                    // Apply spacing to all items except header
+                    outRect.left = spacingInPixels
+                    outRect.right = spacingInPixels
+                    outRect.bottom = spacingInPixels
+
+                    // Determine if this is an item in the left or right column
+                    val isLeftColumn = (position - 1) % 2 == 0
+
+                    // Add more space on the left for left column items and on the right for right column items
+                    if (isLeftColumn) {
+                        outRect.left = spacingInPixels * 2
+                    } else {
+                        outRect.right = spacingInPixels * 2
+                    }
+
+                    // Add top margin only for the first row items
+                    if (position == 1 || position == 2) {
+                        outRect.top = spacingInPixels
+                    }
+                }
+            }
+        })
+
         viewBinding.profileRecyclerView.apply {
             this.layoutManager = layoutManager
             adapter = profileAdapter
             clipToPadding = false  // Allow scrolling into the padding area
+            setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.bottom_nav_height))
         }
 
         // Set up loading view
@@ -167,7 +203,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
                     HeaderViewHolder(binding)
                 }
                 else -> {
-                    val binding = ItemCocktailCardBinding.inflate(
+                    val binding = ItemCocktailBinding.inflate(
                         LayoutInflater.from(parent.context), parent, false)
                     CocktailViewHolder(binding)
                 }
@@ -234,26 +270,26 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         /**
          * ViewHolder for cocktail items
          */
-        inner class CocktailViewHolder(private val binding: ItemCocktailCardBinding) : RecyclerView.ViewHolder(binding.root) {
+        inner class CocktailViewHolder(private val binding: ItemCocktailBinding) : RecyclerView.ViewHolder(binding.root) {
 
             fun bind(cocktail: Cocktail) {
-                binding.cocktailTitleTextView.text = cocktail.name
-                binding.cocktailCategoryTextView.text = cocktail.description ?: "Cocktail"
+                binding.tvCocktailName.text = cocktail.strDrink
+                binding.tvCocktailCategory.text = cocktail.strCategory ?: "Cocktail"
 
                 // Load the cocktail image using our custom ImageLoader
                 try {
                     ImageLoader.loadImage(
-                        url = cocktail.imageUrl,
-                        imageView = binding.cocktailImageView,
+                        url = cocktail.strDrinkThumb,
+                        imageView = binding.ivCocktail,
                         placeholderResId = R.drawable.ic_launcher_background
                     )
                 } catch (e: Exception) {
                     // If image loading fails, use placeholder
-                    binding.cocktailImageView.setImageResource(R.drawable.ic_launcher_background)
+                    binding.ivCocktail.setImageResource(R.drawable.ic_launcher_background)
                 }
 
                 // Set rating
-                binding.ratingChip.text = "★ 4.5"
+                binding.tvRating.text = "4.8"
             }
         }
     }

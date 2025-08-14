@@ -78,4 +78,8 @@
     <string name="Apply_Filter">Apply Filter</string>
     <string name="All_Categories">All Categories</string>
     <string name="All_Types">All Types</string>
+
+    <!-- My Recipe Screen Strings -->
+    <string name="custom_recipe">Custom Recipe</string>
+    <string name="my_recipe">★ My Recipe</string>
 </resources>

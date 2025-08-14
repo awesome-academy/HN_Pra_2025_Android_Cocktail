@@ -56,40 +56,40 @@ class MyRecipePresenter(
     private fun createMockUserRecipes(): List<Cocktail> {
         return listOf(
             Cocktail(
-                id = "101",
-                name = "Berry Blast",
-                description = "My special berry cocktail",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/xwqvur1468876473.jpg"
+                idDrink = "101",
+                strDrink = "Berry Blast",
+                strCategory = "My special berry cocktail",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/xwqvur1468876473.jpg"
             ),
             Cocktail(
-                id = "102",
-                name = "Mango Tango",
-                description = "Sweet mango-based cocktail with a twist",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/bxyyrq1534536248.jpg"
+                idDrink = "102",
+                strDrink = "Mango Tango",
+                strCategory = "Sweet mango-based cocktail with a twist",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/vrwquq1478252802.jpg"
             ),
             Cocktail(
-                id = "103",
-                name = "Blue Lagoon",
-                description = "My take on the blue lagoon - with extra citrus",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/5wm4zo1582579154.jpg"
+                idDrink = "103",
+                strDrink = "Blue Lagoon",
+                strCategory = "My take on the blue lagoon - with extra citrus",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/5wm4zo1582579154.jpg"
             ),
             Cocktail(
-                id = "104",
-                name = "Vanilla Dream",
-                description = "Creamy vanilla cocktail perfect for dessert",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/yrhutv1503563730.jpg"
+                idDrink = "104",
+                strDrink = "Vanilla Dream",
+                strCategory = "Creamy vanilla cocktail perfect for dessert",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/yrhutv1503563730.jpg"
             ),
             Cocktail(
-                id = "105",
-                name = "Ginger Fizz",
-                description = "Spicy ginger cocktail with soda",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/nzlyc81605905755.jpg"
+                idDrink = "105",
+                strDrink = "Ginger Fizz",
+                strCategory = "Spicy ginger cocktail with soda",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/nzlyc81605905755.jpg"
             ),
             Cocktail(
-                id = "106",
-                name = "Cucumber Cooler",
-                description = "Refreshing cucumber-based summer drink",
-                imageUrl = "https://www.thecocktaildb.com/images/media/drink/hbkfsh1589574990.jpg"
+                idDrink = "106",
+                strDrink = "Cucumber Cooler",
+                strCategory = "Refreshing cucumber-based summer drink",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/hbkfsh1589574990.jpg"
             )
         )
     }
