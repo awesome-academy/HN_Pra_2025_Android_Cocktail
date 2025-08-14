@@ -4,7 +4,6 @@
     <string name="title_messages">Messages</string>
     <string name="title_add">Add</string>
     <string name="title_favorites">Favorites</string>
-    <string name="title_profile">Profile</string>
 
     <!-- Start Screen Strings -->
     <string name="start_title">What do you want to cook today?</string>
