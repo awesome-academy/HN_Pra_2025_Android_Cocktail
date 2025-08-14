@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:clipToPadding="false"
-    android:paddingBottom="100dp"
+    android:paddingBottom="@dimen/dp_120"
     tools:context=".screen.home.HomeFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -17,7 +17,7 @@
         <ImageView
             android:id="@+id/iv_hero_background"
             android:layout_width="0dp"
-            android:layout_height="300dp"
+            android:layout_height="@dimen/dp_300"
             android:scaleType="centerCrop"
             android:src="@drawable/imgstart"
             app:layout_constraintEnd_toEndOf="parent"
@@ -28,7 +28,7 @@
         <View
             android:id="@+id/overlay"
             android:layout_width="0dp"
-            android:layout_height="300dp"
+            android:layout_height="@dimen/dp_300"
             android:background="#80000000"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -39,9 +39,9 @@
             android:id="@+id/tv_hero_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
-            android:layout_marginTop="80dp"
+            android:layout_marginStart="@dimen/dp_32"
+            android:layout_marginEnd="@dimen/dp_32"
+            android:layout_marginTop="@dimen/dp_72"
             android:text="@string/hero_title"
             android:textAlignment="center"
             android:textColor="@color/white"
@@ -55,12 +55,12 @@
         <androidx.cardview.widget.CardView
             android:id="@+id/card_search"
             android:layout_width="0dp"
-            android:layout_height="56dp"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:layout_marginTop="20dp"
-            app:cardCornerRadius="28dp"
-            app:cardElevation="8dp"
+            android:layout_height="@dimen/dp_56"
+            android:layout_marginStart="@dimen/dp_24"
+            android:layout_marginEnd="@dimen/dp_24"
+            android:layout_marginTop="@dimen/dp_20"
+            app:cardCornerRadius="@dimen/dp_8"
+            app:cardElevation="@dimen/dp_8"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tv_hero_title">
@@ -71,8 +71,8 @@
                 android:background="@color/pink_light"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp">
+                android:paddingStart="@dimen/dp_24"
+                android:paddingEnd="@dimen/dp_24">
 
                 <TextView
                     android:layout_width="0dp"
@@ -83,8 +83,8 @@
                     android:textSize="16sp" />
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                                    android:layout_width="@dimen/dp_24"
+                android:layout_height="@dimen/dp_24"
                     android:src="@drawable/ic_search"
                     app:tint="@color/white" />
 
@@ -96,9 +96,9 @@
             android:id="@+id/ll_popular_header"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="80dp"
-            android:layout_marginEnd="24dp"
+            android:layout_marginStart="@dimen/dp_24"
+            android:layout_marginTop="@dimen/dp_72"
+            android:layout_marginEnd="@dimen/dp_24"
             android:orientation="horizontal"
             android:gravity="center_vertical"
             app:layout_constraintEnd_toEndOf="parent"
@@ -118,10 +118,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/button_start_background"
-                android:paddingStart="16dp"
-                android:paddingTop="8dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="8dp"
+                android:paddingStart="@dimen/dp_16"
+                android:paddingTop="@dimen/dp_8"
+                android:paddingEnd="@dimen/dp_16"
+                android:paddingBottom="@dimen/dp_8"
                 android:text="View All"
                 android:textColor="@color/white"
                 android:textSize="14sp"
@@ -134,9 +134,9 @@
             android:id="@+id/ll_cocktail_grid"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="24dp"
+            android:layout_marginStart="@dimen/dp_4"
+            android:layout_marginTop="@dimen/dp_16"
+            android:layout_marginEnd="@dimen/dp_4"
             android:orientation="vertical"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -146,18 +146,18 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:orientation="horizontal">
 
                 <!-- Cocktail 1 -->
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_cocktail_1"
                     android:layout_width="0dp"
-                    android:layout_height="180dp"
+                    android:layout_height="@dimen/dp_180"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp">
+                    android:layout_marginEnd="@dimen/dp_8"
+                    app:cardCornerRadius="@dimen/dp_16"
+                    app:cardElevation="@dimen/dp_4">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -178,21 +178,21 @@
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginEnd="12dp"
+                            android:layout_marginTop="@dimen/dp_12"
+                            android:layout_marginEnd="@dimen/dp_12"
                             android:background="@drawable/rating_background"
                             android:gravity="center"
                             android:orientation="horizontal"
-                            android:paddingStart="8dp"
-                            android:paddingTop="4dp"
-                            android:paddingEnd="8dp"
-                            android:paddingBottom="4dp"
+                            android:paddingStart="@dimen/dp_8"
+                            android:paddingTop="@dimen/dp_4"
+                            android:paddingEnd="@dimen/dp_8"
+                            android:paddingBottom="@dimen/dp_4"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="@dimen/dp_16"
+                                android:layout_height="@dimen/dp_16"
                                 android:src="@drawable/ic_heart"
                                 app:tint="@color/pink_primary" />
 
@@ -200,7 +200,7 @@
                                 android:id="@+id/tv_rating_1"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
+                                android:layout_marginStart="@dimen/dp_4"
                                 android:text="4.5"
                                 android:textColor="@color/white"
                                 android:textSize="12sp"
@@ -223,9 +223,9 @@
                             android:id="@+id/tv_cocktail_name_1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="8dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_8"
                             android:text="Cocktail 1"
                             android:textColor="@color/white"
                             android:textSize="16sp"
@@ -238,9 +238,9 @@
                             android:id="@+id/tv_cocktail_category_1"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="16dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_16"
                             android:text="Cocktail"
                             android:textColor="@color/white"
                             android:textSize="14sp"
@@ -255,11 +255,11 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_cocktail_2"
                     android:layout_width="0dp"
-                    android:layout_height="180dp"
+                    android:layout_height="@dimen/dp_180"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp">
+                    android:layout_marginStart="@dimen/dp_8"
+                    app:cardCornerRadius="@dimen/dp_16"
+                    app:cardElevation="@dimen/dp_4">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -280,21 +280,21 @@
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginEnd="12dp"
+                            android:layout_marginTop="@dimen/dp_12"
+                            android:layout_marginEnd="@dimen/dp_12"
                             android:background="@drawable/rating_background"
                             android:gravity="center"
                             android:orientation="horizontal"
-                            android:paddingStart="8dp"
-                            android:paddingTop="4dp"
-                            android:paddingEnd="8dp"
-                            android:paddingBottom="4dp"
+                            android:paddingStart="@dimen/dp_8"
+                            android:paddingTop="@dimen/dp_4"
+                            android:paddingEnd="@dimen/dp_8"
+                            android:paddingBottom="@dimen/dp_4"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="@dimen/dp_16"
+                                android:layout_height="@dimen/dp_16"
                                 android:src="@drawable/ic_heart"
                                 app:tint="@color/pink_primary" />
 
@@ -302,7 +302,7 @@
                                 android:id="@+id/tv_rating_2"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
+                                android:layout_marginStart="@dimen/dp_4"
                                 android:text="4.8"
                                 android:textColor="@color/white"
                                 android:textSize="12sp"
@@ -325,9 +325,9 @@
                             android:id="@+id/tv_cocktail_name_2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="8dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_8"
                             android:text="Cocktail 2"
                             android:textColor="@color/white"
                             android:textSize="16sp"
@@ -340,9 +340,9 @@
                             android:id="@+id/tv_cocktail_category_2"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="16dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_16"
                             android:text="Cocktail"
                             android:textColor="@color/white"
                             android:textSize="14sp"
@@ -365,11 +365,11 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_cocktail_3"
                     android:layout_width="0dp"
-                    android:layout_height="180dp"
+                    android:layout_height="@dimen/dp_180"
                     android:layout_weight="1"
-                    android:layout_marginEnd="8dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp">
+                    android:layout_marginEnd="@dimen/dp_8"
+                    app:cardCornerRadius="@dimen/dp_16"
+                    app:cardElevation="@dimen/dp_4">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -390,21 +390,21 @@
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginEnd="12dp"
+                            android:layout_marginTop="@dimen/dp_12"
+                            android:layout_marginEnd="@dimen/dp_12"
                             android:background="@drawable/rating_background"
                             android:gravity="center"
                             android:orientation="horizontal"
-                            android:paddingStart="8dp"
-                            android:paddingTop="4dp"
-                            android:paddingEnd="8dp"
-                            android:paddingBottom="4dp"
+                            android:paddingStart="@dimen/dp_8"
+                            android:paddingTop="@dimen/dp_4"
+                            android:paddingEnd="@dimen/dp_8"
+                            android:paddingBottom="@dimen/dp_4"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="@dimen/dp_16"
+                                android:layout_height="@dimen/dp_16"
                                 android:src="@drawable/ic_heart"
                                 app:tint="@color/pink_primary" />
 
@@ -412,7 +412,7 @@
                                 android:id="@+id/tv_rating_3"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
+                                android:layout_marginStart="@dimen/dp_4"
                                 android:text="4.7"
                                 android:textColor="@color/white"
                                 android:textSize="12sp"
@@ -435,9 +435,9 @@
                             android:id="@+id/tv_cocktail_name_3"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="8dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_8"
                             android:text="Cocktail 3"
                             android:textColor="@color/white"
                             android:textSize="16sp"
@@ -450,9 +450,9 @@
                             android:id="@+id/tv_cocktail_category_3"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="16dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_16"
                             android:text="Cocktail"
                             android:textColor="@color/white"
                             android:textSize="14sp"
@@ -467,11 +467,11 @@
                 <androidx.cardview.widget.CardView
                     android:id="@+id/card_cocktail_4"
                     android:layout_width="0dp"
-                    android:layout_height="180dp"
+                    android:layout_height="@dimen/dp_180"
                     android:layout_weight="1"
-                    android:layout_marginStart="8dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp">
+                    android:layout_marginStart="@dimen/dp_8"
+                    app:cardCornerRadius="@dimen/dp_16"
+                    app:cardElevation="@dimen/dp_4">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -492,21 +492,21 @@
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:layout_marginEnd="12dp"
+                            android:layout_marginTop="@dimen/dp_12"
+                            android:layout_marginEnd="@dimen/dp_12"
                             android:background="@drawable/rating_background"
                             android:gravity="center"
                             android:orientation="horizontal"
-                            android:paddingStart="8dp"
-                            android:paddingTop="4dp"
-                            android:paddingEnd="8dp"
-                            android:paddingBottom="4dp"
+                            android:paddingStart="@dimen/dp_8"
+                            android:paddingTop="@dimen/dp_4"
+                            android:paddingEnd="@dimen/dp_8"
+                            android:paddingBottom="@dimen/dp_4"
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
                             <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
+                                android:layout_width="@dimen/dp_16"
+                                android:layout_height="@dimen/dp_16"
                                 android:src="@drawable/ic_heart"
                                 app:tint="@color/pink_primary" />
 
@@ -514,7 +514,7 @@
                                 android:id="@+id/tv_rating_4"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginStart="4dp"
+                                android:layout_marginStart="@dimen/dp_4"
                                 android:text="4.8"
                                 android:textColor="@color/white"
                                 android:textSize="12sp"
@@ -537,9 +537,9 @@
                             android:id="@+id/tv_cocktail_name_4"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="8dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_8"
                             android:text="Cocktail 4"
                             android:textColor="@color/white"
                             android:textSize="16sp"
@@ -552,9 +552,9 @@
                             android:id="@+id/tv_cocktail_category_4"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginBottom="16dp"
+                            android:layout_marginStart="@dimen/dp_16"
+                            android:layout_marginEnd="@dimen/dp_16"
+                            android:layout_marginBottom="@dimen/dp_16"
                             android:text="Cocktail"
                             android:textColor="@color/white"
                             android:textSize="14sp"
@@ -571,5 +571,3 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
-
-
