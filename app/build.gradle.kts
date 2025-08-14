@@ -9,7 +9,7 @@ detekt {
     buildUponDefaultConfig = true
     allRules = false
     config = files()
-    ignoreFailures = true // Tạm thời cho phép build thành công dù có lỗi detekt
+            ignoreFailures = true
 }
 
 android {
@@ -62,6 +62,17 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    
+    // RecyclerView and CardView
+    implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("androidx.cardview:cardview:1.0.0")
+    
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    
+    // Glide for image loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -70,7 +81,6 @@ dependencies {
     implementation("com.google.firebase:firebase-auth:22.3.1")
     implementation("com.google.firebase:firebase-firestore:24.11.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
-    // Ktlint dependency với version cũ hơn tương thích với Java 17
     "ktlint"("com.pinterest:ktlint:0.45.2")
 }
 
@@ -90,3 +100,4 @@ tasks.register<JavaExec>("ktlintFormat") {
     mainClass.set("com.pinterest.ktlint.Main")
     args("-F", "src/**/*.kt")
 }
+

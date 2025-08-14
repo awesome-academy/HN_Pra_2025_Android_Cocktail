@@ -3,6 +3,11 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+    <string name="title_messages">Messages</string>
+    <string name="title_add">Add</string>
+    <string name="title_favorites">Favorites</string>
+    <string name="title_profile">Profile</string>
+
 
     <!-- Start Screen Strings -->
     <string name="start_title">What do you want to cook today?</string>
@@ -50,6 +55,12 @@
     <string name="Accept_condition">Accept terms &amp; Condition</string>
     <string name="Cre_account">Create an account</string>
     <string name="Search">Search cocktails</string>
+
+    <!-- Home Screen Strings -->
+    <string name="hero_title">What do you want to cook today?</string>
+    <string name="search_placeholder">Search</string>
+    <string name="popular_recipe">Popular Recipe</string>
+    <string name="view_all">View All</string>
 </resources>
 
 

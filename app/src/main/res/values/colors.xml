@@ -21,5 +21,9 @@
     <color name="White_smoke">#F5F5F5</color>
     <color name="dark_gray">#2C2C2C</color>
     <color name="light_yellow">#FFF9C4</color>
+
+    <!-- Pink colors for cocktail app -->
+    <color name="pink_primary">#FF6B81</color>
+    <color name="pink_light">#FF8A92</color>
 </resources>
 

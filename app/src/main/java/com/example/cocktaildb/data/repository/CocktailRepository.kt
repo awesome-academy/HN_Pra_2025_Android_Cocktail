@@ -12,5 +12,9 @@ class CocktailRepository(private val dataSource: CocktailDataSource) {
     fun getCocktailById(id: String): Cocktail? {
         return dataSource.getCocktailById(id)
     }
+    
+    suspend fun fetchCocktailsFromApi(): List<Cocktail> {
+        return dataSource.fetchCocktailsFromApi()
+    }
 }
 
