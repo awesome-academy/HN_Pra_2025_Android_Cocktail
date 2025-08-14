@@ -61,6 +61,13 @@
     <string name="Cre_account">Create an account</string>
     <string name="Search">Search cocktails</string>
 
+    <string name="Previous">Previous</string>
+    <string name="Next">Next</string>
+    <string name="Page_info">Page %1$d of %2$d</string>
+    <string name="Clear">Clear</string>
+    <string name="Apply_Filter">Apply Filter</string>
+    <string name="All_Categories">All Categories</string>
+    <string name="All_Types">All Types</string>
 </resources>
 
 

@@ -1,6 +1,7 @@
 package com.example.cocktaildb.data.repository.source.local
 
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.model.DataCocktail
 import com.example.cocktaildb.data.repository.source.CocktailDataSource
 
 class CocktailLocalDataSource : CocktailDataSource {
@@ -14,10 +15,19 @@ class CocktailLocalDataSource : CocktailDataSource {
         // TODO: Implement local data source
         return null
     }
-    
+
     override suspend fun fetchCocktailsFromApi(): List<Cocktail> {
         // TODO: Implement API call
         return emptyList()
     }
-}
 
+    override fun getCocktailSearch(): List<DataCocktail> {
+        // TODO: Implement local data source
+        return emptyList()
+    }
+
+    override fun getCocktailByIdSearch(id: String): DataCocktail? {
+        // TODO: Implement local data source
+        return null
+    }
+}

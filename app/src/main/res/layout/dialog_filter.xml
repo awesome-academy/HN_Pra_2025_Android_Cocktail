@@ -33,7 +33,7 @@
             android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Milk"
+            android:text="@string/All_Categories"
             android:textSize="16sp"
             android:textColor="@color/black" />
 
@@ -71,7 +71,7 @@
             android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Non Alcoholic"
+            android:text="@string/All_Types"
             android:textSize="16sp"
             android:textColor="@color/black" />
 
@@ -83,17 +83,41 @@
             app:tint="@color/black" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnFilter"
-        android:layout_width="@dimen/dp_200"
-        android:layout_height="@dimen/dp_48"
-        android:layout_gravity="center"
-        android:text="Filter"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:background="@drawable/filter_button_bg"
-        android:layout_marginTop="@dimen/dp_8" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="@dimen/dp_8"
+        android:gravity="center_vertical"
+        android:baselineAligned="false">
+
+        <Button
+            android:id="@+id/btnClear"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/dp_48"
+            android:layout_weight="1"
+            android:text="@string/Clear"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:background="@drawable/page_button_bg"
+            android:layout_marginEnd="@dimen/dp_8"
+            android:gravity="center"
+            style="?android:attr/buttonStyleSmall"/>
+
+        <Button
+            android:id="@+id/btnApply"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/dp_48"
+            android:layout_weight="1"
+            android:text="@string/Apply_Filter"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/filter_button_bg"
+            android:layout_marginStart="@dimen/dp_8"
+            android:gravity="center" />
+
+    </LinearLayout>
 
 </LinearLayout>
 
