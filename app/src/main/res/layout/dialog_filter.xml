@@ -39,8 +39,8 @@
 
         <ImageView
             android:id="@+id/ivCategoryArrow"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="@dimen/dp_24"
+            android:layout_height="@dimen/dp_24"
             android:src="@drawable/ic_arrow_drop_down"
             app:tint="@color/black" />
     </LinearLayout>
@@ -96,3 +96,5 @@
         android:layout_marginTop="@dimen/dp_8" />
 
 </LinearLayout>
+
+

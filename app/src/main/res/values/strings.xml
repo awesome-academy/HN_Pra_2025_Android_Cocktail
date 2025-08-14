@@ -3,6 +3,11 @@
     <string name="title_home">Home</string>
     <string name="title_dashboard">Dashboard</string>
     <string name="title_notifications">Notifications</string>
+
+    <!-- Start Screen Strings -->
+    <string name="start_title">What do you want to cook today?</string>
+    <string name="start_subtitle">Let\'s make a delicious dish with the best recipe for the family</string>
+    <string name="start_button">Start</string>
     <string name="default_web_client_id">938670152663-1hdfpaes40s4roacp9jq7r42rj5nd5pu.apps.googleusercontent.com</string>
 
     <string name="msg_enter_email">Please enter your email</string>
@@ -46,3 +51,5 @@
     <string name="Cre_account">Create an account</string>
     <string name="Search">Search cocktails</string>
 </resources>
+
+
