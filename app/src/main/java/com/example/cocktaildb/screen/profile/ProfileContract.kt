@@ -28,6 +28,11 @@ interface ProfileContract {
         fun navigateToMyRecipes()
 
         /**
+         * Navigate to Login screen after logout
+         */
+        fun navigateToLogin()
+
+        /**
          * Show loading indicator
          */
         fun displayLoading(show: Boolean)
@@ -61,5 +66,10 @@ interface ProfileContract {
          * Handle History button click
          */
         fun onHistoryClicked()
+
+        /**
+         * Handle Logout button click
+         */
+        fun onLogoutClicked()
     }
 }

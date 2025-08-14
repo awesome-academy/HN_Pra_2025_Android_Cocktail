@@ -129,6 +129,14 @@ class ProfilePresenter(
         // This would typically navigate to a history screen
     }
 
+    override fun onLogoutClicked() {
+        // Call the AuthRepository's signOut method to log the user out
+        authRepository.signOut()
+
+        // Navigate to login screen
+        view?.navigateToLogin()
+    }
+
     private fun loadData() {
         loadUserProfile()
         loadUserCocktails()

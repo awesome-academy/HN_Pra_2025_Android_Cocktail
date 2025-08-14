@@ -1,5 +1,6 @@
 package com.example.cocktaildb.screen.profile
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -18,13 +19,14 @@ import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSour
 import com.example.cocktaildb.databinding.FragmentProfileBinding
 import com.example.cocktaildb.databinding.ItemCocktailCardBinding
 import com.example.cocktaildb.databinding.ItemProfileHeaderBinding
+import com.example.cocktaildb.screen.auth.SignInActivity
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.utils.base.BaseFragment
 
 /**
  * Fragment for displaying user profile and cocktail list
  */
-class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
+class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View {
 
     private lateinit var presenter: ProfileContract.Presenter
     private val profileAdapter = ProfileAdapter()
@@ -75,41 +77,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
         val repository = CocktailRepository(dataSource)
         val authRepository = AuthRepository()
         presenter = ProfilePresenter(repository, authRepository)
-        presenter.setView(object : ProfileContract.View {
-            override fun showUserProfile(userName: String, userBio: String, profileImageUrl: String?) {
-                profileAdapter.setUserProfile(userName, userBio, profileImageUrl)
-            }
-
-            override fun showUserCocktails(cocktails: List<Cocktail>) {
-                profileAdapter.setCocktails(cocktails)
-            }
-
-            override fun navigateToMyRecipes() {
-                try {
-                    // Navigate to the MyRecipe screen using the Navigation Component
-                    val navController = androidx.navigation.Navigation.findNavController(
-                        requireActivity(),
-                        R.id.nav_host_fragment_activity_main
-                    )
-                    navController.navigate(R.id.navigation_my_recipe)
-                } catch (e: Exception) {
-                    // Fallback in case navigation fails
-                    Toast.makeText(
-                        context,
-                        "My Recipes feature coming soon!",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-
-            override fun displayLoading(show: Boolean) {
-                viewBinding.loadingView.visibility = if (show) View.VISIBLE else View.GONE
-            }
-
-            override fun displayError(message: String) {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
-            }
-        })
+        presenter.setView(this)
     }
 
     override fun onResume() {
@@ -120,6 +88,46 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
     override fun onPause() {
         presenter.onStop()
         super.onPause()
+    }
+
+    override fun showUserProfile(userName: String, userBio: String, profileImageUrl: String?) {
+        profileAdapter.setUserProfile(userName, userBio, profileImageUrl)
+    }
+
+    override fun showUserCocktails(cocktails: List<Cocktail>) {
+        profileAdapter.setCocktails(cocktails)
+    }
+
+    override fun navigateToMyRecipes() {
+        try {
+            // Navigate to the MyRecipe screen using the Navigation Component
+            val navController = androidx.navigation.Navigation.findNavController(
+                requireActivity(),
+                R.id.nav_host_fragment_activity_main
+            )
+            navController.navigate(R.id.navigation_my_recipe)
+        } catch (e: Exception) {
+            // Fallback in case navigation fails
+            Toast.makeText(
+                context,
+                "My Recipes feature coming soon!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    override fun navigateToLogin() {
+        val intent = Intent(requireContext(), SignInActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+    }
+
+    override fun displayLoading(show: Boolean) {
+        viewBinding.loadingView.visibility = if (show) View.VISIBLE else View.GONE
+    }
+
+    override fun displayError(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     /**
@@ -192,6 +200,10 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>() {
 
                 binding.historyButton.setOnClickListener {
                     presenter.onHistoryClicked()
+                }
+
+                binding.logoutButton.setOnClickListener {
+                    presenter.onLogoutClicked()
                 }
             }
 
