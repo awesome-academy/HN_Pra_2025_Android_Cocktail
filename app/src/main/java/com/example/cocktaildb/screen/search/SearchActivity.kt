@@ -78,6 +78,13 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     }
 
     private fun showCocktailDetail(cocktail: Cocktail) {
+        // Add to history first
+        try {
+            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(this, cocktail)
+        } catch (e: Exception) {
+            // Handle error silently
+        }
+        
         // Hide search results and show detail container
         viewBinding.searchResultsContainer.visibility = View.GONE
         viewBinding.detailContainer.visibility = View.VISIBLE

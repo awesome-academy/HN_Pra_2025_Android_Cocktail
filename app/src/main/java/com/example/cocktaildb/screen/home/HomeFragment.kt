@@ -49,6 +49,13 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         cocktailAdapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
+                // Add to history first
+                try {
+                    com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
+                } catch (e: Exception) {
+                    // Handle error silently
+                }
+                
                 // Navigate to cocktail detail fragment using Navigation Component
                 val bundle = Bundle().apply {
                     putString("cocktail_id", cocktail.idDrink)

@@ -123,8 +123,8 @@ class ProfilePresenter(
     }
 
     override fun onHistoryClicked() {
-        // Handle History button click
-        // This would typically navigate to a history screen
+        // Navigate to History screen
+        view?.navigateToHistory()
     }
 
     override fun onLogoutClicked() {
@@ -172,26 +172,46 @@ class ProfilePresenter(
             Cocktail(
                 idDrink = "1",
                 strDrink = "Mojito",
-                strCategory = "Refreshing rum cocktail with mint and lime",
-                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg"
+                strCategory = "Cocktail",
+                strAlcoholic = "Alcoholic",
+                strGlass = "Highball glass",
+                strInstructions = "Muddle mint leaves with sugar and lime juice. Add a splash of soda water and fill the glass with cracked ice. Pour the rum and top with soda water. Garnish and serve with straws.",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/metwgh1606770327.jpg",
+                ingredients = listOf("White rum", "Lime juice", "Sugar", "Mint", "Soda water"),
+                measures = listOf("2 oz", "1 oz", "1 tsp", "6 leaves", "Top up")
             ),
             Cocktail(
                 idDrink = "2",
                 strDrink = "Margarita",
-                strCategory = "Classic tequila cocktail with lime",
-                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg"
+                strCategory = "Cocktail",
+                strAlcoholic = "Alcoholic",
+                strGlass = "Cocktail glass",
+                strInstructions = "Rub the rim of the glass with the lime slice to make the salt stick to it. Take care to moisten only the outer rim and sprinkle the salt on it. The salt should present to the lips of the imbiber and never mix into the cocktail. Shake the other ingredients with ice, then carefully pour into the glass.",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/5noda61589575158.jpg",
+                ingredients = listOf("Tequila", "Triple sec", "Lime juice", "Salt"),
+                measures = listOf("1 1/2 oz", "1/2 oz", "1 oz", "For rim")
             ),
             Cocktail(
                 idDrink = "3",
                 strDrink = "Piña Colada",
-                strCategory = "Tropical rum cocktail with coconut and pineapple",
-                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/cpf4j51504371346.jpg"
+                strCategory = "Cocktail",
+                strAlcoholic = "Alcoholic",
+                strGlass = "Hurricane glass",
+                strInstructions = "Mix all ingredients in a blender until smooth. Pour into a chilled glass and garnish with a pineapple slice and cherry.",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/cpf4j51504371346.jpg",
+                ingredients = listOf("White rum", "Coconut cream", "Pineapple juice"),
+                measures = listOf("2 oz", "2 oz", "3 oz")
             ),
             Cocktail(
                 idDrink = "4",
                 strDrink = "Virgin Mojito",
-                strCategory = "Non-alcoholic version of the classic Mojito",
-                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/vr6kle1504886114.jpg"
+                strCategory = "Cocktail",
+                strAlcoholic = "Non alcoholic",
+                strGlass = "Highball glass",
+                strInstructions = "Muddle mint leaves with sugar and lime juice. Add a splash of soda water and fill the glass with cracked ice. Top with soda water. Garnish and serve with straws.",
+                strDrinkThumb = "https://www.thecocktaildb.com/images/media/drink/vr6kle1504886114.jpg",
+                ingredients = listOf("Lime juice", "Sugar", "Mint", "Soda water"),
+                measures = listOf("1 oz", "1 tsp", "6 leaves", "Top up")
             )
         )
     }

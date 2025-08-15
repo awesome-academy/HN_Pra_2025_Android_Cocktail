@@ -75,4 +75,10 @@
             android:name="cocktail_measures"
             app:argType="string[]" />
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_history"
+        android:name="com.example.cocktaildb.screen.history.HistoryFragment"
+        android:label="History"
+        tools:layout="@layout/fragment_history" />
 </navigation>

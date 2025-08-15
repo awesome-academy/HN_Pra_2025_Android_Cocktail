@@ -17,6 +17,7 @@ interface ProfileContract {
 
         fun navigateToMyRecipes()
 
+        fun navigateToHistory()
 
         fun navigateToLogin()
 

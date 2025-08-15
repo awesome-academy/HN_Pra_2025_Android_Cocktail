@@ -60,6 +60,14 @@ class CocktailDetailFragment : Fragment() {
         val ingredients = args?.getStringArray("cocktail_ingredients") ?: emptyArray()
         val measures = args?.getStringArray("cocktail_measures") ?: emptyArray()
 
+        // Create cocktail object and add to history
+        val cocktail = createCocktailFromArgs(
+            cocktailName, cocktailCategory, alcoholic, glass, 
+            instructions, imageUrl, ingredients, measures
+        )
+        // Note: History is already added when navigating from other screens
+        // This prevents duplicate entries
+
         // Set cocktail name
         binding.tvCocktailName.text = cocktailName
 
@@ -152,8 +160,41 @@ class CocktailDetailFragment : Fragment() {
         }
     }
 
+    private fun createCocktailFromArgs(
+        name: String,
+        category: String,
+        alcoholic: String,
+        glass: String,
+        instructions: String,
+        imageUrl: String?,
+        ingredients: Array<String>,
+        measures: Array<String>
+    ): com.example.cocktaildb.data.model.Cocktail {
+        return com.example.cocktaildb.data.model.Cocktail(
+            idDrink = arguments?.getString("cocktail_id") ?: "",
+            strDrink = name,
+            strCategory = category,
+            strAlcoholic = alcoholic,
+            strGlass = glass,
+            strInstructions = instructions,
+            strDrinkThumb = imageUrl,
+            ingredients = ingredients.toList(),
+            measures = measures.toList()
+        )
+    }
+
+    private fun addToHistory(cocktail: com.example.cocktaildb.data.model.Cocktail) {
+        try {
+            // Use HistoryPresenter companion method to add to history
+            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
+        } catch (e: Exception) {
+            // Handle error silently
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 } 

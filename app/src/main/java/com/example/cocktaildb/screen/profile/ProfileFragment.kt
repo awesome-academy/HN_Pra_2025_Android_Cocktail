@@ -151,6 +151,24 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         }
     }
 
+    override fun navigateToHistory() {
+        try {
+            // Navigate to the History screen using the Navigation Component
+            val navController = androidx.navigation.Navigation.findNavController(
+                requireActivity(),
+                R.id.nav_host_fragment_activity_main
+            )
+            navController.navigate(R.id.navigation_history)
+        } catch (e: Exception) {
+            // Fallback in case navigation fails
+            Toast.makeText(
+                context,
+                "History feature coming soon!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     override fun navigateToLogin() {
         val intent = Intent(requireContext(), SignInActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -180,6 +198,13 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
 
     // Implement CocktailClickListener interface method
     override fun onCocktailClicked(cocktail: Cocktail) {
+        // Add to history first
+        try {
+            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
+        } catch (e: Exception) {
+            // Handle error silently
+        }
+        
         // Navigate to cocktail detail fragment using Navigation Component
         val bundle = Bundle().apply {
             putString("cocktail_id", cocktail.idDrink)

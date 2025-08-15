@@ -69,6 +69,7 @@
     <string name="desc_profile_image">Profile Picture</string>
     <string name="desc_cocktail_image">Cocktail Image</string>
     <string name="title_profile">Profile</string>
+    <string name="title_history">History</string>
     <string name="Search">Search cocktails</string>
 
     <string name="Previous">Previous</string>
