@@ -18,19 +18,14 @@ import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
 import com.example.cocktaildb.databinding.FragmentProfileBinding
-import com.example.cocktaildb.databinding.ItemCocktailBinding
-import com.example.cocktaildb.databinding.ItemProfileHeaderBinding
 import com.example.cocktaildb.screen.auth.SignInActivity
-import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.utils.base.BaseFragment
 
-/**
- * Fragment for displaying user profile and cocktail list
- */
-class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View {
+
+class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View, ProfileAdapter.HeaderClickListener {
 
     private lateinit var presenter: ProfileContract.Presenter
-    private val profileAdapter = ProfileAdapter()
+    private lateinit var profileAdapter: ProfileAdapter
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentProfileBinding {
         return FragmentProfileBinding.inflate(inflater)
@@ -54,6 +49,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
     }
 
     override fun initView() {
+        // Initialize the adapter with this fragment as the click listener
+        profileAdapter = ProfileAdapter(this)
+
         // Set up RecyclerView with GridLayoutManager showing 2 items per row
         val layoutManager = GridLayoutManager(context, 2)
         layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -166,131 +164,16 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
-    /**
-     * Adapter for the profile RecyclerView that displays both header and cocktail items
-     */
-    private inner class ProfileAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-        private val VIEW_TYPE_HEADER = 0
-        private val VIEW_TYPE_COCKTAIL = 1
+    // Implement HeaderClickListener interface methods
+    override fun onMyRecipesClicked() {
+        presenter.onMyRecipesClicked()
+    }
 
-        private var userName: String = ""
-        private var userBio: String = ""
-        private var profileImageUrl: String? = null
-        private val cocktails: MutableList<Cocktail> = mutableListOf()
+    override fun onHistoryClicked() {
+        presenter.onHistoryClicked()
+    }
 
-        fun setUserProfile(userName: String, userBio: String, profileImageUrl: String?) {
-            this.userName = userName
-            this.userBio = userBio
-            this.profileImageUrl = profileImageUrl
-            notifyItemChanged(0)
-        }
-
-        fun setCocktails(cocktails: List<Cocktail>) {
-            this.cocktails.clear()
-            this.cocktails.addAll(cocktails)
-            notifyDataSetChanged()
-        }
-
-        override fun getItemViewType(position: Int): Int {
-            return if (position == 0) VIEW_TYPE_HEADER else VIEW_TYPE_COCKTAIL
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-            return when (viewType) {
-                VIEW_TYPE_HEADER -> {
-                    val binding = ItemProfileHeaderBinding.inflate(
-                        LayoutInflater.from(parent.context), parent, false)
-                    HeaderViewHolder(binding)
-                }
-                else -> {
-                    val binding = ItemCocktailBinding.inflate(
-                        LayoutInflater.from(parent.context), parent, false)
-                    CocktailViewHolder(binding)
-                }
-            }
-        }
-
-        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-            when (holder) {
-                is HeaderViewHolder -> {
-                    holder.bind(userName, userBio, profileImageUrl)
-                }
-                is CocktailViewHolder -> {
-                    // Position - 1 because header is at position 0
-                    holder.bind(cocktails[position - 1])
-                }
-            }
-        }
-
-        override fun getItemCount(): Int = if (cocktails.isEmpty()) 1 else cocktails.size + 1
-
-        /**
-         * ViewHolder for the profile header
-         */
-        inner class HeaderViewHolder(private val binding: ItemProfileHeaderBinding) : RecyclerView.ViewHolder(binding.root) {
-
-            init {
-                binding.myRecipeButton.setOnClickListener {
-                    presenter.onMyRecipesClicked()
-                }
-
-                binding.historyButton.setOnClickListener {
-                    presenter.onHistoryClicked()
-                }
-
-                binding.logoutButton.setOnClickListener {
-                    presenter.onLogoutClicked()
-                }
-            }
-
-            fun bind(name: String, bio: String, imageUrl: String?) {
-                // Ensure we have some text to display
-                binding.userName.text = if (name.isNotEmpty()) name else "User"
-                binding.userBio.text = if (bio.isNotEmpty()) bio else "Email not available"
-
-                // Use our custom ImageLoader to load the profile image if available
-                if (imageUrl != null && imageUrl.isNotEmpty()) {
-                    try {
-                        ImageLoader.loadImage(
-                            url = imageUrl,
-                            imageView = binding.profileImageView,
-                            placeholderResId = R.drawable.profile_placeholder
-                        )
-                    } catch (e: Exception) {
-                        // If image loading fails, use placeholder
-                        binding.profileImageView.setImageResource(R.drawable.profile_placeholder)
-                    }
-                } else {
-                    // Use the profile placeholder if no image URL is provided
-                    binding.profileImageView.setImageResource(R.drawable.profile_placeholder)
-                }
-            }
-        }
-
-        /**
-         * ViewHolder for cocktail items
-         */
-        inner class CocktailViewHolder(private val binding: ItemCocktailBinding) : RecyclerView.ViewHolder(binding.root) {
-
-            fun bind(cocktail: Cocktail) {
-                binding.tvCocktailName.text = cocktail.strDrink
-                binding.tvCocktailCategory.text = cocktail.strCategory ?: "Cocktail"
-
-                // Load the cocktail image using our custom ImageLoader
-                try {
-                    ImageLoader.loadImage(
-                        url = cocktail.strDrinkThumb,
-                        imageView = binding.ivCocktail,
-                        placeholderResId = R.drawable.ic_launcher_background
-                    )
-                } catch (e: Exception) {
-                    // If image loading fails, use placeholder
-                    binding.ivCocktail.setImageResource(R.drawable.ic_launcher_background)
-                }
-
-                // Set rating
-                binding.tvRating.text = "4.8"
-            }
-        }
+    override fun onLogoutClicked() {
+        presenter.onLogoutClicked()
     }
 }

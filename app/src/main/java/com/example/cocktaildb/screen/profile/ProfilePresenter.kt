@@ -6,9 +6,7 @@ import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.google.firebase.firestore.FirebaseFirestore
 
-/**
- * Presenter implementation for the Profile screen
- */
+
 class ProfilePresenter(
     private val cocktailRepository: CocktailRepository,
     private val authRepository: AuthRepository = AuthRepository()
@@ -142,9 +140,7 @@ class ProfilePresenter(
         loadUserCocktails()
     }
 
-    /**
-     * AsyncTask to load cocktails in background
-     */
+
     @Suppress("DEPRECATION")
     private inner class CocktailLoadTask : AsyncTask<Void, Void, List<Cocktail>>() {
 
@@ -170,9 +166,7 @@ class ProfilePresenter(
         }
     }
 
-    /**
-     * Creates mock cocktail data for display when repository is empty
-     */
+
     private fun createMockCocktails(): List<Cocktail> {
         return listOf(
             Cocktail(

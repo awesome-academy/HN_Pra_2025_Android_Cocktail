@@ -6,9 +6,7 @@ import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import java.util.concurrent.Executors
 
-/**
- * Presenter implementation for the My Recipes screen
- */
+
 class MyRecipePresenter(
     private val cocktailRepository: CocktailRepository
 ) : MyRecipeContract.Presenter {
@@ -50,9 +48,7 @@ class MyRecipePresenter(
         }
     }
 
-    /**
-     * Creates mock user recipe data
-     */
+
     private fun createMockUserRecipes(): List<Cocktail> {
         return listOf(
             Cocktail(
