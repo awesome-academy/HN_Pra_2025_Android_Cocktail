@@ -82,4 +82,10 @@
     <!-- My Recipe Screen Strings -->
     <string name="custom_recipe">Custom Recipe</string>
     <string name="my_recipe">★ My Recipe</string>
+
+    <!-- Cocktail Detail Screen Strings -->
+    <string name="how_to_make">How to make:</string>
+    <string name="ingredients">Ingredients</string>
+    <string name="bookmark">Bookmark</string>
+    <string name="favorite">Favorite</string>
 </resources>

@@ -17,6 +17,7 @@ import com.example.cocktaildb.databinding.FragmentHomeBinding
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
+import androidx.navigation.fragment.findNavController
 import kotlin.math.min
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
@@ -48,7 +49,19 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         cocktailAdapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
-                Toast.makeText(context, "Selected: ${cocktail.strDrink}", Toast.LENGTH_SHORT).show()
+                // Navigate to cocktail detail fragment using Navigation Component
+                val bundle = Bundle().apply {
+                    putString("cocktail_id", cocktail.idDrink)
+                    putString("cocktail_name", cocktail.strDrink)
+                    putString("cocktail_category", cocktail.strCategory ?: "")
+                    putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
+                    putString("cocktail_glass", cocktail.strGlass ?: "")
+                    putString("cocktail_instructions", cocktail.strInstructions ?: "")
+                    putString("cocktail_image", cocktail.strDrinkThumb ?: "")
+                    putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
+                    putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+                }
+                findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
             }
         )
 

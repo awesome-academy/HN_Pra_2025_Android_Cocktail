@@ -1,16 +1,22 @@
 package com.example.cocktaildb.screen.search
 
+import android.content.Intent
+import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.databinding.ActivitySearchBinding
+import com.example.cocktaildb.screen.detail.CocktailDetailFragment
 import com.example.cocktaildb.screen.filter.FilterDialog
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseActivity
 import com.example.cocktaildb.utils.pagination.PaginationUI
 import java.util.concurrent.Executors
+import android.view.View
 
 class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.View {
 
@@ -32,6 +38,21 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         setupSearchListener()
         setupFilterListener()
         setupPaginationListeners()
+        setupBackPressHandler()
+    }
+
+    private fun setupBackPressHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack()
+                    showSearchResults()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     override fun initData() {
@@ -48,12 +69,45 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         adapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
-                Toast.makeText(this, "Selected: ${cocktail.strDrink}", Toast.LENGTH_SHORT).show()
+                showCocktailDetail(cocktail)
             },
             useSearchLayout = true
         )
         viewBinding.recyclerView.layoutManager = GridLayoutManager(this, 2)
         viewBinding.recyclerView.adapter = adapter
+    }
+
+    private fun showCocktailDetail(cocktail: Cocktail) {
+        // Hide search results and show detail container
+        viewBinding.searchResultsContainer.visibility = View.GONE
+        viewBinding.detailContainer.visibility = View.VISIBLE
+        
+        // Create and show detail fragment
+        val fragment = CocktailDetailFragment().apply {
+            arguments = Bundle().apply {
+                putString("cocktail_id", cocktail.idDrink)
+                putString("cocktail_name", cocktail.strDrink)
+                putString("cocktail_category", cocktail.strCategory ?: "")
+                putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
+                putString("cocktail_glass", cocktail.strGlass ?: "")
+                putString("cocktail_instructions", cocktail.strInstructions ?: "")
+                putString("cocktail_image", cocktail.strDrinkThumb ?: "")
+                putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
+                putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+            }
+        }
+        
+        // Replace detail container with the fragment
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.detailContainer, fragment)
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showSearchResults() {
+        // Show search results and hide detail container
+        viewBinding.searchResultsContainer.visibility = View.VISIBLE
+        viewBinding.detailContainer.visibility = View.GONE
     }
 
     private fun setupSearchListener() {
