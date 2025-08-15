@@ -23,7 +23,8 @@ data class Cocktail(
     val strImageSource: String? = null,
     val strImageAttribution: String? = null,
     val strCreativeCommonsConfirmed: String? = null,
-    val dateModified: String? = null
+    val dateModified: String? = null,
+    val rating: Float? = null
 ) {
     // Helper function to get ingredients with measures
     fun getIngredientsWithMeasures(): List<Pair<String?, String?>> {
@@ -46,5 +47,13 @@ data class Cocktail(
         ).filterValues { it != null }
             .mapValues { it.value!! }
     }
+
+    // Helper properties for backward compatibility
+    val id: String get() = idDrink
+    val name: String get() = strDrink
+    val description: String? get() = strInstructions
+    val imageUrl: String? get() = strDrinkThumb
+    val category: String? get() = strCategory
+    val alcoholic: String? get() = strAlcoholic
 }
 

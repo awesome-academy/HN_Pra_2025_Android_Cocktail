@@ -4,7 +4,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
-import com.example.cocktaildb.data.model.DataCocktail
+import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.databinding.ActivitySearchBinding
 import com.example.cocktaildb.screen.filter.FilterDialog
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
@@ -45,7 +45,13 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     }
 
     private fun setupRecyclerView() {
-        adapter = CocktailAdapter(emptyList())
+        adapter = CocktailAdapter(
+            items = emptyList(),
+            onCocktailClick = { cocktail ->
+                Toast.makeText(this, "Selected: ${cocktail.strDrink}", Toast.LENGTH_SHORT).show()
+            },
+            useSearchLayout = true
+        )
         viewBinding.recyclerView.layoutManager = GridLayoutManager(this, 2)
         viewBinding.recyclerView.adapter = adapter
     }
@@ -89,7 +95,9 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
             }
         )
         filterDialog.show()
-    }    private fun applyFilter(category: String?, alcoholicType: String?) {
+    }
+
+    private fun applyFilter(category: String?, alcoholicType: String?) {
         val currentQuery = viewBinding.etSearch.text?.toString() ?: ""
         
         when {
@@ -116,8 +124,8 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         // TODO: Hide loading dialog or progress bar
     }
 
-    override fun showCocktails(dataCocktails: List<DataCocktail>) {
-        adapter.submit(dataCocktails)
+    override fun showCocktails(cocktails: List<Cocktail>) {
+        adapter.submit(cocktails)
     }
 
     override fun showError(message: String) {

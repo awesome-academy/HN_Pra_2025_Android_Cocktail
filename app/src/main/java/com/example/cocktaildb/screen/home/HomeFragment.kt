@@ -6,18 +6,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import android.graphics.Rect
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentHomeBinding
 import com.example.cocktaildb.screen.search.SearchActivity
+import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
-import com.bumptech.glide.Glide
-import kotlin.random.Random
+import kotlin.math.min
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
     private lateinit var presenter: HomePresenter
+    private lateinit var cocktailAdapter: CocktailAdapter
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater)
@@ -29,9 +34,63 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         presenter = HomePresenter(repository)
         presenter.setView(this)
 
+        // Initialize RecyclerView
+        setupRecyclerView()
+
+        // Set up search card click listener
         viewBinding.cardSearch.setOnClickListener {
             val intent = Intent(requireContext(), SearchActivity::class.java)
             startActivity(intent)
+        }
+    }
+
+    private fun setupRecyclerView() {
+        cocktailAdapter = CocktailAdapter(
+            items = emptyList(),
+            onCocktailClick = { cocktail ->
+                Toast.makeText(context, "Selected: ${cocktail.strDrink}", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        // Set up RecyclerView with GridLayoutManager showing 2 items per row
+        val layoutManager = GridLayoutManager(context, 2)
+        
+        // Apply proper item spacing decoration
+        val spacingInPixels = resources.getDimensionPixelSize(R.dimen.dp_8)
+        viewBinding.recyclerViewCocktails.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: Rect,
+                view: View,
+                parent: RecyclerView,
+                state: RecyclerView.State
+            ) {
+                val position = parent.getChildAdapterPosition(view)
+                // Apply spacing to all items
+                outRect.left = spacingInPixels
+                outRect.right = spacingInPixels
+                outRect.bottom = spacingInPixels
+
+                // Determine if this is an item in the left or right column
+                val isLeftColumn = position % 2 == 0
+
+                // Add more space on the left for left column items and on the right for right column items
+                if (isLeftColumn) {
+                    outRect.left = spacingInPixels * 2
+                } else {
+                    outRect.right = spacingInPixels * 2
+                }
+
+                // Add top margin only for the first row items
+                if (position == 0 || position == 1) {
+                    outRect.top = spacingInPixels
+                }
+            }
+        })
+
+        viewBinding.recyclerViewCocktails.apply {
+            this.layoutManager = layoutManager
+            adapter = cocktailAdapter
+            clipToPadding = false  // Allow scrolling into the padding area
         }
     }
 
@@ -51,10 +110,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             return
         }
 
-        // Skip first 3 cocktails and show from 4th onwards, limit to 4 cocktails
+        // Skip first 3 cocktails and show from 4th onwards, limit to 8 cocktails
         val filteredCocktails = if (cocktails.size > 3) {
             val startIndex = 3
-            val endIndex = minOf(startIndex + 4, cocktails.size)
+            val endIndex = min(startIndex + 8, cocktails.size)
             cocktails.subList(startIndex, endIndex)
         } else {
             // If less than 4 cocktails, show all
@@ -66,89 +125,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             return
         }
 
-        // Update UI with filtered cocktails
-        updateCocktailGrid(filteredCocktails)
+        // Update adapter with filtered cocktails
+        cocktailAdapter.submit(filteredCocktails)
 
         // Show success message
         Toast.makeText(context, "Loaded ${filteredCocktails.size} cocktails", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun updateCocktailGrid(cocktails: List<Cocktail>) {
-        // Update first cocktail
-        if (cocktails.isNotEmpty()) {
-            updateCocktailCard(
-                viewBinding.tvCocktailName1,
-                viewBinding.tvCocktailCategory1,
-                viewBinding.tvRating1,
-                viewBinding.ivCocktail1,
-                cocktails[0]
-            )
-        }
-
-        // Update second cocktail
-        if (cocktails.size > 1) {
-            updateCocktailCard(
-                viewBinding.tvCocktailName2,
-                viewBinding.tvCocktailCategory2,
-                viewBinding.tvRating2,
-                viewBinding.ivCocktail2,
-                cocktails[1]
-            )
-        }
-
-        // Update third cocktail
-        if (cocktails.size > 2) {
-            updateCocktailCard(
-                viewBinding.tvCocktailName3,
-                viewBinding.tvCocktailCategory3,
-                viewBinding.tvRating3,
-                viewBinding.ivCocktail3,
-                cocktails[2]
-            )
-        }
-
-        // Update fourth cocktail
-        if (cocktails.size > 3) {
-            updateCocktailCard(
-                viewBinding.tvCocktailName4,
-                viewBinding.tvCocktailCategory4,
-                viewBinding.tvRating4,
-                viewBinding.ivCocktail4,
-                cocktails[3]
-            )
-        }
-    }
-
-    private fun updateCocktailCard(
-        nameTextView: android.widget.TextView,
-        categoryTextView: android.widget.TextView,
-        ratingTextView: android.widget.TextView,
-        imageView: android.widget.ImageView,
-        cocktail: Cocktail
-    ) {
-        nameTextView.text = cocktail.strDrink
-        categoryTextView.text = cocktail.strCategory ?: "Cocktail"
-
-        // Generate random rating between 4.0 and 5.0
-        val rating = (Random.nextDouble(4.0, 5.0) * 10).toInt() / 10.0
-        ratingTextView.text = rating.toString()
-
-        // Load cocktail image using Glide
-        if (!cocktail.strDrinkThumb.isNullOrEmpty()) {
-            Glide.with(this)
-                .load(cocktail.strDrinkThumb)
-                .placeholder(com.example.cocktaildb.R.drawable.imgstart)
-                .error(com.example.cocktaildb.R.drawable.imgstart)
-                .into(imageView)
-        } else {
-            // Use placeholder if no image URL
-            imageView.setImageResource(com.example.cocktaildb.R.drawable.imgstart)
-        }
-
-        // Set click listener for the card
-        (imageView.parent as? android.view.View)?.setOnClickListener {
-            Toast.makeText(context, "Selected: ${cocktail.strDrink}", Toast.LENGTH_SHORT).show()
-        }
     }
 }
 
