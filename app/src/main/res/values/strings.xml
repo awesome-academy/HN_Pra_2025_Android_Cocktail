@@ -4,7 +4,6 @@
     <string name="title_messages">Messages</string>
     <string name="title_add">Add</string>
     <string name="title_favorites">Favorites</string>
-    <string name="title_profile">Profile</string>
 
     <!-- Start Screen Strings -->
     <string name="start_title">What do you want to cook today?</string>
@@ -59,6 +58,17 @@
     <string name="Start">Start</string>
     <string name="Accept_condition">Accept terms &amp; Condition</string>
     <string name="Cre_account">Create an account</string>
+    <string name="title_my_recipe">My Recipes</string>
+
+    <!-- Profile strings -->
+    <string name="profile_title">User Profile</string>
+    <string name="user_name">John Doe</string>
+    <string name="user_bio">Cocktail enthusiast and mixologist</string>
+    <string name="my_recipe_button">My Recipe</string>
+    <string name="history_button">History</string>
+    <string name="desc_profile_image">Profile Picture</string>
+    <string name="desc_cocktail_image">Cocktail Image</string>
+    <string name="title_profile">Profile</string>
     <string name="Search">Search cocktails</string>
 
     <string name="Previous">Previous</string>
@@ -68,6 +78,8 @@
     <string name="Apply_Filter">Apply Filter</string>
     <string name="All_Categories">All Categories</string>
     <string name="All_Types">All Types</string>
+
+    <!-- My Recipe Screen Strings -->
+    <string name="custom_recipe">Custom Recipe</string>
+    <string name="my_recipe">★ My Recipe</string>
 </resources>
-
-
