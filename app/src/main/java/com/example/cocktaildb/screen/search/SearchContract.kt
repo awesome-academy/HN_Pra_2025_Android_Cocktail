@@ -1,12 +1,12 @@
 package com.example.cocktaildb.screen.search
 
-import com.example.cocktaildb.data.model.DataCocktail
+import com.example.cocktaildb.data.model.Cocktail
 
 interface SearchContract {
     interface View {
         fun showLoading()
         fun hideLoading()
-        fun showCocktails(dataCocktails: List<DataCocktail>)
+        fun showCocktails(cocktails: List<Cocktail>)
         fun showError(message: String)
         fun showMessage(message: String)
         fun updatePagination(currentPage: Int, totalPages: Int, hasNext: Boolean, hasPrevious: Boolean)
@@ -19,6 +19,7 @@ interface SearchContract {
         fun onStop()
         fun searchCocktails(query: String)
         fun filterByCategory(category: String)
+        fun filterByAlcoholic(alcoholic: String)
         fun loadCategories()
         fun nextPage()
         fun previousPage()

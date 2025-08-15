@@ -1,16 +1,17 @@
 package com.example.cocktaildb.screen.search
 
 import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.utils.pagination.PaginationData
 import java.util.concurrent.Executors
 
 class SearchPresenter : SearchContract.Presenter {
 
     private var view: SearchContract.View? = null
-    private val cocktailRepository = CocktailRepository()
+    private val cocktailRepository = CocktailRepository(CocktailRemoteDataSource())
     private val executor = Executors.newSingleThreadExecutor()
     private var currentSearchQuery: String = ""
-    private val paginationData = PaginationData<com.example.cocktaildb.data.model.DataCocktail>(10)
+    private val paginationData = PaginationData<com.example.cocktaildb.data.model.Cocktail>(10)
 
     override fun setView(view: SearchContract.View?) {
         this.view = view
@@ -30,7 +31,7 @@ class SearchPresenter : SearchContract.Presenter {
         executor.execute {
             try {
                 val cocktails = if (query.isEmpty()) {
-                    cocktailRepository.getCocktailSearch()
+                    cocktailRepository.getCocktails()
                 } else {
                     cocktailRepository.searchCocktails(query)
                 }
@@ -64,7 +65,7 @@ class SearchPresenter : SearchContract.Presenter {
                 } else {
                     val searchResults = cocktailRepository.searchCocktails(currentSearchQuery)
                     searchResults.filter { cocktail ->
-                        cocktail.category?.equals(category, ignoreCase = true) == true
+                        cocktail.strCategory?.equals(category, ignoreCase = true) == true
                     }
                 }
 
@@ -88,7 +89,7 @@ class SearchPresenter : SearchContract.Presenter {
         }
     }
 
-    fun filterByAlcoholic(alcoholic: String) {
+    override fun filterByAlcoholic(alcoholic: String) {
         view?.showLoading()
         executor.execute {
             try {
@@ -97,7 +98,7 @@ class SearchPresenter : SearchContract.Presenter {
                 } else {
                     val searchResults = cocktailRepository.searchCocktails(currentSearchQuery)
                     searchResults.filter { cocktail ->
-                        cocktail.alcoholic?.equals(alcoholic, ignoreCase = true) == true
+                        cocktail.strAlcoholic?.equals(alcoholic, ignoreCase = true) == true
                     }
                 }
 
@@ -128,6 +129,7 @@ class SearchPresenter : SearchContract.Presenter {
 
                 view?.let { v ->
                     android.os.Handler(android.os.Looper.getMainLooper()).post {
+                        // TODO: Update categories UI if needed
                     }
                 }
             } catch (e: Exception) {
@@ -139,6 +141,7 @@ class SearchPresenter : SearchContract.Presenter {
             }
         }
     }
+
     override fun nextPage() {
         if (paginationData.nextPage()) {
             view?.showCocktails(paginationData.currentPageItems)

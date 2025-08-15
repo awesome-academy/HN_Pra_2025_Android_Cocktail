@@ -3,7 +3,6 @@ package com.example.cocktaildb.data.repository.source.remote
 import android.util.Log
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.model.CocktailResponse
-import com.example.cocktaildb.data.model.DataCocktail
 import com.example.cocktaildb.data.service.CocktailService
 import com.example.cocktaildb.data.repository.source.CocktailDataSource
 import kotlinx.coroutines.Dispatchers
@@ -21,37 +20,28 @@ class CocktailRemoteDataSource : CocktailDataSource {
         private const val API_URL = "https://www.thecocktaildb.com/api/json/v1/1/search.php?f=a"
     }
 
-    override fun getCocktailSearch(): List<DataCocktail> {
-        return CocktailService.searchByName("")
-    }
-    override fun getCocktailByIdSearch(id: String): DataCocktail? {
-        // TODO: Implement remote data source
-        return null
-    }
-
     override fun getCocktails(): List<Cocktail> {
-        // Return empty list for local method
-        return emptyList()
+        return CocktailService.searchByName("")
     }
 
     override fun getCocktailById(id: String): Cocktail? {
-        // TODO: Implement remote data source
-        return null
+        val cocktails = CocktailService.searchByName("")
+        return cocktails.find { it.idDrink == id }
     }
 
-    fun searchCocktails(query: String): List<DataCocktail> {
+    override fun searchCocktails(query: String): List<Cocktail> {
         return CocktailService.searchCombined(query)
     }
 
-    fun filterByCategory(category: String): List<DataCocktail> {
+    override fun filterByCategory(category: String): List<Cocktail> {
         return CocktailService.filterByCategory(category)
     }
 
-    fun filterByAlcoholic(alcoholic: String): List<DataCocktail> {
+    override fun filterByAlcoholic(alcoholic: String): List<Cocktail> {
         return CocktailService.filterByAlcoholic(alcoholic)
     }
 
-    fun getCategories(): List<String> {
+    override fun getCategories(): List<String> {
         return CocktailService.getCategories()
     }
 
