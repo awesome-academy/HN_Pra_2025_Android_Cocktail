@@ -38,3 +38,4 @@ interface MyRecipeContract {
         fun loadUserRecipes()
     }
 }
+

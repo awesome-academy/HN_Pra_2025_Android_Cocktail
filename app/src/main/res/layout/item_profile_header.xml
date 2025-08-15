@@ -3,14 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingBottom="16dp">
+    android:paddingBottom="@dimen/dp_16">
 
     <TextView
         android:id="@+id/profileTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/dp_16"
         android:text="@string/profile_title"
         android:textAppearance="?attr/textAppearanceHeadline5"
         android:textColor="@color/textColorPrimary"
@@ -19,16 +19,16 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="@dimen/dp_16">
 
         <!-- Circular Image using MaterialCardView -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/profileImageCard"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginStart="24dp"
-            app:cardCornerRadius="60dp"
-            app:cardElevation="4dp">
+            android:layout_width="@dimen/dp_120"
+            android:layout_height="@dimen/dp_120"
+            android:layout_marginStart="@dimen/dp_24"
+            app:cardCornerRadius="@dimen/dp_60"
+            app:cardElevation="@dimen/dp_4">
 
             <ImageView
                 android:id="@+id/profileImageView"
@@ -46,11 +46,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="24dp"
+            android:layout_marginEnd="@dimen/dp_24"
             android:backgroundTint="#FF5252"
             android:text="Logout"
             android:textColor="@color/white"
-            app:cornerRadius="16dp"
+            app:cornerRadius="@dimen/dp_16"
             app:icon="@android:drawable/ic_lock_power_off"
             app:iconTint="@color/white" />
     </RelativeLayout>
@@ -60,8 +60,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="@dimen/dp_24"
+        android:layout_marginTop="@dimen/dp_16"
         android:text="@string/user_name"
         android:textAppearance="?attr/textAppearanceHeadline6"
         android:textColor="@color/textColorPrimary"
@@ -72,8 +72,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="4dp"
+        android:layout_marginStart="@dimen/dp_24"
+        android:layout_marginTop="@dimen/dp_4"
         android:text="@string/user_bio"
         android:textAppearance="?attr/textAppearanceBody2"
         android:textColor="@color/textColorSecondary" />
@@ -81,9 +81,9 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_24"
+        android:layout_marginEnd="@dimen/dp_16"
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
@@ -91,25 +91,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/profile_button_green"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
+            android:paddingTop="@dimen/dp_12"
+            android:paddingBottom="@dimen/dp_12"
+            android:paddingStart="@dimen/dp_24"
+            android:paddingEnd="@dimen/dp_24"
             android:text="@string/my_recipe_button"
-            app:cornerRadius="16dp" />
+            app:cornerRadius="@dimen/dp_16" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/historyButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="@dimen/dp_32"
             android:backgroundTint="@color/profile_button_green"
-            android:paddingTop="12dp"
-            android:paddingBottom="12dp"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
+            android:paddingTop="@dimen/dp_12"
+            android:paddingBottom="@dimen/dp_12"
+            android:paddingStart="@dimen/dp_24"
+            android:paddingEnd="@dimen/dp_24"
             android:text="@string/history_button"
-            app:cornerRadius="16dp" />
+            app:cornerRadius="@dimen/dp_16" />
     </LinearLayout>
 
 </LinearLayout>
