@@ -12,6 +12,7 @@ import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.screen.search.SearchActivity
 import kotlinx.coroutines.launch
 import android.view.View
+import java.util.UUID
 
 class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
 
@@ -115,7 +116,7 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
         val categories = listOf("Drink", "Smoothie", "Coffee", "Tea", "Milkshake")
 
         return Cocktail(
-            idDrink = "sample_${System.currentTimeMillis()}",
+            idDrink = "sample_${UUID.randomUUID()}",
             strDrink = drinkNames.random(),
             strCategory = categories.random(),
             strAlcoholic = "Non alcoholic",

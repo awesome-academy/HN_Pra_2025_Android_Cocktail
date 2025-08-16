@@ -33,7 +33,7 @@
     <string name="msg_google_login_not_initialized">Google login has not been initialized</string>
     <string name="msg_failed_to_save_user">Failed to save user information: %1$s</string>
     <string name="msg_firebase_user_not_exist">Firebase user does not exist</string>
-    <string name="msg_google_signin_failed">Google Sign-In failed</string>
+    <string name="msg_google_signin_failed">Google Sign-In failed: %1$s</string>
 
     <string name="msg_check_inbox_reset_password">Please check your inbox to reset your password</string>
     <string name="msg_unable_to_send_email">Unable to send email: %1$s</string>
