@@ -25,39 +25,40 @@ class PaginationUI(private val context: Context) {
         
         when {
             totalPages <= maxVisiblePages -> {
+                // Ít hơn hoặc bằng 5 trang: hiển thị tất cả
                 startPage = 1
                 endPage = totalPages
             }
             currentPage <= 3 -> {
+                // Ở gần đầu: hiển thị 1 2 3 4 5 ...
                 startPage = 1
                 endPage = maxVisiblePages
             }
             currentPage >= totalPages - 2 -> {
+                // Ở gần cuối: hiển thị ... (totalPages-4) (totalPages-3) (totalPages-2) (totalPages-1) totalPages
                 startPage = totalPages - maxVisiblePages + 1
                 endPage = totalPages
             }
             else -> {
+                // Ở giữa: hiển thị ... (currentPage-2) (currentPage-1) currentPage (currentPage+1) (currentPage+2) ...
                 startPage = currentPage - 2
                 endPage = currentPage + 2
             }
         }
 
+        // Thêm ellipsis đầu nếu cần
         if (startPage > 1) {
-            addPageButton(container, 1, currentPage, onPageClick)
-            if (startPage > 2) {
-                addDots(container)
-            }
+            addDots(container)
         }
 
+        // Thêm các trang
         for (page in startPage..endPage) {
             addPageButton(container, page, currentPage, onPageClick)
         }
 
+        // Thêm ellipsis cuối nếu cần
         if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                addDots(container)
-            }
-            addPageButton(container, totalPages, currentPage, onPageClick)
+            addDots(container)
         }
     }
     

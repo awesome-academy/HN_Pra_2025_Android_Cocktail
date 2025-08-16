@@ -15,6 +15,7 @@ import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentHomeBinding
 import com.example.cocktaildb.screen.search.SearchActivity
+import com.example.cocktaildb.screen.todaydrink.TodayDrinkActivity
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
 import androidx.navigation.fragment.findNavController
@@ -41,6 +42,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         // Set up search card click listener
         viewBinding.cardSearch.setOnClickListener {
             val intent = Intent(requireContext(), SearchActivity::class.java)
+            startActivity(intent)
+        }
+        viewBinding.tvViewAll.setOnClickListener {
+            val intent = Intent(requireContext(), TodayDrinkActivity::class.java)
             startActivity(intent)
         }
     }

@@ -33,7 +33,7 @@
     <string name="msg_google_login_not_initialized">Google login has not been initialized</string>
     <string name="msg_failed_to_save_user">Failed to save user information: %1$s</string>
     <string name="msg_firebase_user_not_exist">Firebase user does not exist</string>
-    <string name="msg_google_signin_failed">Google Sign-In failed: %1$s</string>
+    <string name="msg_google_signin_failed">Google Sign-In failed</string>
 
     <string name="msg_check_inbox_reset_password">Please check your inbox to reset your password</string>
     <string name="msg_unable_to_send_email">Unable to send email: %1$s</string>
@@ -89,4 +89,12 @@
     <string name="ingredients">Ingredients</string>
     <string name="bookmark">Bookmark</string>
     <string name="favorite">Favorite</string>
+    
+    <!-- Today Drink Screen -->
+    <string name="today_drink_screen_title">TodayDrinkScreen</string>
+    <string name="today_drink_title">Today\'s drink</string>
+    <string name="sample_drink_name">Avocado Milkshake</string>
+    <string name="sample_drink_category">Drink</string>
+    <string name="hot_badge">HOT</string>
+    <string name="rating_badge">⭐4.7</string>
 </resources>
