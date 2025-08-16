@@ -8,12 +8,12 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 
-abstract class BaseFragment<viewBinding : ViewBinding> : Fragment() {
+abstract class BaseFragment<T : ViewBinding> : Fragment() {
 
-    private lateinit var _viewBinding: viewBinding
+    private lateinit var _viewBinding: T
     protected val viewBinding get() = _viewBinding
 
-    abstract fun inflateViewBinding(inflater: LayoutInflater): viewBinding
+    abstract fun inflateViewBinding(inflater: LayoutInflater): T
 
     abstract fun initData()
 
@@ -21,12 +21,12 @@ abstract class BaseFragment<viewBinding : ViewBinding> : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         _viewBinding = inflateViewBinding(inflater)
-        initView()
         return viewBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initView()
         initData()
     }
 
