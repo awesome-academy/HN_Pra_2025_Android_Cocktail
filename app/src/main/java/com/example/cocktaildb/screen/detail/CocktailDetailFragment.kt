@@ -39,10 +39,15 @@ class CocktailDetailFragment : Fragment() {
         binding.toolbar.setNavigationOnClickListener {
             // Check if we're in SearchActivity context
             if (activity is SearchActivity) {
-                // If in SearchActivity, trigger back press
-                activity?.onBackPressedDispatcher?.onBackPressed()
+                val searchActivity = activity as SearchActivity
+                if (searchActivity.intent.getBooleanExtra("from_today_drink", false)) {
+                    // If opened from TodayDrinkActivity, finish SearchActivity to go back to TodayDrinkActivity
+                    searchActivity.finish()
+                } else {
+                    // Normal SearchActivity back press - trigger the back handler
+                    searchActivity.onBackPressedDispatcher.onBackPressed()
+                }
             } else {
-                // If in MainActivity, use Navigation Component
                 findNavController().navigateUp()
             }
         }

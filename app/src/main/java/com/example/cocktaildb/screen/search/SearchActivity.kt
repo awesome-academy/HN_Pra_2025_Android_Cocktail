@@ -44,6 +44,10 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     private fun setupBackPressHandler() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                if (intent.getBooleanExtra("from_today_drink", false)) {
+                    finish()
+                    return
+                }
                 if (supportFragmentManager.backStackEntryCount > 0) {
                     supportFragmentManager.popBackStack()
                     showSearchResults()
@@ -58,6 +62,32 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     override fun initData() {
         initPresenter()
         presenter.onStart()
+        handleIncomingIntent()
+    }
+
+    private fun handleIncomingIntent() {
+        if (intent.getBooleanExtra("show_detail", false)) {
+            if (intent.getBooleanExtra("from_today_drink", false)) {
+                hideSearchComponents()
+            }
+            val cocktail = Cocktail(
+                idDrink = intent.getStringExtra("cocktail_id") ?: "",
+                strDrink = intent.getStringExtra("cocktail_name") ?: "",
+                strCategory = intent.getStringExtra("cocktail_category"),
+                strAlcoholic = intent.getStringExtra("cocktail_alcoholic"),
+                strGlass = intent.getStringExtra("cocktail_glass"),
+                strInstructions = intent.getStringExtra("cocktail_instructions"),
+                strDrinkThumb = intent.getStringExtra("cocktail_image"),
+                ingredients = intent.getStringArrayExtra("cocktail_ingredients")?.toList() ?: emptyList(),
+                measures = intent.getStringArrayExtra("cocktail_measures")?.toList() ?: emptyList()
+            )
+            showCocktailDetail(cocktail)
+        }
+    }
+
+    private fun hideSearchComponents() {
+        viewBinding.searchHeader.visibility = View.GONE
+        viewBinding.searchResultsContainer.visibility = View.GONE
     }
 
     private fun initPresenter() {
@@ -88,6 +118,10 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         // Hide search results and show detail container
         viewBinding.searchResultsContainer.visibility = View.GONE
         viewBinding.detailContainer.visibility = View.VISIBLE
+
+        if (intent.getBooleanExtra("from_today_drink", false)) {
+            viewBinding.searchHeader.visibility = View.GONE
+        }
         
         // Create and show detail fragment
         val fragment = CocktailDetailFragment().apply {
@@ -103,18 +137,25 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
                 putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
             }
         }
-        
-        // Replace detail container with the fragment
-        supportFragmentManager.beginTransaction()
+
+
+        val transaction = supportFragmentManager.beginTransaction()
             .replace(R.id.detailContainer, fragment)
-            .addToBackStack(null)
-            .commit()
+        if (!intent.getBooleanExtra("from_today_drink", false)) {
+            transaction.addToBackStack(null)
+        }
+        
+        transaction.commit()
     }
 
     private fun showSearchResults() {
         // Show search results and hide detail container
         viewBinding.searchResultsContainer.visibility = View.VISIBLE
         viewBinding.detailContainer.visibility = View.GONE
+
+        if (!intent.getBooleanExtra("from_today_drink", false)) {
+            viewBinding.searchHeader.visibility = View.VISIBLE
+        }
     }
 
     private fun setupSearchListener() {
