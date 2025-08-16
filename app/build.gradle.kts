@@ -124,4 +124,3 @@ tasks.register<JavaExec>("ktlintFormat") {
     mainClass.set("com.pinterest.ktlint.Main")
     args("-F", "src/**/*.kt")
 }
-
