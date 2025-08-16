@@ -9,7 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 class ProfilePresenter(
     private val cocktailRepository: CocktailRepository,
-    private val authRepository: AuthRepository = AuthRepository()
+    private val authRepository: AuthRepository
 ) : ProfileContract.Presenter {
 
     private var view: ProfileContract.View? = null

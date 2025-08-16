@@ -48,7 +48,7 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(), AuthContract.View 
     }
 
     override fun initData() {
-        val authRepository = AuthRepository()
+        val authRepository = AuthRepository(this)
         presenter = AuthPresenter(authRepository).apply {
             setView(this@SignUpActivity)
             onStart()

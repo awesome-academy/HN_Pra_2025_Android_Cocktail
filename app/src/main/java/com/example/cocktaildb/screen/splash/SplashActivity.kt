@@ -25,7 +25,7 @@ class SplashActivity : BaseActivity<ActivityFrontPageBinding>(), SplashContract.
     }
 
     override fun initData() {
-        val authRepository = AuthRepository()
+        val authRepository = AuthRepository(this)
         presenter = SplashPresenter(authRepository)
         presenter.setView(this)
         presenter.onStart()

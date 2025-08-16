@@ -1,15 +1,18 @@
 package com.example.cocktaildb.data.repository
 
+import android.content.Context
 import android.util.Log
 import com.example.cocktaildb.data.model.User
 import com.example.cocktaildb.data.model.LoginMethod
+import com.example.cocktaildb.utils.GoogleAuth
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 
-class AuthRepository {
+class AuthRepository(private val context: Context? = null) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val googleAuth: GoogleAuth? = context?.let { GoogleAuth(it) }
 
     fun loginWithEmail(email: String, password: String, onComplete: (FirebaseUser?, String?) -> Unit) {
         auth.signInWithEmailAndPassword(email, password).addOnCompleteListener { task ->
@@ -85,7 +88,11 @@ class AuthRepository {
     }
 
     fun signOut() {
-        auth.signOut()
+        if (googleAuth != null) {
+            googleAuth.revokeAccess()
+        } else {
+            auth.signOut()
+        }
     }
 
     fun getCurrentUser(): FirebaseUser? {
