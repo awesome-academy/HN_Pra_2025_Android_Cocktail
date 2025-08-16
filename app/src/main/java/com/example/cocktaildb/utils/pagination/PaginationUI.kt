@@ -37,27 +37,20 @@ class PaginationUI(private val context: Context) {
                 endPage = totalPages
             }
             else -> {
+
                 startPage = currentPage - 2
                 endPage = currentPage + 2
             }
         }
 
         if (startPage > 1) {
-            addPageButton(container, 1, currentPage, onPageClick)
-            if (startPage > 2) {
-                addDots(container)
-            }
+            addDots(container)
         }
-
         for (page in startPage..endPage) {
             addPageButton(container, page, currentPage, onPageClick)
         }
-
         if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                addDots(container)
-            }
-            addPageButton(container, totalPages, currentPage, onPageClick)
+            addDots(container)
         }
     }
     
