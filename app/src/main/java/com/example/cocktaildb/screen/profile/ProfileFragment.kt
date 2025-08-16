@@ -110,7 +110,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         // Initialize presenter with repositories
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
-        val authRepository = AuthRepository()
+        val authRepository = AuthRepository(requireContext())
         presenter = ProfilePresenter(repository, authRepository)
         presenter.setView(this)
     }
