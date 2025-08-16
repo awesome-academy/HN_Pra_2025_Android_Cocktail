@@ -39,7 +39,7 @@ class SignInActivity : BaseActivity<ActivityLoginBinding>(), AuthContract.View {
     }
 
     private fun initPresenter() {
-        val authRepository = AuthRepository()
+        val authRepository = AuthRepository(this)
         presenter = AuthPresenter(authRepository)
         presenter.setView(this)
     }
