@@ -88,8 +88,11 @@ class AuthRepository(private val context: Context? = null) {
     }
 
     fun signOut() {
-        auth.signOut()
-        googleAuth?.revokeAccess()
+        if (googleAuth != null) {
+            googleAuth.revokeAccess()
+        } else {
+            auth.signOut()
+        }
     }
 
     fun getCurrentUser(): FirebaseUser? {
