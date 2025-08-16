@@ -30,7 +30,6 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
     }
 
     override fun initData() {
-        // Initialize any data if needed
     }
 
     private fun setupClickListeners() {
@@ -60,17 +59,13 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
                     currentDrink = it
                     displayDrink(it)
                 } ?: run {
-                    val sampleDrink = createSampleDrink()
-                    currentDrink = sampleDrink
-                    displayDrink(sampleDrink)
+
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(this@TodayDrinkActivity, 
                     "Failed to load today's drink", Toast.LENGTH_SHORT).show()
-                val sampleDrink = createSampleDrink()
-                currentDrink = sampleDrink
-                displayDrink(sampleDrink)
+
             } finally {
                 showLoading(false)
             }
