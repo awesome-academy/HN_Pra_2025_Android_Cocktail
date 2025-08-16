@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.navigation.fragment.findNavController
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.AuthRepository
@@ -22,7 +23,7 @@ import com.example.cocktaildb.screen.auth.SignInActivity
 import com.example.cocktaildb.utils.base.BaseFragment
 
 
-class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View, ProfileAdapter.HeaderClickListener {
+class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View, ProfileAdapter.HeaderClickListener, ProfileAdapter.CocktailClickListener {
 
     private lateinit var presenter: ProfileContract.Presenter
     private lateinit var profileAdapter: ProfileAdapter
@@ -49,8 +50,8 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
     }
 
     override fun initView() {
-        // Initialize the adapter with this fragment as the click listener
-        profileAdapter = ProfileAdapter(this)
+        // Initialize the adapter with this fragment as both click listeners
+        profileAdapter = ProfileAdapter(this, this)
 
         // Set up RecyclerView with GridLayoutManager showing 2 items per row
         val layoutManager = GridLayoutManager(context, 2)
@@ -150,6 +151,24 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         }
     }
 
+    override fun navigateToHistory() {
+        try {
+            // Navigate to the History screen using the Navigation Component
+            val navController = androidx.navigation.Navigation.findNavController(
+                requireActivity(),
+                R.id.nav_host_fragment_activity_main
+            )
+            navController.navigate(R.id.navigation_history)
+        } catch (e: Exception) {
+            // Fallback in case navigation fails
+            Toast.makeText(
+                context,
+                "History feature coming soon!",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     override fun navigateToLogin() {
         val intent = Intent(requireContext(), SignInActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -175,5 +194,29 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
 
     override fun onLogoutClicked() {
         presenter.onLogoutClicked()
+    }
+
+    // Implement CocktailClickListener interface method
+    override fun onCocktailClicked(cocktail: Cocktail) {
+        // Add to history first
+        try {
+            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
+        } catch (e: Exception) {
+            // Handle error silently
+        }
+        
+        // Navigate to cocktail detail fragment using Navigation Component
+        val bundle = Bundle().apply {
+            putString("cocktail_id", cocktail.idDrink)
+            putString("cocktail_name", cocktail.strDrink)
+            putString("cocktail_category", cocktail.strCategory ?: "")
+            putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
+            putString("cocktail_glass", cocktail.strGlass ?: "")
+            putString("cocktail_instructions", cocktail.strInstructions ?: "")
+            putString("cocktail_image", cocktail.strDrinkThumb ?: "")
+            putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
+            putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+        }
+        findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }
 }

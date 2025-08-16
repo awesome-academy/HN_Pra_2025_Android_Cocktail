@@ -10,7 +10,10 @@ import com.example.cocktaildb.databinding.ItemProfileHeaderBinding
 import com.example.cocktaildb.utils.ImageLoader
 
 
-class ProfileAdapter(private val headerClickListener: HeaderClickListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class ProfileAdapter(
+    private val headerClickListener: HeaderClickListener,
+    private val cocktailClickListener: CocktailClickListener? = null
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private val VIEW_TYPE_HEADER = 0
     private val VIEW_TYPE_COCKTAIL = 1
 
@@ -46,7 +49,7 @@ class ProfileAdapter(private val headerClickListener: HeaderClickListener) : Rec
             else -> {
                 val binding = ItemCocktailBinding.inflate(
                     LayoutInflater.from(parent.context), parent, false)
-                CocktailViewHolder(binding)
+                CocktailViewHolder(binding, cocktailClickListener)
             }
         }
     }
@@ -110,7 +113,10 @@ class ProfileAdapter(private val headerClickListener: HeaderClickListener) : Rec
     }
 
 
-    class CocktailViewHolder(private val binding: ItemCocktailBinding) : RecyclerView.ViewHolder(binding.root) {
+    class CocktailViewHolder(
+        private val binding: ItemCocktailBinding,
+        private val clickListener: CocktailClickListener?
+    ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(cocktail: Cocktail) {
             binding.tvCocktailName.text = cocktail.strDrink
@@ -130,6 +136,11 @@ class ProfileAdapter(private val headerClickListener: HeaderClickListener) : Rec
 
             // Set rating
             binding.tvRating.text = "4.8"
+
+            // Set click listener for cocktail item
+            itemView.setOnClickListener {
+                clickListener?.onCocktailClicked(cocktail)
+            }
         }
     }
 
@@ -138,5 +149,9 @@ class ProfileAdapter(private val headerClickListener: HeaderClickListener) : Rec
         fun onMyRecipesClicked()
         fun onHistoryClicked()
         fun onLogoutClicked()
+    }
+
+    interface CocktailClickListener {
+        fun onCocktailClicked(cocktail: Cocktail)
     }
 }

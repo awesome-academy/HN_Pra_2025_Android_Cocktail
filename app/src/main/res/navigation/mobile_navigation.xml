@@ -40,4 +40,45 @@
         android:name="com.example.cocktaildb.screen.myrecipe.MyRecipeFragment"
         android:label="@string/title_my_recipe"
         tools:layout="@layout/fragment_my_recipe" />
+
+    <fragment
+        android:id="@+id/navigation_cocktail_detail"
+        android:name="com.example.cocktaildb.screen.detail.CocktailDetailFragment"
+        android:label="Cocktail Detail"
+        tools:layout="@layout/fragment_cocktail_detail">
+        
+        <argument
+            android:name="cocktail_id"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_name"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_category"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_alcoholic"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_glass"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_instructions"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_image"
+            app:argType="string" />
+        <argument
+            android:name="cocktail_ingredients"
+            app:argType="string[]" />
+        <argument
+            android:name="cocktail_measures"
+            app:argType="string[]" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_history"
+        android:name="com.example.cocktaildb.screen.history.HistoryFragment"
+        android:label="History"
+        tools:layout="@layout/fragment_history" />
 </navigation>
