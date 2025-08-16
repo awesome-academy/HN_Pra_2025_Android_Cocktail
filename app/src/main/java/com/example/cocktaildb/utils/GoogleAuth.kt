@@ -62,6 +62,10 @@ class GoogleAuth(private val context: Context) {
     }
     fun revokeAccess() {
         auth.signOut()
+        googleSignInClient.signOut()
+    }
+    fun revokeAccess() {
+        auth.signOut()
         googleSignInClient.signOut().addOnCompleteListener {
             googleSignInClient.revokeAccess()
         }
