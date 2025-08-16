@@ -95,6 +95,13 @@ object CocktailService {
         return out
     }
 
+    fun getRandomCocktail(): Cocktail? {
+        val url = BASE + "random.php"
+        val json = get(url)
+        val cocktails = parseDetailedDrinks(json)
+        return cocktails.firstOrNull()
+    }
+
     private fun parseDetailedDrinks(json: String): List<Cocktail> {
         val out = mutableListOf<Cocktail>()
         try {

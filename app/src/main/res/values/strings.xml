@@ -89,4 +89,12 @@
     <string name="ingredients">Ingredients</string>
     <string name="bookmark">Bookmark</string>
     <string name="favorite">Favorite</string>
+    
+    <!-- Today Drink Screen -->
+    <string name="today_drink_screen_title">TodayDrinkScreen</string>
+    <string name="today_drink_title">Today\'s drink</string>
+    <string name="sample_drink_name">Avocado Milkshake</string>
+    <string name="sample_drink_category">Drink</string>
+    <string name="hot_badge">HOT</string>
+    <string name="rating_badge">⭐4.7</string>
 </resources>
