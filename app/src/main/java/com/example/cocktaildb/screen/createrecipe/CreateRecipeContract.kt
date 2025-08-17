@@ -1,6 +1,5 @@
 package com.example.cocktaildb.screen.createrecipe
 
-import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.utils.base.BasePresenter
 
 interface CreateRecipeContract {

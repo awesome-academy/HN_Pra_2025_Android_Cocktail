@@ -76,9 +76,6 @@ class CreateRecipePresenter(
             // For now we'll just simulate success
             Log.d("CreateRecipePresenter", "Created recipe: $cocktail")
 
-            // Simulate saving to repository
-            Thread.sleep(500)
-
             view?.showLoading(false)
             view?.showSuccess("Recipe saved successfully!")
             view?.navigateToMyRecipes()

@@ -6,24 +6,18 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
 import com.example.cocktaildb.R
+import com.example.cocktaildb.data.model.IngredientItem
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
 import com.example.cocktaildb.databinding.FragmentCreateRecipeBinding
 import com.example.cocktaildb.utils.base.BaseFragment
-import com.google.android.material.snackbar.Snackbar
 
 class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), CreateRecipeContract.View {
 
@@ -185,51 +179,6 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         if (position >= 0 && position < ingredients.size) {
             ingredients.removeAt(position)
             ingredientsAdapter.notifyItemRemoved(position)
-        }
-    }
-
-    // Inner class for ingredient item data
-    data class IngredientItem(
-        var name: String,
-        var measure: String
-    )
-
-    // Adapter for ingredients RecyclerView - now uses item_recipe_ingredient.xml
-    inner class IngredientsAdapter(
-        private val items: List<IngredientItem>,
-        private val onRemoveClick: (Int) -> Unit
-    ) : androidx.recyclerview.widget.RecyclerView.Adapter<IngredientsAdapter.ViewHolder>() {
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-            val inflater = LayoutInflater.from(parent.context)
-            val view = inflater.inflate(R.layout.item_recipe_ingredient, parent, false)
-            return ViewHolder(view)
-        }
-
-        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-            val item = items[position]
-            holder.bind(item, position)
-        }
-
-        override fun getItemCount() = items.size
-
-        inner class ViewHolder(itemView: View) :
-            androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
-
-            private val tvIngredientName: TextView = itemView.findViewById(R.id.tvIngredientName)
-            private val tvIngredientMeasure: TextView = itemView.findViewById(R.id.tvIngredientMeasure)
-            private val buttonRemoveIngredient: ImageButton = itemView.findViewById(R.id.buttonRemoveIngredient)
-
-            fun bind(item: IngredientItem, position: Int) {
-                // Display ingredient data as text
-                tvIngredientName.text = item.name
-                tvIngredientMeasure.text = item.measure
-
-                // Setup remove button
-                buttonRemoveIngredient.setOnClickListener {
-                    onRemoveClick(position)
-                }
-            }
         }
     }
 }
