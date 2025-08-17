@@ -8,6 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -52,7 +53,7 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         // Initialize presenter
         val firebaseRepository = FirebaseRepository()
         val authRepository = AuthRepository(requireContext())
-        presenter = CreateRecipePresenter(firebaseRepository, authRepository)
+        presenter = CreateRecipePresenter(firebaseRepository, authRepository, viewLifecycleOwner.lifecycleScope)
         presenter.setView(this)
 
         // Setup RecyclerView for ingredients

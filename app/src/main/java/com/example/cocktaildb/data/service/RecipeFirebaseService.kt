@@ -15,7 +15,6 @@ class RecipeFirebaseService {
     private val recipeImagesCollection = firestore.collection("recipe_images")
     private val recipeIngredientsCollection = firestore.collection("recipe_ingredients")
     private val similarRecipesCollection = firestore.collection("similar_recipes")
-
     suspend fun createRecipe(recipe: Recipe): Result<String> {
         return try {
             val recipeId = if (recipe.id.isEmpty()) {
@@ -23,12 +22,10 @@ class RecipeFirebaseService {
             } else {
                 recipe.id
             }
-            
             val newRecipe = recipe.copy(
                 id = recipeId,
                 updatedAt = System.currentTimeMillis()
             )
-            
             recipesCollection.document(recipeId).set(newRecipe).await()
             Result.success(recipeId)
         } catch (e: Exception) {
@@ -165,7 +162,7 @@ class RecipeFirebaseService {
             } else {
                 recipeImage.id
             }
-            
+
             val newImage = recipeImage.copy(id = imageId)
             recipeImagesCollection.document(imageId).set(newImage).await()
             Result.success(imageId)
@@ -202,7 +199,7 @@ class RecipeFirebaseService {
             } else {
                 ingredient.id
             }
-            
+
             val newIngredient = ingredient.copy(id = ingredientId)
             recipeIngredientsCollection.document(ingredientId).set(newIngredient).await()
             Result.success(ingredientId)
@@ -239,7 +236,7 @@ class RecipeFirebaseService {
             } else {
                 similarRecipe.id
             }
-            
+
             val newSimilar = similarRecipe.copy(id = similarId)
             similarRecipesCollection.document(similarId).set(newSimilar).await()
             Result.success(similarId)
