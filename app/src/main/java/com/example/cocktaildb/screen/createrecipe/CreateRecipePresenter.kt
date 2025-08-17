@@ -13,7 +13,6 @@ class CreateRecipePresenter(
 ) : CreateRecipeContract.Presenter {
 
     private var view: CreateRecipeContract.View? = null
-    private var ingredientCount = 1  // Start with at least one ingredient
 
     override fun setView(view: CreateRecipeContract.View?) {
         this.view = view
@@ -87,14 +86,14 @@ class CreateRecipePresenter(
     }
 
     override fun addIngredient() {
-        ingredientCount++
+        // Just call the view to add an ingredient field
+        // The fragment will manage adding the actual ingredient to the list
         view?.addIngredientField()
     }
 
     override fun removeIngredient(position: Int) {
-        if (ingredientCount > 1) {
-            ingredientCount--
-            view?.removeIngredientField(position)
-        }
+        // Just call the view to remove the ingredient
+        // The fragment will manage removing the ingredient from the list
+        view?.removeIngredientField(position)
     }
 }

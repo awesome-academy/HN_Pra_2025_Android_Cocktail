@@ -69,11 +69,8 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         ingredientsAdapter = IngredientsAdapter(
             ingredients,
             onRemoveClick = { position ->
-                // Direct removal from the adapter instead of going through presenter
-                if (position >= 0 && position < ingredients.size) {
-                    ingredients.removeAt(position)
-                    ingredientsAdapter.notifyItemRemoved(position)
-                }
+                // Use the presenter to handle ingredient removal
+                presenter.removeIngredient(position)
             }
         )
 
@@ -139,7 +136,24 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
     private fun saveRecipe() {
         val name = viewBinding.editTextRecipeTitle.text.toString().trim()
         val instructions = viewBinding.editTextPreparation.text.toString().trim()
+
+        // FIXME: Using Uri.toString() creates a local content URI that won't be accessible
+        // after app restarts or on other devices. For a production app, the image should be:
+        // 1. Copied to app's internal storage (for local recipes only)
+        // 2. Uploaded to a remote storage service like Firebase Storage
+        // Below is the current implementation which has limitations
         val imageUrl = selectedImageUri?.toString() ?: ""
+
+        // TODO: Implement proper image storage. Example:
+        // if (selectedImageUri != null) {
+        //     showLoading(true)
+        //     uploadImageToFirebaseStorage(selectedImageUri!!) { remoteUrl ->
+        //         continueRecipeSave(name, instructions, remoteUrl, ...)
+        //     }
+        // } else {
+        //     continueRecipeSave(name, instructions, "", ...)
+        // }
+
         val category = "Cocktail" // Default category if spinner not available
         val glass = "Cocktail glass" // Default glass if spinner not available
 
@@ -156,6 +170,31 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
             glass = glass,
             alcoholic = isAlcoholic
         )
+    }
+
+    /**
+     * Example method for uploading an image to Firebase Storage
+     * This would need Firebase Storage dependency and proper setup
+     */
+    private fun uploadImageToFirebaseStorage(uri: Uri, onComplete: (String) -> Unit) {
+        // This is example code that would need to be implemented with actual Firebase dependencies
+
+        // Create a storage reference
+        // val storageRef = FirebaseStorage.getInstance().reference
+        // val imageRef = storageRef.child("recipe_images/${UUID.randomUUID()}.jpg")
+
+        // Upload the file
+        // imageRef.putFile(uri)
+        //     .addOnSuccessListener {
+        //         // Get download URL
+        //         imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+        //             onComplete(downloadUrl.toString())
+        //         }
+        //     }
+        //     .addOnFailureListener { e ->
+        //         Toast.makeText(requireContext(), "Image upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+        //         onComplete("")
+        //     }
     }
 
     override fun showLoading(show: Boolean) {
@@ -179,6 +218,11 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         if (position >= 0 && position < ingredients.size) {
             ingredients.removeAt(position)
             ingredientsAdapter.notifyItemRemoved(position)
+
+            // Notify adapter of potential changes in subsequent items
+            if (position < ingredients.size) {
+                ingredientsAdapter.notifyItemRangeChanged(position, ingredients.size - position)
+            }
         }
     }
 }
