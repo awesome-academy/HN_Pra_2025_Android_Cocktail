@@ -16,7 +16,6 @@ class RecipeFirebaseService {
     private val recipeIngredientsCollection = firestore.collection("recipe_ingredients")
     private val similarRecipesCollection = firestore.collection("similar_recipes")
 
-    // Recipe CRUD
     suspend fun createRecipe(recipe: Recipe): Result<String> {
         return try {
             val recipeId = if (recipe.id.isEmpty()) {
@@ -159,7 +158,6 @@ class RecipeFirebaseService {
         }
     }
 
-    // Recipe Images CRUD
     suspend fun addRecipeImage(recipeImage: RecipeImage): Result<String> {
         return try {
             val imageId = if (recipeImage.id.isEmpty()) {
@@ -197,8 +195,6 @@ class RecipeFirebaseService {
             Result.failure(e)
         }
     }
-
-    // Recipe Ingredients CRUD
     suspend fun addRecipeIngredient(ingredient: RecipeIngredient): Result<String> {
         return try {
             val ingredientId = if (ingredient.id.isEmpty()) {
@@ -236,7 +232,6 @@ class RecipeFirebaseService {
         }
     }
 
-    // Similar Recipes CRUD
     suspend fun addSimilarRecipe(similarRecipe: SimilarRecipe): Result<String> {
         return try {
             val similarId = if (similarRecipe.id.isEmpty()) {

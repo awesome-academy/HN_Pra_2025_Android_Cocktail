@@ -104,7 +104,7 @@ class HistoryFirebaseService {
             val querySnapshot = historyCollection
                 .whereEqualTo("uid", uid)
                 .get().await()
-            
+
             for (document in querySnapshot.documents) {
                 document.reference.delete().await()
             }
@@ -117,12 +117,12 @@ class HistoryFirebaseService {
     suspend fun removeOldHistory(uid: String, daysToKeep: Int = 30): Result<Boolean> {
         return try {
             val cutoffTime = System.currentTimeMillis() - (daysToKeep * 24 * 60 * 60 * 1000L)
-            
+
             val querySnapshot = historyCollection
                 .whereEqualTo("uid", uid)
                 .whereLessThan("viewedAt", cutoffTime)
                 .get().await()
-            
+
             for (document in querySnapshot.documents) {
                 document.reference.delete().await()
             }
@@ -150,7 +150,7 @@ class HistoryFirebaseService {
                 .whereEqualTo("uid", uid)
                 .orderBy("viewedAt", Query.Direction.DESCENDING)
                 .get().await()
-            
+
             val uniqueCocktailIds = mutableSetOf<String>()
             for (document in querySnapshot.documents) {
                 val cocktailId = document.getString("cocktailId")
@@ -158,7 +158,7 @@ class HistoryFirebaseService {
                     uniqueCocktailIds.add(cocktailId)
                 }
             }
-            
+
             Result.success(uniqueCocktailIds.toList())
         } catch (e: Exception) {
             Result.failure(e)
@@ -167,22 +167,20 @@ class HistoryFirebaseService {
 
     suspend fun getMostViewedCocktails(limit: Int = 20): Result<Map<String, Int>> {
         return try {
-            val querySnapshot = historyCollection.get().await()
+            val cocktailViewsCollection = firestore.collection("cocktailViews")
+            val querySnapshot = cocktailViewsCollection
+                .orderBy("viewCount", Query.Direction.DESCENDING)
+                .limit(limit.toLong())
+                .get().await()
             val cocktailViewCounts = mutableMapOf<String, Int>()
-            
             for (document in querySnapshot.documents) {
                 val cocktailId = document.getString("cocktailId")
+                val viewCount = document.getLong("viewCount")?.toInt() ?: 0
                 if (cocktailId != null) {
-                    cocktailViewCounts[cocktailId] = cocktailViewCounts.getOrDefault(cocktailId, 0) + 1
+                    cocktailViewCounts[cocktailId] = viewCount
                 }
             }
-            
-            val sortedCocktails = cocktailViewCounts.entries
-                .sortedByDescending { it.value }
-                .take(limit)
-                .associate { it.key to it.value }
-            
-            Result.success(sortedCocktails)
+            Result.success(cocktailViewCounts)
         } catch (e: Exception) {
             Result.failure(e)
         }

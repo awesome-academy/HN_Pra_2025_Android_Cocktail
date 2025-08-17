@@ -14,7 +14,7 @@ import com.bumptech.glide.Glide
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.IngredientItem
 import com.example.cocktaildb.data.repository.AuthRepository
-import com.example.cocktaildb.data.service.FirebaseRepository
+import com.example.cocktaildb.data.repository.FirebaseRepository
 import com.example.cocktaildb.databinding.FragmentCreateRecipeBinding
 import com.example.cocktaildb.utils.base.BaseFragment
 

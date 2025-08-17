@@ -84,7 +84,7 @@ class CheckmarkFirebaseService {
                 .whereEqualTo("uid", uid)
                 .whereEqualTo("cocktailId", cocktailId)
                 .get().await()
-            
+
             if (!querySnapshot.isEmpty) {
                 val checkmark = querySnapshot.documents[0].toObject(Checkmark::class.java)
                 Result.success(checkmark)
@@ -102,7 +102,7 @@ class CheckmarkFirebaseService {
                 .whereEqualTo("uid", uid)
                 .whereEqualTo("cocktailId", cocktailId)
                 .get().await()
-            
+
             for (document in querySnapshot.documents) {
                 document.reference.delete().await()
             }
@@ -155,7 +155,7 @@ class CheckmarkFirebaseService {
             val querySnapshot = checkmarksCollection
                 .whereEqualTo("uid", uid)
                 .get().await()
-            
+
             for (document in querySnapshot.documents) {
                 document.reference.delete().await()
             }

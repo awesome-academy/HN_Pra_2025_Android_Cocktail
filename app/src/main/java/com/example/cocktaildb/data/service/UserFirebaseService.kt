@@ -70,7 +70,7 @@ class UserFirebaseService {
                 "name" to name
             )
             profileImage?.let { updates["profileImage"] = it }
-            
+
             usersCollection.document(uid).update(updates).await()
             Result.success(true)
         } catch (e: Exception) {

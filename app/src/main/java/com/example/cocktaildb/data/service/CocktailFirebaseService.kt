@@ -10,7 +10,6 @@ class CocktailFirebaseService {
     private val firestore = FirebaseFirestore.getInstance()
     private val cocktailsCollection = firestore.collection("cocktails")
 
-    // Create
     suspend fun createCocktail(cocktail: CocktailTable): Result<String> {
         return try {
             val cocktailId = if (cocktail.id.isEmpty()) {
@@ -31,7 +30,6 @@ class CocktailFirebaseService {
         }
     }
 
-    // Read
     suspend fun getCocktail(cocktailId: String): Result<CocktailTable?> {
         return try {
             val document = cocktailsCollection.document(cocktailId).get().await()
@@ -60,7 +58,7 @@ class CocktailFirebaseService {
 
     suspend fun searchCocktails(searchQuery: String): Result<List<CocktailTable>> {
         return try {
-            // Firebase doesn't support full-text search, so we'll do multiple queries
+
             val nameResults = cocktailsCollection
                 .whereGreaterThanOrEqualTo("name", searchQuery)
                 .whereLessThanOrEqualTo("name", searchQuery + "\uf8ff")
@@ -134,17 +132,26 @@ class CocktailFirebaseService {
 
     suspend fun getRandomCocktails(limit: Int = 10): Result<List<CocktailTable>> {
         return try {
-            // Since Firestore doesn't have random queries, we'll get all and shuffle
-            val querySnapshot = cocktailsCollection.get().await()
-            val allCocktails = querySnapshot.toObjects(CocktailTable::class.java)
-            val randomCocktails = allCocktails.shuffled().take(limit)
-            Result.success(randomCocktails)
+            val randomSeed = Math.random()
+            var querySnapshot = cocktailsCollection
+                .whereGreaterThanOrEqualTo("randomSeed", randomSeed)
+                .limit(limit.toLong())
+                .get().await()
+            var cocktails = querySnapshot.toObjects(CocktailTable::class.java)
+            if (cocktails.size < limit) {
+                val remaining = limit - cocktails.size
+                val secondQuerySnapshot = cocktailsCollection
+                    .whereLessThan("randomSeed", randomSeed)
+                    .limit(remaining.toLong())
+                    .get().await()
+                cocktails = cocktails + secondQuerySnapshot.toObjects(CocktailTable::class.java)
+            }
+            Result.success(cocktails)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    // Update
     suspend fun updateCocktail(cocktail: CocktailTable): Result<Boolean> {
         return try {
             val updatedCocktail = cocktail.copy(updatedAt = System.currentTimeMillis())
@@ -155,7 +162,6 @@ class CocktailFirebaseService {
         }
     }
 
-    // Delete
     suspend fun deleteCocktail(cocktailId: String): Result<Boolean> {
         return try {
             cocktailsCollection.document(cocktailId).delete().await()
@@ -165,7 +171,6 @@ class CocktailFirebaseService {
         }
     }
 
-    // Batch operations
     suspend fun createMultipleCocktails(cocktails: List<CocktailTable>): Result<List<String>> {
         return try {
             val batch = firestore.batch()
@@ -195,7 +200,6 @@ class CocktailFirebaseService {
         }
     }
 
-    // Check if cocktail exists
     suspend fun cocktailExists(cocktailId: String): Result<Boolean> {
         return try {
             val document = cocktailsCollection.document(cocktailId).get().await()

@@ -79,7 +79,7 @@ class FavoriteFirebaseService {
                 .whereEqualTo("uid", uid)
                 .whereEqualTo("cocktailId", cocktailId)
                 .get().await()
-            
+
             if (!querySnapshot.isEmpty) {
                 val favorite = querySnapshot.documents[0].toObject(Favorite::class.java)
                 Result.success(favorite)
@@ -97,7 +97,7 @@ class FavoriteFirebaseService {
                 .whereEqualTo("uid", uid)
                 .whereEqualTo("cocktailId", cocktailId)
                 .get().await()
-            
+
             for (document in querySnapshot.documents) {
                 document.reference.delete().await()
             }
@@ -121,7 +121,7 @@ class FavoriteFirebaseService {
             val querySnapshot = favoritesCollection
                 .whereEqualTo("uid", uid)
                 .get().await()
-            
+
             for (document in querySnapshot.documents) {
                 document.reference.delete().await()
             }

@@ -1,6 +1,20 @@
-package com.example.cocktaildb.data.service
+package com.example.cocktaildb.data.repository
 
-import com.example.cocktaildb.data.model.*
+import com.example.cocktaildb.data.model.User
+import com.example.cocktaildb.data.model.Favorite
+import com.example.cocktaildb.data.model.Checkmark
+import com.example.cocktaildb.data.model.CocktailTable
+import com.example.cocktaildb.data.model.Recipe
+import com.example.cocktaildb.data.model.RecipeImage
+import com.example.cocktaildb.data.model.RecipeIngredient
+import com.example.cocktaildb.data.model.SimilarRecipe
+import com.example.cocktaildb.data.model.History
+import com.example.cocktaildb.data.service.UserFirebaseService
+import com.example.cocktaildb.data.service.FavoriteFirebaseService
+import com.example.cocktaildb.data.service.CheckmarkFirebaseService
+import com.example.cocktaildb.data.service.CocktailFirebaseService
+import com.example.cocktaildb.data.service.RecipeFirebaseService
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 

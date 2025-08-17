@@ -4,7 +4,7 @@ import android.util.Log
 import com.example.cocktaildb.data.model.Recipe
 import com.example.cocktaildb.data.model.RecipeIngredient
 import com.example.cocktaildb.data.repository.AuthRepository
-import com.example.cocktaildb.data.service.FirebaseRepository
+import com.example.cocktaildb.data.repository.FirebaseRepository
 import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +13,8 @@ import kotlinx.coroutines.withContext
 
 class CreateRecipePresenter(
     private val firebaseRepository: FirebaseRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val coroutineScope: CoroutineScope
 ) : CreateRecipeContract.Presenter {
 
     private var view: CreateRecipeContract.View? = null
@@ -59,7 +60,7 @@ class CreateRecipePresenter(
         view?.showLoading(true)
 
         // Save recipe using coroutines
-        CoroutineScope(Dispatchers.IO).launch {
+        coroutineScope.launch(Dispatchers.IO) {
             try {
                 // Get current user
                 val currentUser = authRepository.getCurrentUser()
@@ -128,30 +129,38 @@ class CreateRecipePresenter(
     }
 
     private suspend fun saveRecipeIngredients(recipeId: String, ingredients: List<String>, measures: List<String>) {
+        val failedIngredients = mutableListOf<String>()
         try {
             for (i in ingredients.indices) {
                 val ingredientName = ingredients[i].trim()
                 if (ingredientName.isNotBlank()) {
                     val measure = if (i < measures.size) measures[i].trim() else ""
-                    
                     val recipeIngredient = RecipeIngredient(
-                        id = "", // Will be generated
+                        id = "",
                         recipeId = recipeId,
                         ingredientName = ingredientName,
                         quantity = measure,
-                        unit = "", // Can be parsed from measure if needed
+                        unit = "",
                         isOptional = false,
                         notes = ""
                     )
-                    
                     val result = firebaseRepository.addRecipeIngredient(recipeIngredient)
                     if (result.isFailure) {
                         Log.e("CreateRecipePresenter", "Failed to save ingredient: $ingredientName")
+                        failedIngredients.add(ingredientName)
                     }
+                }
+            }
+            if (failedIngredients.isNotEmpty()) {
+                withContext(Dispatchers.Main) {
+                    view?.showError("Warning: The following ingredients could not be saved: ${failedIngredients.joinToString(", ")}")
                 }
             }
         } catch (e: Exception) {
             Log.e("CreateRecipePresenter", "Error saving ingredients: ${e.message}")
+            withContext(Dispatchers.Main) {
+                view?.showError("Error saving ingredients: ${e.message}")
+            }
         }
     }
 
