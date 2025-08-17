@@ -14,8 +14,7 @@ import com.bumptech.glide.Glide
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.IngredientItem
 import com.example.cocktaildb.data.repository.AuthRepository
-import com.example.cocktaildb.data.repository.CocktailRepository
-import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
+import com.example.cocktaildb.data.service.FirebaseRepository
 import com.example.cocktaildb.databinding.FragmentCreateRecipeBinding
 import com.example.cocktaildb.utils.base.BaseFragment
 
@@ -51,10 +50,9 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
 
     override fun initData() {
         // Initialize presenter
-        val dataSource = CocktailLocalDataSource()
-        val repository = CocktailRepository(dataSource)
+        val firebaseRepository = FirebaseRepository()
         val authRepository = AuthRepository(requireContext())
-        presenter = CreateRecipePresenter(repository, authRepository)
+        presenter = CreateRecipePresenter(firebaseRepository, authRepository)
         presenter.setView(this)
 
         // Setup RecyclerView for ingredients
@@ -137,22 +135,8 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         val name = viewBinding.editTextRecipeTitle.text.toString().trim()
         val instructions = viewBinding.editTextPreparation.text.toString().trim()
 
-        // FIXME: Using Uri.toString() creates a local content URI that won't be accessible
-        // after app restarts or on other devices. For a production app, the image should be:
-        // 1. Copied to app's internal storage (for local recipes only)
-        // 2. Uploaded to a remote storage service like Firebase Storage
-        // Below is the current implementation which has limitations
         val imageUrl = selectedImageUri?.toString() ?: ""
 
-        // TODO: Implement proper image storage. Example:
-        // if (selectedImageUri != null) {
-        //     showLoading(true)
-        //     uploadImageToFirebaseStorage(selectedImageUri!!) { remoteUrl ->
-        //         continueRecipeSave(name, instructions, remoteUrl, ...)
-        //     }
-        // } else {
-        //     continueRecipeSave(name, instructions, "", ...)
-        // }
 
         val category = "Cocktail" // Default category if spinner not available
         val glass = "Cocktail glass" // Default glass if spinner not available
