@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cocktail Categories -->
+    <string-array name="cocktail_categories">
+        <item>Ordinary Drink</item>
+        <item>Cocktail</item>
+        <item>Milk / Float / Shake</item>
+        <item>Other/Unknown</item>
+        <item>Cocoa</item>
+        <item>Shot</item>
+        <item>Coffee / Tea</item>
+        <item>Homemade Liqueur</item>
+        <item>Punch / Party Drink</item>
+        <item>Beer</item>
+        <item>Soft Drink / Soda</item>
+    </string-array>
+
+    <!-- Cocktail Glasses -->
+    <string-array name="cocktail_glasses">
+        <item>Highball glass</item>
+        <item>Cocktail glass</item>
+        <item>Old-fashioned glass</item>
+        <item>Whiskey Glass</item>
+        <item>Collins glass</item>
+        <item>Pousse cafe glass</item>
+        <item>Champagne flute</item>
+        <item>Whiskey sour glass</item>
+        <item>Cordial glass</item>
+        <item>Brandy snifter</item>
+        <item>White wine glass</item>
+        <item>Nick and Nora Glass</item>
+        <item>Hurricane glass</item>
+        <item>Coffee mug</item>
+        <item>Shot glass</item>
+        <item>Jar</item>
+        <item>Irish coffee cup</item>
+        <item>Punch bowl</item>
+        <item>Pitcher</item>
+        <item>Pint glass</item>
+        <item>Copper Mug</item>
+        <item>Wine Glass</item>
+        <item>Beer mug</item>
+        <item>Margarita/Coupette glass</item>
+        <item>Beer pilsner</item>
+        <item>Beer Glass</item>
+        <item>Parfait glass</item>
+        <item>Mason jar</item>
+        <item>Margarita glass</item>
+        <item>Martini Glass</item>
+        <item>Balloon Glass</item>
+        <item>Coupe Glass</item>
+    </string-array>
+</resources>
