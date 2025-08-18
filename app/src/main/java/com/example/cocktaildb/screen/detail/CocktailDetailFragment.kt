@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.cocktaildb.R
@@ -160,8 +161,61 @@ class CocktailDetailFragment : Fragment() {
             // TODO: Implement bookmark functionality
         }
         
+        // Get the current cocktail
+        val currentCocktail = createCocktailFromArgs(
+            arguments?.getString("cocktail_name") ?: "",
+            arguments?.getString("cocktail_category") ?: "",
+            arguments?.getString("cocktail_alcoholic") ?: "",
+            arguments?.getString("cocktail_glass") ?: "",
+            arguments?.getString("cocktail_instructions") ?: "",
+            arguments?.getString("cocktail_image"),
+            arguments?.getStringArray("cocktail_ingredients") ?: emptyArray(),
+            arguments?.getStringArray("cocktail_measures") ?: emptyArray()
+        )
+
+        // Update favorite button based on current state
+        updateFavoriteButtonState(currentCocktail)
+
         binding.btnFavorite.setOnClickListener {
-            // TODO: Implement favorite functionality
+            // Show loading indicator on the button
+            binding.btnFavorite.isEnabled = false
+
+            // Toggle favorite with Firebase
+            com.example.cocktaildb.data.manager.FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
+                // Update UI on the main thread
+                activity?.runOnUiThread {
+                    binding.btnFavorite.isEnabled = true
+
+                    // Update button state
+                    if (isFavorite) {
+                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+                        // Show toast notification when adding to favorites
+                        Toast.makeText(
+                            requireContext(),
+                            "Added ${currentCocktail.strDrink} to favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+                        // Show toast notification when removing from favorites
+                        Toast.makeText(
+                            requireContext(),
+                            "Removed ${currentCocktail.strDrink} from favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateFavoriteButtonState(cocktail: Cocktail) {
+        val isFavorite = com.example.cocktaildb.data.manager.FavoritesManager.isFavorite(cocktail.idDrink)
+
+        if (isFavorite) {
+            binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+        } else {
+            binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
         }
     }
 
@@ -202,4 +256,4 @@ class CocktailDetailFragment : Fragment() {
         _binding = null
     }
 
-} 
+}
