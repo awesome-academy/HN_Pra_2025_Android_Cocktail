@@ -46,10 +46,10 @@ class CocktailDetailFragment : Fragment(), CocktailDetailContract.View {
     private var _binding: FragmentCocktailDetailBinding? = null
     private val binding get() = _binding!!
     private var cocktail: Cocktail? = null
+    private val TAG = "CocktailDetailFragment"
 
     private lateinit var relatedCocktailAdapter: RelatedCocktailAdapter
     private lateinit var presenter: CocktailDetailPresenter
-    private val TAG = "CocktailDetailFragment"
 
     override fun onCreateView(
         inflater: LayoutInflater,
