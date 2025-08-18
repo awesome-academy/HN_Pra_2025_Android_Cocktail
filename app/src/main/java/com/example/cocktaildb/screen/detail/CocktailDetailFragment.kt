@@ -1,6 +1,7 @@
 package com.example.cocktaildb.screen.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,6 +20,7 @@ class CocktailDetailFragment : Fragment() {
     private var _binding: FragmentCocktailDetailBinding? = null
     private val binding get() = _binding!!
     private var cocktail: Cocktail? = null
+    private val TAG = "CocktailDetailFragment"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,13 +36,38 @@ class CocktailDetailFragment : Fragment() {
         setupToolbar()
         loadCocktailData()
         setupClickListeners()
+
+        // Ensure favorites are loaded before checking status
+        ensureFavoritesLoaded()
     }
 
     override fun onResume() {
         super.onResume()
-        // Refresh favorite status when returning to this fragment
+        // Refresh favorite button state when returning to this screen
         cocktail?.let {
             updateFavoriteButtonState(it)
+        }
+    }
+
+    private fun ensureFavoritesLoaded() {
+        // Make sure favorites are loaded before checking favorite status
+        if (!com.example.cocktaildb.data.manager.FavoritesManager.isInitialized()) {
+            Log.d(TAG, "Favorites not initialized, loading them now")
+            com.example.cocktaildb.data.manager.FavoritesManager.loadFavoritesFromFirestore { success ->
+                if (success) {
+                    Log.d(TAG, "Favorites loaded successfully")
+                    // Update button state after favorites are loaded
+                    activity?.runOnUiThread {
+                        cocktail?.let {
+                            updateFavoriteButtonState(it)
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "Failed to load favorites")
+                }
+            }
+        } else {
+            Log.d(TAG, "Favorites already initialized")
         }
     }
 
@@ -181,6 +208,8 @@ class CocktailDetailFragment : Fragment() {
             arguments?.getStringArray("cocktail_measures") ?: emptyArray()
         )
 
+        this.cocktail = currentCocktail
+
         // Update favorite button based on current state
         updateFavoriteButtonState(currentCocktail)
 
@@ -218,7 +247,9 @@ class CocktailDetailFragment : Fragment() {
     }
 
     private fun updateFavoriteButtonState(cocktail: Cocktail) {
+        Log.d(TAG, "Updating favorite button state for cocktail ${cocktail.idDrink}")
         val isFavorite = com.example.cocktaildb.data.manager.FavoritesManager.isFavorite(cocktail.idDrink)
+        Log.d(TAG, "Is favorite: $isFavorite")
 
         if (isFavorite) {
             binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))

@@ -1,5 +1,6 @@
 package com.example.cocktaildb.data.manager
 
+import android.util.Log
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.model.Favorite
 import com.google.firebase.auth.FirebaseAuth
@@ -12,11 +13,16 @@ import java.util.UUID
 object FavoritesManager {
     private val favoriteCocktails = mutableSetOf<Cocktail>()
     private val favoritesById = mutableMapOf<String, String>() // cocktailId -> favoriteId
+    private var isInitialized = false
+    private const val TAG = "FavoritesManager"
 
     private val firestore = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
     private const val FAVORITES_COLLECTION = "favorites"
+
+    // Check if manager is initialized with user favorites
+    fun isInitialized(): Boolean = isInitialized
 
     // Load all favorites for the current user from Firestore
     fun loadFavoritesFromFirestore(onComplete: (Boolean) -> Unit) {
@@ -39,18 +45,28 @@ object FavoritesManager {
                     favoritesById[favorite.cocktailId] = favorite.id
                 }
 
+                isInitialized = true
+                Log.d(TAG, "Loaded ${favoritesById.size} favorites for user ${currentUser.uid}")
                 onComplete(true)
             }
             .addOnFailureListener {
+                Log.e(TAG, "Failed to load favorites: ${it.message}")
                 onComplete(false)
             }
     }
 
-    // Add a favorite to Firestore
+    // Add a favorite to Firestore (prevents duplicates)
     fun addFavoriteToFirestore(cocktail: Cocktail, onComplete: (Boolean) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser == null) {
             onComplete(false)
+            return
+        }
+
+        // Check if the cocktail is already a favorite
+        if (isFavorite(cocktail.idDrink)) {
+            Log.d(TAG, "Cocktail ${cocktail.idDrink} is already a favorite, skipping add")
+            onComplete(true)
             return
         }
 
@@ -68,9 +84,11 @@ object FavoritesManager {
             .addOnSuccessListener {
                 favoriteCocktails.add(cocktail)
                 favoritesById[cocktail.idDrink] = favoriteId
+                Log.d(TAG, "Added cocktail ${cocktail.idDrink} to favorites")
                 onComplete(true)
             }
             .addOnFailureListener {
+                Log.e(TAG, "Failed to add favorite: ${it.message}")
                 onComplete(false)
             }
     }
