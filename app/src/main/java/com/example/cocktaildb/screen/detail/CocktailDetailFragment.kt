@@ -9,8 +9,11 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentCocktailDetailBinding
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
@@ -20,8 +23,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.cocktaildb.utils.adapter.RelatedCocktailAdapter
 
-class CocktailDetailFragment : Fragment() {
+class CocktailDetailFragment : Fragment(), CocktailDetailContract.View {
 
     companion object {
         const val KEY_COCKTAIL_ID = "cocktail_id"
@@ -38,6 +42,9 @@ class CocktailDetailFragment : Fragment() {
     private var _binding: FragmentCocktailDetailBinding? = null
     private val binding get() = _binding!!
     private var cocktail: Cocktail? = null
+
+    private lateinit var relatedCocktailAdapter: RelatedCocktailAdapter
+    private lateinit var presenter: CocktailDetailPresenter
     private val TAG = "CocktailDetailFragment"
 
     override fun onCreateView(
@@ -51,7 +58,9 @@ class CocktailDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupPresenter()
         setupToolbar()
+        setupRelatedCocktailsRecyclerView()
         loadCocktailData()
         setupClickListeners()
 
@@ -89,6 +98,12 @@ class CocktailDetailFragment : Fragment() {
         }
     }
 
+    private fun setupPresenter() {
+        val repository = CocktailRepository(CocktailRemoteDataSource())
+        presenter = CocktailDetailPresenter(repository)
+        presenter.setView(this)
+    }
+
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
             // Check if we're in SearchActivity context
@@ -104,6 +119,18 @@ class CocktailDetailFragment : Fragment() {
             } else {
                 findNavController().navigateUp()
             }
+        }
+    }
+
+    private fun setupRelatedCocktailsRecyclerView() {
+        relatedCocktailAdapter = RelatedCocktailAdapter(emptyList()) { cocktail ->
+            // Navigate to cocktail detail
+            navigateToCocktailDetail(cocktail)
+        }
+
+        binding.rvRelatedCocktails.apply {
+            layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            adapter = relatedCocktailAdapter
         }
     }
 
@@ -150,6 +177,11 @@ class CocktailDetailFragment : Fragment() {
         // Set instructions
         setupInstructions(instructions)
 
+        // Set ingredients (only non-null ingredients)
+        setupIngredients(ingredients, measures)
+
+        // Load related cocktails using presenter
+        presenter.loadRelatedCocktails(cocktailName, cocktailCategory)
         if (cocktailId.isNotEmpty() && (ingredients.isEmpty() || ingredients.all { it.isEmpty() })) {
             loadRecipeIngredientsFromFirebase(cocktailId)
         } else {
@@ -219,7 +251,7 @@ class CocktailDetailFragment : Fragment() {
                 val result = withContext(Dispatchers.IO) {
                     com.example.cocktaildb.data.service.RecipeFirebaseService().getRecipeIngredients(recipeId)
                 }
-                
+
                 result.fold(
                     onSuccess = { ingredients ->
                         Log.d("CocktailDetailFragment", "Loaded ${ingredients.size} ingredients for recipe $recipeId")
@@ -310,6 +342,34 @@ class CocktailDetailFragment : Fragment() {
         }
     }
 
+
+
+    private fun navigateToCocktailDetail(cocktail: Cocktail) {
+        // Create arguments for the new cocktail detail
+        val args = Bundle().apply {
+            putString("cocktail_id", cocktail.idDrink)
+            putString("cocktail_name", cocktail.strDrink)
+            putString("cocktail_category", cocktail.strCategory ?: "Cocktail")
+            putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
+            putString("cocktail_glass", cocktail.strGlass ?: "")
+            putString("cocktail_image", cocktail.strDrinkThumb)
+            putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
+            putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+        }
+
+        // Navigate to cocktail detail fragment
+        findNavController().navigate(R.id.action_cocktailDetailFragment_self, args)
+    }
+
+    // Implementation of CocktailDetailContract.View
+    override fun showRelatedCocktails(cocktails: List<Cocktail>) {
+        relatedCocktailAdapter.submit(cocktails)
+    }
+
+    override fun showError(message: String) {
+        // Handle error silently for now, could show a toast or snackbar
+    }
+
     private fun createCocktailFromArgs(
         name: String,
         category: String,
@@ -342,9 +402,20 @@ class CocktailDetailFragment : Fragment() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        presenter.onStart()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        presenter.onStop()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 
 }
+

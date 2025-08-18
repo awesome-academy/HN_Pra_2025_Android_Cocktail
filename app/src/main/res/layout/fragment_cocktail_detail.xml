@@ -203,6 +203,36 @@
 
             </androidx.cardview.widget.CardView>
 
+            <!-- Related Cocktails Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginBottom="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/related_cocktails"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginBottom="16dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvRelatedCocktails"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:clipToPadding="false"
+                    android:paddingStart="0dp"
+                    android:paddingEnd="12dp"
+                    tools:itemCount="6"
+                    tools:listitem="@layout/item_related_cocktail" />
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

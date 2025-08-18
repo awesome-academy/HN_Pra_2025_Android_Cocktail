@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="160dp"
+    android:layout_height="200dp"
+    android:layout_marginEnd="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- Image -->
+        <ImageView
+            android:id="@+id/ivCocktail"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/cocktail_image_bg"
+            tools:src="@drawable/imgstart" />
+
+        <!-- Text Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- Cocktail Name -->
+            <TextView
+                android:id="@+id/tvCocktailName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Cocktail Name"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="4dp"
+                tools:text="Mojito" />
+
+            <!-- Category -->
+            <TextView
+                android:id="@+id/tvCocktailCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Category"
+                android:textSize="12sp"
+                android:textColor="@color/dark_gray"
+                android:maxLines="1"
+                android:ellipsize="end"
+                tools:text="Cocktail" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView> 
