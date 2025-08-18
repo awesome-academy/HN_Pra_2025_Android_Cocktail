@@ -36,6 +36,14 @@ class CocktailDetailFragment : Fragment() {
         setupClickListeners()
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Refresh favorite status when returning to this fragment
+        cocktail?.let {
+            updateFavoriteButtonState(it)
+        }
+    }
+
     private fun setupToolbar() {
         binding.toolbar.setNavigationOnClickListener {
             // Check if we're in SearchActivity context
