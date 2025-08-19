@@ -1,10 +1,14 @@
 package com.example.cocktaildb.screen.createrecipe
 
+import android.content.Context
+import android.net.Uri
 import android.util.Log
 import com.example.cocktaildb.data.model.Recipe
+import com.example.cocktaildb.data.model.RecipeImage
 import com.example.cocktaildb.data.model.RecipeIngredient
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.FirebaseRepository
+import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +18,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.cancel
 
 class CreateRecipePresenter(
+    private val context: Context,
     private val firebaseRepository: FirebaseRepository,
     private val authRepository: AuthRepository
 ) : CreateRecipeContract.Presenter {
@@ -105,8 +110,7 @@ class CreateRecipePresenter(
 
                     // Save recipe image if provided
                     if (imageUrl.isNotBlank()) {
-                        // TODO: Implement saving recipe image
-                        // saveRecipeImage(recipeId, imageUrl)
+                        saveRecipeImage(recipeId, imageUrl)
                     }
 
                     withContext(Dispatchers.Main) {
@@ -163,6 +167,67 @@ class CreateRecipePresenter(
             Log.e("CreateRecipePresenter", "Error saving ingredients: ${e.message}")
             withContext(Dispatchers.Main) {
                 view?.showError("Error saving ingredients: ${e.message}")
+            }
+        }
+    }
+
+    private suspend fun saveRecipeImage(recipeId: String, imageUrl: String) {
+        try {
+            Log.d("CreateRecipePresenter", "Starting to save image with URL: $imageUrl")
+
+            val permanentImagePath = if (imageUrl.startsWith("content://")) {
+
+                Log.d("CreateRecipePresenter", "Detected content:// URI, copying to internal storage")
+                val sourceUri = Uri.parse(imageUrl)
+                val copiedPath = ImageLoader.copyImageToInternalStorage(context, sourceUri)
+                Log.d("CreateRecipePresenter", "Copy result: $copiedPath")
+                copiedPath
+            } else {
+
+                Log.d("CreateRecipePresenter", "Using existing path: $imageUrl")
+                imageUrl
+            }
+            
+            if (permanentImagePath == null) {
+                Log.e("CreateRecipePresenter", "Failed to copy image to internal storage")
+                withContext(Dispatchers.Main) {
+                    view?.showError("Warning: Recipe saved but image could not be saved")
+                }
+                return
+            }
+
+            val finalImageUrl = if (permanentImagePath.startsWith("/")) {
+                val fileUri = ImageLoader.getFileUri(permanentImagePath)
+                Log.d("CreateRecipePresenter", "Converted to file URI: $fileUri")
+                fileUri
+            } else {
+                permanentImagePath
+            }
+            
+            val recipeImage = RecipeImage(
+                id = "",
+                recipeId = recipeId,
+                imageUrl = finalImageUrl,
+                isPrimary = true,
+                caption = "",
+                uploadedAt = System.currentTimeMillis()
+            )
+            
+            Log.d("CreateRecipePresenter", "Saving to Firebase with URL: $finalImageUrl")
+            val result = firebaseRepository.addRecipeImage(recipeImage)
+            if (result.isSuccess) {
+                Log.d("CreateRecipePresenter", "Recipe image saved successfully with URL: $finalImageUrl")
+            } else {
+                val error = result.exceptionOrNull()
+                Log.e("CreateRecipePresenter", "Failed to save recipe image: ${error?.message}")
+                withContext(Dispatchers.Main) {
+                    view?.showError("Warning: Recipe saved but image could not be saved")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CreateRecipePresenter", "Error saving recipe image: ${e.message}", e)
+            withContext(Dispatchers.Main) {
+                view?.showError("Warning: Recipe saved but image could not be saved: ${e.message}")
             }
         }
     }

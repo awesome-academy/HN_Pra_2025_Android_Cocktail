@@ -16,6 +16,10 @@ import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.data.manager.FavoritesManager
 import com.example.cocktaildb.screen.history.HistoryPresenter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CocktailDetailFragment : Fragment() {
 
@@ -106,6 +110,7 @@ class CocktailDetailFragment : Fragment() {
     private fun loadCocktailData() {
         // Get data from arguments using Navigation component's safe args
         val args = arguments
+        val cocktailId = args?.getString(KEY_COCKTAIL_ID) ?: ""
         val cocktailName = args?.getString(KEY_COCKTAIL_NAME) ?: "Cocktail"
         val cocktailCategory = args?.getString(KEY_COCKTAIL_CATEGORY) ?: "Cocktail"
         val alcoholic = args?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: ""
@@ -145,8 +150,11 @@ class CocktailDetailFragment : Fragment() {
         // Set instructions
         setupInstructions(instructions)
 
-        // Set ingredients (only non-null ingredients)
-        setupIngredients(ingredients, measures)
+        if (cocktailId.isNotEmpty() && (ingredients.isEmpty() || ingredients.all { it.isEmpty() })) {
+            loadRecipeIngredientsFromFirebase(cocktailId)
+        } else {
+            setupIngredients(ingredients, measures)
+        }
     }
 
     private fun setupInstructions(instructions: String) {
@@ -202,6 +210,36 @@ class CocktailDetailFragment : Fragment() {
             ingredientMeasure.text = measure
             
             ingredientsContainer.addView(ingredientView)
+        }
+    }
+
+    private fun loadRecipeIngredientsFromFirebase(recipeId: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    com.example.cocktaildb.data.service.RecipeFirebaseService().getRecipeIngredients(recipeId)
+                }
+                
+                result.fold(
+                    onSuccess = { ingredients ->
+                        Log.d("CocktailDetailFragment", "Loaded ${ingredients.size} ingredients for recipe $recipeId")
+                        if (ingredients.isNotEmpty()) {
+                            val ingredientNames = ingredients.map { it.ingredientName }.toTypedArray()
+                            val ingredientMeasures = ingredients.map { "${it.quantity} ${it.unit}".trim() }.toTypedArray()
+                            setupIngredients(ingredientNames, ingredientMeasures)
+                        } else {
+                            setupIngredients(emptyArray(), emptyArray())
+                        }
+                    },
+                    onFailure = { exception ->
+                        Log.e("CocktailDetailFragment", "Failed to load ingredients for recipe $recipeId", exception)
+                        setupIngredients(emptyArray(), emptyArray())
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("CocktailDetailFragment", "Error loading ingredients for recipe $recipeId", e)
+                setupIngredients(emptyArray(), emptyArray())
+            }
         }
     }
 

@@ -1,24 +1,31 @@
 package com.example.cocktaildb.screen.myrecipe
 
 import android.graphics.Rect
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
-import com.example.cocktaildb.data.model.Cocktail
-import com.example.cocktaildb.data.repository.CocktailRepository
-import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
+import com.example.cocktaildb.data.model.Recipe
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.RecipeFirebaseService
 import com.example.cocktaildb.databinding.FragmentMyRecipeBinding
 import com.example.cocktaildb.utils.base.BaseFragment
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContract.View {
 
     private lateinit var presenter: MyRecipePresenter
     private lateinit var recipeAdapter: RecipeAdapter
+    private lateinit var recipeFirebaseService: RecipeFirebaseService
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentMyRecipeBinding {
         return FragmentMyRecipeBinding.inflate(inflater)
@@ -27,6 +34,10 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     override fun initView() {
         // Setup RecyclerView
         recipeAdapter = RecipeAdapter()
+
+        recipeAdapter.setOnItemClickListener { recipe ->
+            navigateToRecipeDetail(recipe)
+        }
 
         // Apply proper item spacing decoration
         val spacingInPixels = resources.getDimensionPixelSize(R.dimen.dp_8)
@@ -69,10 +80,9 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     }
 
     override fun initData() {
-        // Initialize presenter with repository
-        val dataSource = CocktailLocalDataSource()
-        val repository = CocktailRepository(dataSource)
-        presenter = MyRecipePresenter(repository)
+        recipeFirebaseService = RecipeFirebaseService()
+        val authRepository = AuthRepository()
+        presenter = MyRecipePresenter(recipeFirebaseService, authRepository)
         presenter.setView(this)
     }
 
@@ -86,8 +96,48 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
         super.onPause()
     }
 
-    override fun showUserRecipes(cocktails: List<Cocktail>) {
-        recipeAdapter.setRecipes(cocktails)
+    override fun showUserRecipes(recipes: List<Recipe>) {
+        println("MyRecipeFragment: Received ${recipes.size} recipes")
+        recipes.forEach { recipe ->
+            println("MyRecipeFragment: Recipe - ${recipe.name} (ID: ${recipe.id})")
+        }
+        
+        recipeAdapter.setRecipes(recipes)
+        loadRecipeImages(recipes)
+    }
+
+    private fun loadRecipeImages(recipes: List<Recipe>) {
+        println("MyRecipeFragment: Starting to load images for ${recipes.size} recipes")
+        CoroutineScope(Dispatchers.Main).launch {
+            recipes.forEach { recipe ->
+                try {
+                    println("MyRecipeFragment: Loading images for recipe ${recipe.id}")
+                    val result = withContext(Dispatchers.IO) {
+                        recipeFirebaseService.getRecipeImages(recipe.id)
+                    }
+                    
+                    result.fold(
+                        onSuccess = { images ->
+                            println("MyRecipeFragment: Found ${images.size} images for recipe ${recipe.id}")
+                            val primaryImage = images.find { it.isPrimary } ?: images.firstOrNull()
+                            if (primaryImage != null) {
+                                println("MyRecipeFragment: Setting image URL: ${primaryImage.imageUrl}")
+                            } else {
+                                println("MyRecipeFragment: No images found for recipe ${recipe.id}")
+                            }
+                            recipeAdapter.setRecipeImage(recipe.id, primaryImage)
+                        },
+                        onFailure = { exception ->
+                            println("Failed to load images for recipe ${recipe.id}: ${exception.message}")
+                            recipeAdapter.setRecipeImage(recipe.id, null)
+                        }
+                    )
+                } catch (e: Exception) {
+                    println("Error loading images for recipe ${recipe.id}: ${e.message}")
+                    recipeAdapter.setRecipeImage(recipe.id, null)
+                }
+            }
+        }
     }
 
     override fun displayLoading(show: Boolean) {
@@ -98,7 +148,78 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
+    private fun navigateToRecipeDetail(recipe: Recipe) {
+        try {
+            val bundle = Bundle().apply {
+                putString("cocktail_id", recipe.id)
+                putString("cocktail_name", recipe.name)
+                putString("cocktail_category", recipe.category)
+                putString("cocktail_alcoholic", recipe.alcoholic.ifEmpty { "Unknown" })
+                putString("cocktail_glass", "Cocktail Glass")
+                putString("cocktail_instructions", recipe.instructions)
+
+                val imageUrl = recipeAdapter.getRecipeImageUrl(recipe.id) ?: ""
+                putString("cocktail_image", imageUrl)
+
+                putStringArray("cocktail_ingredients", emptyArray())
+                putStringArray("cocktail_measures", emptyArray())
+            }
+
+            navigateToDetailFragment(bundle)
+            
+        } catch (e: Exception) {
+            println("MyRecipeFragment: Error navigating to detail: ${e.message}")
+            Toast.makeText(context, "Error opening recipe details", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun navigateToDetailFragment(bundle: Bundle) {
+        try {
+            findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+        } catch (e: Exception) {
+            println("MyRecipeFragment: Navigation failed, trying fragment transaction: ${e.message}")
+            try {
+                val detailFragment = com.example.cocktaildb.screen.detail.CocktailDetailFragment()
+                detailFragment.arguments = bundle
+                
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.nav_host_fragment_activity_main, detailFragment)
+                    .addToBackStack(null)
+                    .commit()
+            } catch (ex: Exception) {
+                println("MyRecipeFragment: Fragment transaction failed: ${ex.message}")
+                Toast.makeText(context, "Unable to open recipe details", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun loadRecipeIngredients(recipeId: String, onComplete: (List<String>, List<String>) -> Unit) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    recipeFirebaseService.getRecipeIngredients(recipeId)
+                }
+                
+                result.fold(
+                    onSuccess = { recipeIngredients ->
+                        val ingredients = recipeIngredients.map { it.ingredientName }
+                        val measures = recipeIngredients.map { "${it.quantity} ${it.unit}".trim() }
+                        onComplete(ingredients, measures)
+                    },
+                    onFailure = { exception ->
+                        println("Failed to load ingredients for recipe $recipeId: ${exception.message}")
+                        onComplete(emptyList(), emptyList())
+                    }
+                )
+            } catch (e: Exception) {
+                println("Error loading ingredients for recipe $recipeId: ${e.message}")
+                onComplete(emptyList(), emptyList())
+            }
+        }
+    }
+
     companion object {
         fun newInstance() = MyRecipeFragment()
     }
 }
+
