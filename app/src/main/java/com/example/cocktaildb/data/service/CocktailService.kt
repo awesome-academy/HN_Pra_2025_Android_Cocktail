@@ -9,9 +9,11 @@ import java.lang.StringBuilder
 import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
+import android.util.Log
 
 object CocktailService {
     private const val BASE = "https://www.thecocktaildb.com/api/json/v1/1/"
+    private const val TAG = "CocktailService"
 
     fun searchByName(query: String): List<Cocktail> {
         val q = URLEncoder.encode(query, "UTF-8")
@@ -100,6 +102,24 @@ object CocktailService {
         val json = get(url)
         val cocktails = parseDetailedDrinks(json)
         return cocktails.firstOrNull()
+    }
+
+    // New method to lookup a cocktail by ID
+    fun lookupById(id: String): Cocktail? {
+        Log.d(TAG, "Looking up cocktail by ID: $id")
+        val url = BASE + "lookup.php?i=$id"
+        val json = get(url)
+        Log.d(TAG, "Got JSON response for ID $id: ${json.take(100)}...")
+
+        val cocktails = parseDetailedDrinks(json)
+
+        if (cocktails.isNotEmpty()) {
+            Log.d(TAG, "Found cocktail: ${cocktails[0].strDrink}")
+            return cocktails[0]
+        }
+
+        Log.d(TAG, "No cocktail found with ID: $id")
+        return null
     }
 
     private fun parseDetailedDrinks(json: String): List<Cocktail> {
@@ -201,4 +221,3 @@ object CocktailService {
         }
     }
 }
-
