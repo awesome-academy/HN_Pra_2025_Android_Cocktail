@@ -107,9 +107,6 @@ class ImageUploadService {
         }
     }
 
-    /**
-     * Convert URI to Base64 string for ImgBB API
-     */
     private fun convertUriToBase64(context: Context, uri: Uri): String? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)
@@ -144,9 +141,6 @@ class ImageUploadService {
         }
     }
 
-    /**
-     * Compress bitmap to reduce file size
-     */
     private fun compressBitmap(original: Bitmap): Bitmap {
         val maxWidth = 1200
         val maxHeight = 1200
@@ -167,16 +161,10 @@ class ImageUploadService {
         return Bitmap.createScaledBitmap(original, newWidth, newHeight, true)
     }
 
-    /**
-     * Check if a URL is an ImgBB URL
-     */
     fun isImgBBUrl(url: String): Boolean {
         return url.contains("i.ibb.co") || url.contains("imgbb.com")
     }
 
-    /**
-     * Delete image from ImgBB (Note: ImgBB free tier doesn't support delete API)
-     */
     suspend fun deleteRecipeImage(imageUrl: String): Result<Boolean> {
         Log.w(TAG, "ImgBB free tier doesn't support image deletion")
         return Result.success(true)
