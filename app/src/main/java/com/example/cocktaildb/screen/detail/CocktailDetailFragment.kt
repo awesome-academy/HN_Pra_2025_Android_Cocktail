@@ -19,6 +19,18 @@ import com.example.cocktaildb.screen.history.HistoryPresenter
 
 class CocktailDetailFragment : Fragment() {
 
+    companion object {
+        const val KEY_COCKTAIL_ID = "cocktail_id"
+        const val KEY_COCKTAIL_NAME = "cocktail_name"
+        const val KEY_COCKTAIL_CATEGORY = "cocktail_category"
+        const val KEY_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        const val KEY_COCKTAIL_GLASS = "cocktail_glass"
+        const val KEY_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        const val KEY_COCKTAIL_IMAGE = "cocktail_image"
+        const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
+    }
+
     private var _binding: FragmentCocktailDetailBinding? = null
     private val binding get() = _binding!!
     private var cocktail: Cocktail? = null
@@ -94,14 +106,14 @@ class CocktailDetailFragment : Fragment() {
     private fun loadCocktailData() {
         // Get data from arguments using Navigation component's safe args
         val args = arguments
-        val cocktailName = args?.getString("cocktail_name") ?: "Cocktail"
-        val cocktailCategory = args?.getString("cocktail_category") ?: "Cocktail"
-        val alcoholic = args?.getString("cocktail_alcoholic") ?: ""
-        val glass = args?.getString("cocktail_glass") ?: ""
-        val instructions = args?.getString("cocktail_instructions") ?: "No instructions available"
-        val imageUrl = args?.getString("cocktail_image")
-        val ingredients = args?.getStringArray("cocktail_ingredients") ?: emptyArray()
-        val measures = args?.getStringArray("cocktail_measures") ?: emptyArray()
+        val cocktailName = args?.getString(KEY_COCKTAIL_NAME) ?: "Cocktail"
+        val cocktailCategory = args?.getString(KEY_COCKTAIL_CATEGORY) ?: "Cocktail"
+        val alcoholic = args?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: ""
+        val glass = args?.getString(KEY_COCKTAIL_GLASS) ?: ""
+        val instructions = args?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "No instructions available"
+        val imageUrl = args?.getString(KEY_COCKTAIL_IMAGE)
+        val ingredients = args?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray()
+        val measures = args?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
 
         // Create cocktail object and add to history
         val cocktail = createCocktailFromArgs(
@@ -200,14 +212,14 @@ class CocktailDetailFragment : Fragment() {
         
         // Get the current cocktail
         val currentCocktail = createCocktailFromArgs(
-            arguments?.getString("cocktail_name") ?: "",
-            arguments?.getString("cocktail_category") ?: "",
-            arguments?.getString("cocktail_alcoholic") ?: "",
-            arguments?.getString("cocktail_glass") ?: "",
-            arguments?.getString("cocktail_instructions") ?: "",
-            arguments?.getString("cocktail_image"),
-            arguments?.getStringArray("cocktail_ingredients") ?: emptyArray(),
-            arguments?.getStringArray("cocktail_measures") ?: emptyArray()
+            arguments?.getString(KEY_COCKTAIL_NAME) ?: "",
+            arguments?.getString(KEY_COCKTAIL_CATEGORY) ?: "",
+            arguments?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: "",
+            arguments?.getString(KEY_COCKTAIL_GLASS) ?: "",
+            arguments?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "",
+            arguments?.getString(KEY_COCKTAIL_IMAGE),
+            arguments?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray(),
+            arguments?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
         )
 
         this.cocktail = currentCocktail
@@ -271,7 +283,7 @@ class CocktailDetailFragment : Fragment() {
         measures: Array<String>
     ): Cocktail {
         return Cocktail(
-            idDrink = arguments?.getString("cocktail_id") ?: "",
+            idDrink = arguments?.getString(KEY_COCKTAIL_ID) ?: "",
             strDrink = name,
             strCategory = category,
             strAlcoholic = alcoholic,
