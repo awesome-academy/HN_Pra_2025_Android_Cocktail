@@ -32,10 +32,23 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
         presenter.onStart()
     }
 
-    override fun onDestroyView() {
+    override fun onResume() {
+        super.onResume()
+        // Ensure presenter has a view reference before loading
+        presenter.setView(this)
+        // Force reload favorites
+        presenter.loadFavorites()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Clear view reference to avoid memory leaks
         presenter.setView(null)
-        presenter.onStop()
+    }
+
+    override fun onDestroyView() {
         super.onDestroyView()
+        presenter.onStop()
     }
 
     private fun setupRecyclerView() {
