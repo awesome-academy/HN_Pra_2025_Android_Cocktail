@@ -148,24 +148,16 @@ object ImageLoader {
         }
     }
 
-    // ===== IMAGE FILE MANAGEMENT METHODS =====
-
-    /**
-     * Copy image from temporary URI to app's internal storage
-     * Returns the file path if successful, null if failed
-     */
     fun copyImageToInternalStorage(context: Context, sourceUri: Uri): String? {
         val uriString = sourceUri.toString()
-        
-        // Validate that this isn't a temporary URI that shouldn't be copied
+
         if (isTemporaryUri(uriString)) {
             Log.w(TAG, "Attempting to copy temporary URI, this may fail: $uriString")
         }
         
         return try {
             Log.d(TAG, "Starting to copy image from URI: $sourceUri")
-            
-            // Create images directory in internal storage
+
             val imagesDir = File(context.filesDir, "recipe_images")
             if (!imagesDir.exists()) {
                 val created = imagesDir.mkdirs()
@@ -173,13 +165,11 @@ object ImageLoader {
             } else {
                 Log.d(TAG, "Images directory already exists at: ${imagesDir.absolutePath}")
             }
-            
-            // Generate unique filename
+
             val fileName = "recipe_${UUID.randomUUID()}.jpg"
             val destinationFile = File(imagesDir, fileName)
             Log.d(TAG, "Target file: ${destinationFile.absolutePath}")
-            
-            // Copy the file
+
             context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
                 FileOutputStream(destinationFile).use { outputStream ->
                     val bytesWritten = inputStream.copyTo(outputStream)
