@@ -175,53 +175,48 @@ class CreateRecipePresenter(
         try {
             Log.d("CreateRecipePresenter", "Starting to save image with URL: $imageUrl")
 
-            val permanentImagePath = if (imageUrl.startsWith("content://")) {
-
-                Log.d("CreateRecipePresenter", "Detected content:// URI, copying to internal storage")
+            val uploadResult = if (imageUrl.startsWith("content://")) {
+                Log.d("CreateRecipePresenter", "Uploading content:// URI to ImgBB")
                 val sourceUri = Uri.parse(imageUrl)
-                val copiedPath = ImageLoader.copyImageToInternalStorage(context, sourceUri)
-                Log.d("CreateRecipePresenter", "Copy result: $copiedPath")
-                copiedPath
+                firebaseRepository.uploadRecipeImage(context, sourceUri, recipeId)
+            } else if (firebaseRepository.isImgBBUrl(imageUrl)) {
+                Log.d("CreateRecipePresenter", "Using existing ImgBB URL: $imageUrl")
+                Result.success(imageUrl)
             } else {
-
-                Log.d("CreateRecipePresenter", "Using existing path: $imageUrl")
-                imageUrl
+                Log.w("CreateRecipePresenter", "Unknown image URL format: $imageUrl, attempting upload")
+                val sourceUri = Uri.parse(imageUrl)
+                firebaseRepository.uploadRecipeImage(context, sourceUri, recipeId)
             }
-            
-            if (permanentImagePath == null) {
-                Log.e("CreateRecipePresenter", "Failed to copy image to internal storage")
-                withContext(Dispatchers.Main) {
-                    view?.showError("Warning: Recipe saved but image could not be saved")
+
+            if (uploadResult.isSuccess) {
+                val downloadUrl = uploadResult.getOrThrow()
+                Log.d("CreateRecipePresenter", "Image uploaded successfully to ImgBB: $downloadUrl")
+                
+                val recipeImage = RecipeImage(
+                    id = "",
+                    recipeId = recipeId,
+                    imageUrl = downloadUrl,
+                    isPrimary = true,
+                    caption = "",
+                    uploadedAt = System.currentTimeMillis()
+                )
+                
+                Log.d("CreateRecipePresenter", "Saving image record to Firestore")
+                val result = firebaseRepository.addRecipeImage(recipeImage)
+                if (result.isSuccess) {
+                    Log.d("CreateRecipePresenter", "Recipe image saved successfully")
+                } else {
+                    val error = result.exceptionOrNull()
+                    Log.e("CreateRecipePresenter", "Failed to save image record: ${error?.message}")
+                    withContext(Dispatchers.Main) {
+                        view?.showError("Warning: Image uploaded but failed to save record")
+                    }
                 }
-                return
-            }
-
-            val finalImageUrl = if (permanentImagePath.startsWith("/")) {
-                val fileUri = ImageLoader.getFileUri(permanentImagePath)
-                Log.d("CreateRecipePresenter", "Converted to file URI: $fileUri")
-                fileUri
             } else {
-                permanentImagePath
-            }
-            
-            val recipeImage = RecipeImage(
-                id = "",
-                recipeId = recipeId,
-                imageUrl = finalImageUrl,
-                isPrimary = true,
-                caption = "",
-                uploadedAt = System.currentTimeMillis()
-            )
-            
-            Log.d("CreateRecipePresenter", "Saving to Firebase with URL: $finalImageUrl")
-            val result = firebaseRepository.addRecipeImage(recipeImage)
-            if (result.isSuccess) {
-                Log.d("CreateRecipePresenter", "Recipe image saved successfully with URL: $finalImageUrl")
-            } else {
-                val error = result.exceptionOrNull()
-                Log.e("CreateRecipePresenter", "Failed to save recipe image: ${error?.message}")
+                val error = uploadResult.exceptionOrNull()
+                Log.e("CreateRecipePresenter", "Failed to upload image: ${error?.message}")
                 withContext(Dispatchers.Main) {
-                    view?.showError("Warning: Recipe saved but image could not be saved")
+                    view?.showError("Warning: Recipe saved but image could not be uploaded: ${error?.message}")
                 }
             }
         } catch (e: Exception) {

@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
 import android.widget.ImageView
+import com.bumptech.glide.Glide
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,8 +26,7 @@ import java.util.UUID
 object ImageLoader {
 
     private const val TAG = "ImageLoader"
-    
-    // Constants for temporary URI patterns that should be avoided
+
     private val TEMPORARY_URI_PATTERNS = listOf(
         "com.miui.gallery.open",
         "gallery.open",
@@ -36,38 +36,33 @@ object ImageLoader {
         "/temp/",
         "/cache/"
     )
-    
-    // Schemes that indicate local content
     private val LOCAL_URI_SCHEMES = listOf("content://", "file://")
     
     // Schemes that indicate remote content
     private val REMOTE_URI_SCHEMES = listOf("http://", "https://")
 
-    /**
-     * Check if a URI is temporary/invalid and should not be persisted
-     */
     private fun isTemporaryUri(url: String): Boolean {
         return TEMPORARY_URI_PATTERNS.any { pattern ->
             url.contains(pattern, ignoreCase = true)
         }
     }
     
-    /**
-     * Check if a URI is a local content URI
-     */
+
     private fun isLocalUri(url: String): Boolean {
         return LOCAL_URI_SCHEMES.any { scheme ->
             url.startsWith(scheme, ignoreCase = true)
         }
     }
     
-    /**
-     * Check if a URI is a remote HTTP/HTTPS URL
-     */
+
     private fun isRemoteUri(url: String): Boolean {
         return REMOTE_URI_SCHEMES.any { scheme ->
             url.startsWith(scheme, ignoreCase = true)
         }
+    }
+
+    private fun isImgBBUrl(url: String): Boolean {
+        return url.contains("i.ibb.co") || url.contains("imgbb.com")
     }
 
     fun loadImage(url: String?, imageView: ImageView, placeholderResId: Int) {
@@ -76,13 +71,24 @@ object ImageLoader {
             return
         }
 
-        // Set placeholder while loading
         imageView.setImageResource(placeholderResId)
 
         when {
+            isImgBBUrl(url) -> {
+                Log.d(TAG, "Loading ImgBB image: $url")
+                try {
+                    Glide.with(imageView.context)
+                        .load(url)
+                        .placeholder(placeholderResId)
+                        .error(placeholderResId)
+                        .into(imageView)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading ImgBB image: ${e.message}")
+                    imageView.setImageResource(placeholderResId)
+                }
+            }
             isLocalUri(url) -> {
                 try {
-                    // Check if this is a temporary/invalid URI
                     if (isTemporaryUri(url)) {
                         Log.w(TAG, "Detected temporary/invalid URI, using placeholder: $url")
                         imageView.setImageResource(placeholderResId)

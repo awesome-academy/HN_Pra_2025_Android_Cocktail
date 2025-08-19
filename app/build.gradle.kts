@@ -33,6 +33,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Add ImgBB API Key from local.properties
+        buildConfigField("String", "IMGBB_API_KEY", "\"${localProps.getProperty("IMGBB_API_KEY") ?: ""}\"")
     }
 
     signingConfigs {
@@ -65,6 +68,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
