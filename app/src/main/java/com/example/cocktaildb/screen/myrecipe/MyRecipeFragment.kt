@@ -2,6 +2,7 @@ package com.example.cocktaildb.screen.myrecipe
 
 import android.graphics.Rect
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,11 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     private lateinit var presenter: MyRecipePresenter
     private lateinit var recipeAdapter: RecipeAdapter
     private lateinit var recipeFirebaseService: RecipeFirebaseService
+
+    companion object {
+        private const val TAG = "MyRecipeFragment"
+        fun newInstance() = MyRecipeFragment()
+    }
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentMyRecipeBinding {
         return FragmentMyRecipeBinding.inflate(inflater)
@@ -97,9 +103,9 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     }
 
     override fun showUserRecipes(recipes: List<Recipe>) {
-        println("MyRecipeFragment: Received ${recipes.size} recipes")
+        Log.d(TAG, "Received ${recipes.size} recipes")
         recipes.forEach { recipe ->
-            println("MyRecipeFragment: Recipe - ${recipe.name} (ID: ${recipe.id})")
+            Log.d(TAG, "Recipe - ${recipe.name} (ID: ${recipe.id})")
         }
         
         recipeAdapter.setRecipes(recipes)
@@ -107,33 +113,33 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     }
 
     private fun loadRecipeImages(recipes: List<Recipe>) {
-        println("MyRecipeFragment: Starting to load images for ${recipes.size} recipes")
+        Log.d(TAG, "Starting to load images for ${recipes.size} recipes")
         CoroutineScope(Dispatchers.Main).launch {
             recipes.forEach { recipe ->
                 try {
-                    println("MyRecipeFragment: Loading images for recipe ${recipe.id}")
+                    Log.d(TAG, "Loading images for recipe ${recipe.id}")
                     val result = withContext(Dispatchers.IO) {
                         recipeFirebaseService.getRecipeImages(recipe.id)
                     }
                     
                     result.fold(
                         onSuccess = { images ->
-                            println("MyRecipeFragment: Found ${images.size} images for recipe ${recipe.id}")
+                            Log.d(TAG, "Found ${images.size} images for recipe ${recipe.id}")
                             val primaryImage = images.find { it.isPrimary } ?: images.firstOrNull()
                             if (primaryImage != null) {
-                                println("MyRecipeFragment: Setting image URL: ${primaryImage.imageUrl}")
+                                Log.d(TAG, "Setting image URL: ${primaryImage.imageUrl}")
                             } else {
-                                println("MyRecipeFragment: No images found for recipe ${recipe.id}")
+                                Log.d(TAG, "No images found for recipe ${recipe.id}")
                             }
                             recipeAdapter.setRecipeImage(recipe.id, primaryImage)
                         },
                         onFailure = { exception ->
-                            println("Failed to load images for recipe ${recipe.id}: ${exception.message}")
+                            Log.e(TAG, "Failed to load images for recipe ${recipe.id}: ${exception.message}")
                             recipeAdapter.setRecipeImage(recipe.id, null)
                         }
                     )
                 } catch (e: Exception) {
-                    println("Error loading images for recipe ${recipe.id}: ${e.message}")
+                    Log.e(TAG, "Error loading images for recipe ${recipe.id}: ${e.message}")
                     recipeAdapter.setRecipeImage(recipe.id, null)
                 }
             }
@@ -168,7 +174,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
             navigateToDetailFragment(bundle)
             
         } catch (e: Exception) {
-            println("MyRecipeFragment: Error navigating to detail: ${e.message}")
+            Log.e(TAG, "Error navigating to detail: ${e.message}")
             Toast.makeText(context, "Error opening recipe details", Toast.LENGTH_SHORT).show()
         }
     }
@@ -177,7 +183,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
         try {
             findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
         } catch (e: Exception) {
-            println("MyRecipeFragment: Navigation failed, trying fragment transaction: ${e.message}")
+            Log.w(TAG, "Navigation failed, trying fragment transaction: ${e.message}")
             try {
                 val detailFragment = com.example.cocktaildb.screen.detail.CocktailDetailFragment()
                 detailFragment.arguments = bundle
@@ -187,7 +193,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                     .addToBackStack(null)
                     .commit()
             } catch (ex: Exception) {
-                println("MyRecipeFragment: Fragment transaction failed: ${ex.message}")
+                Log.e(TAG, "Fragment transaction failed: ${ex.message}")
                 Toast.makeText(context, "Unable to open recipe details", Toast.LENGTH_SHORT).show()
             }
         }
@@ -207,19 +213,16 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                         onComplete(ingredients, measures)
                     },
                     onFailure = { exception ->
-                        println("Failed to load ingredients for recipe $recipeId: ${exception.message}")
+                        Log.e(TAG, "Failed to load ingredients for recipe $recipeId: ${exception.message}")
                         onComplete(emptyList(), emptyList())
                     }
                 )
             } catch (e: Exception) {
-                println("Error loading ingredients for recipe $recipeId: ${e.message}")
+                Log.e(TAG, "Error loading ingredients for recipe $recipeId: ${e.message}")
                 onComplete(emptyList(), emptyList())
             }
         }
     }
-
-    companion object {
-        fun newInstance() = MyRecipeFragment()
-    }
+    
 }
 

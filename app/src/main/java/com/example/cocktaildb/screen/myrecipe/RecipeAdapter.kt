@@ -1,5 +1,6 @@
 package com.example.cocktaildb.screen.myrecipe
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +15,10 @@ class RecipeAdapter : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
     private val recipes: MutableList<Recipe> = mutableListOf()
     private val recipeImages: MutableMap<String, RecipeImage?> = mutableMapOf()
     private var onItemClickListener: ((Recipe) -> Unit)? = null
+    
+    companion object {
+        private const val TAG = "RecipeAdapter"
+    }
 
     fun setRecipes(recipes: Collection<Recipe>) {
         this.recipes.clear()
@@ -65,7 +70,7 @@ class RecipeAdapter : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
             }
 
             val imageUrl = image?.imageUrl ?: ""
-            println("RecipeAdapter: Loading image for recipe ${recipe.name}, URL: $imageUrl")
+            Log.d(TAG, "Loading image for recipe ${recipe.name}, URL: $imageUrl")
             
             if (imageUrl.isNotEmpty()) {
                 try {
@@ -75,11 +80,11 @@ class RecipeAdapter : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
                         placeholderResId = R.mipmap.chocolate_milk
                     )
                 } catch (e: Exception) {
-                    println("RecipeAdapter: Error loading image: ${e.message}")
+                    Log.e(TAG, "Error loading image: ${e.message}")
                     binding.cocktailImageView.setImageResource(R.mipmap.chocolate_milk)
                 }
             } else {
-                println("RecipeAdapter: No image URL, using placeholder")
+                Log.d(TAG, "No image URL, using placeholder")
                 binding.cocktailImageView.setImageResource(R.mipmap.chocolate_milk)
             }
             binding.ratingChip.text = binding.root.context.getString(R.string.my_recipe)

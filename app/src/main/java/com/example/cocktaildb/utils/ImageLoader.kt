@@ -19,17 +19,57 @@ import java.net.URL
 import java.util.UUID
 
 /**
- * Simple utility class for loading images from URLs
- * without using external libraries
+ * Comprehensive image loading and management utility
+ * Combines image loading from URLs and local file management
  */
 object ImageLoader {
 
+    private const val TAG = "ImageLoader"
+    
+    // Constants for temporary URI patterns that should be avoided
+    private val TEMPORARY_URI_PATTERNS = listOf(
+        "com.miui.gallery.open",
+        "gallery.open",
+        "com.android.providers.media.documents/temp",
+        "com.google.android.apps.photos.content",
+        ".tmp",
+        "/temp/",
+        "/cache/"
+    )
+    
+    // Schemes that indicate local content
+    private val LOCAL_URI_SCHEMES = listOf("content://", "file://")
+    
+    // Schemes that indicate remote content
+    private val REMOTE_URI_SCHEMES = listOf("http://", "https://")
+
     /**
-     * Loads an image from a URL into an ImageView
-     * @param url The URL of the image to load
-     * @param imageView The ImageView to load the image into
-     * @param placeholderResId The resource ID of a placeholder image to show while loading
+     * Check if a URI is temporary/invalid and should not be persisted
      */
+    private fun isTemporaryUri(url: String): Boolean {
+        return TEMPORARY_URI_PATTERNS.any { pattern ->
+            url.contains(pattern, ignoreCase = true)
+        }
+    }
+    
+    /**
+     * Check if a URI is a local content URI
+     */
+    private fun isLocalUri(url: String): Boolean {
+        return LOCAL_URI_SCHEMES.any { scheme ->
+            url.startsWith(scheme, ignoreCase = true)
+        }
+    }
+    
+    /**
+     * Check if a URI is a remote HTTP/HTTPS URL
+     */
+    private fun isRemoteUri(url: String): Boolean {
+        return REMOTE_URI_SCHEMES.any { scheme ->
+            url.startsWith(scheme, ignoreCase = true)
+        }
+    }
+
     fun loadImage(url: String?, imageView: ImageView, placeholderResId: Int) {
         if (url.isNullOrEmpty()) {
             imageView.setImageResource(placeholderResId)
@@ -39,37 +79,44 @@ object ImageLoader {
         // Set placeholder while loading
         imageView.setImageResource(placeholderResId)
 
-        if (url.startsWith("content://") || url.startsWith("file://")) {
-            try {
-
-                if (url.contains("com.miui.gallery.open") || url.contains("gallery.open")) {
-                    println("ImageLoader: Detected temporary gallery URI, using placeholder: $url")
-                    imageView.setImageResource(placeholderResId)
-                    return
-                }
-                
-                val uri = android.net.Uri.parse(url)
-                imageView.setImageURI(uri)
-                println("ImageLoader: Loaded local image: $url")
-            } catch (e: Exception) {
-                println("ImageLoader: Failed to load local image: ${e.message}")
-                imageView.setImageResource(placeholderResId)
-            }
-        } else {
-            CoroutineScope(Dispatchers.Main).launch {
+        when {
+            isLocalUri(url) -> {
                 try {
-                    val bitmap = withContext(Dispatchers.IO) {
-                        downloadImage(url)
+                    // Check if this is a temporary/invalid URI
+                    if (isTemporaryUri(url)) {
+                        Log.w(TAG, "Detected temporary/invalid URI, using placeholder: $url")
+                        imageView.setImageResource(placeholderResId)
+                        return
                     }
-                    if (bitmap != null) {
-                        imageView.setImageBitmap(bitmap)
-                    } else {
+                    
+                    val uri = android.net.Uri.parse(url)
+                    imageView.setImageURI(uri)
+                    Log.d(TAG, "Loaded local image: $url")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to load local image: ${e.message}")
+                    imageView.setImageResource(placeholderResId)
+                }
+            }
+            isRemoteUri(url) -> {
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        val bitmap = withContext(Dispatchers.IO) {
+                            downloadImage(url)
+                        }
+                        if (bitmap != null) {
+                            imageView.setImageBitmap(bitmap)
+                        } else {
+                            imageView.setImageResource(placeholderResId)
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to download image: ${e.message}")
                         imageView.setImageResource(placeholderResId)
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    imageView.setImageResource(placeholderResId)
                 }
+            }
+            else -> {
+                Log.w(TAG, "Unknown URI scheme, using placeholder: $url")
+                imageView.setImageResource(placeholderResId)
             }
         }
     }
@@ -100,40 +147,59 @@ object ImageLoader {
             }
         }
     }
+
+    // ===== IMAGE FILE MANAGEMENT METHODS =====
+
+    /**
+     * Copy image from temporary URI to app's internal storage
+     * Returns the file path if successful, null if failed
+     */
     fun copyImageToInternalStorage(context: Context, sourceUri: Uri): String? {
+        val uriString = sourceUri.toString()
+        
+        // Validate that this isn't a temporary URI that shouldn't be copied
+        if (isTemporaryUri(uriString)) {
+            Log.w(TAG, "Attempting to copy temporary URI, this may fail: $uriString")
+        }
+        
         return try {
-            Log.d("ImageLoader", "Starting to copy image from URI: $sourceUri")
+            Log.d(TAG, "Starting to copy image from URI: $sourceUri")
+            
+            // Create images directory in internal storage
             val imagesDir = File(context.filesDir, "recipe_images")
             if (!imagesDir.exists()) {
                 val created = imagesDir.mkdirs()
-                Log.d("ImageLoader", "Created images directory: $created at ${imagesDir.absolutePath}")
+                Log.d(TAG, "Created images directory: $created at ${imagesDir.absolutePath}")
             } else {
-                Log.d("ImageLoader", "Images directory already exists at: ${imagesDir.absolutePath}")
+                Log.d(TAG, "Images directory already exists at: ${imagesDir.absolutePath}")
             }
+            
+            // Generate unique filename
             val fileName = "recipe_${UUID.randomUUID()}.jpg"
             val destinationFile = File(imagesDir, fileName)
-            Log.d("ImageLoader", "Target file: ${destinationFile.absolutePath}")
-
+            Log.d(TAG, "Target file: ${destinationFile.absolutePath}")
+            
+            // Copy the file
             context.contentResolver.openInputStream(sourceUri)?.use { inputStream ->
                 FileOutputStream(destinationFile).use { outputStream ->
                     val bytesWritten = inputStream.copyTo(outputStream)
-                    Log.d("ImageLoader", "Copied $bytesWritten bytes")
+                    Log.d(TAG, "Copied $bytesWritten bytes")
                 }
             }
             
             if (destinationFile.exists() && destinationFile.length() > 0) {
-                Log.d("ImageLoader", "Image copied successfully to: ${destinationFile.absolutePath}, size: ${destinationFile.length()} bytes")
+                Log.d(TAG, "Image copied successfully to: ${destinationFile.absolutePath}, size: ${destinationFile.length()} bytes")
                 destinationFile.absolutePath
             } else {
-                Log.e("ImageLoader", "File was not created or is empty")
+                Log.e(TAG, "File was not created or is empty")
                 null
             }
             
         } catch (e: IOException) {
-            Log.e("ImageLoader", "IOException copying image: ${e.message}", e)
+            Log.e(TAG, "IOException copying image: ${e.message}", e)
             null
         } catch (e: Exception) {
-            Log.e("ImageLoader", "Unexpected error copying image: ${e.message}", e)
+            Log.e(TAG, "Unexpected error copying image: ${e.message}", e)
             null
         }
     }
