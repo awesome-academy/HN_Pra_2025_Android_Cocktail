@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.navigation.NavController
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
@@ -14,14 +16,7 @@ import com.example.cocktaildb.utils.ImageLoader
 class FavoritesAdapter(
     private val presenter: FavoritesContract.Presenter,
     private val navController: NavController
-) : RecyclerView.Adapter<FavoritesAdapter.ViewHolder>() {
-
-    private var cocktails: List<Cocktail> = emptyList()
-
-    fun submitList(cocktails: List<Cocktail>) {
-        this.cocktails = cocktails
-        notifyDataSetChanged()
-    }
+) : ListAdapter<Cocktail, FavoritesAdapter.ViewHolder>(CocktailDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemCocktailBinding.inflate(
@@ -33,10 +28,8 @@ class FavoritesAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(cocktails[position])
+        holder.bind(getItem(position))
     }
-
-    override fun getItemCount(): Int = cocktails.size
 
     inner class ViewHolder(private val binding: ItemCocktailBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -84,6 +77,16 @@ class FavoritesAdapter(
                     putStringArray("cocktail_measures", measures)
                 }
             )
+        }
+    }
+
+    private class CocktailDiffCallback : DiffUtil.ItemCallback<Cocktail>() {
+        override fun areItemsTheSame(oldItem: Cocktail, newItem: Cocktail): Boolean {
+            return oldItem.idDrink == newItem.idDrink
+        }
+
+        override fun areContentsTheSame(oldItem: Cocktail, newItem: Cocktail): Boolean {
+            return oldItem == newItem
         }
     }
 }

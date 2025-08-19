@@ -8,16 +8,18 @@ import com.example.cocktaildb.data.repository.FirebaseRepository
 import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.cancel
 
 class CreateRecipePresenter(
     private val firebaseRepository: FirebaseRepository,
-    private val authRepository: AuthRepository,
-    private val coroutineScope: CoroutineScope
+    private val authRepository: AuthRepository
 ) : CreateRecipeContract.Presenter {
 
     private var view: CreateRecipeContract.View? = null
+    private val presenterScope = CoroutineScope(Dispatchers.Main + Job())
 
     override fun setView(view: CreateRecipeContract.View?) {
         this.view = view
@@ -28,7 +30,8 @@ class CreateRecipePresenter(
     }
 
     override fun onStop() {
-        // Clean up resources when presenter stops
+        presenterScope.cancel() // Cancel all coroutines when stopping
+        view = null
     }
 
     override fun saveRecipe(
@@ -60,7 +63,7 @@ class CreateRecipePresenter(
         view?.showLoading(true)
 
         // Save recipe using coroutines
-        coroutineScope.launch(Dispatchers.IO) {
+        presenterScope.launch(Dispatchers.IO) {
             try {
                 // Get current user
                 val currentUser = authRepository.getCurrentUser()

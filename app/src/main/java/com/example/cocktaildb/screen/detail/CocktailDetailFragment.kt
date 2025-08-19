@@ -14,6 +14,8 @@ import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.databinding.FragmentCocktailDetailBinding
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
+import com.example.cocktaildb.data.manager.FavoritesManager
+import com.example.cocktaildb.screen.history.HistoryPresenter
 
 class CocktailDetailFragment : Fragment() {
 
@@ -51,9 +53,9 @@ class CocktailDetailFragment : Fragment() {
 
     private fun ensureFavoritesLoaded() {
         // Make sure favorites are loaded before checking favorite status
-        if (!com.example.cocktaildb.data.manager.FavoritesManager.isInitialized()) {
+        if (!FavoritesManager.isInitialized()) {
             Log.d(TAG, "Favorites not initialized, loading them now")
-            com.example.cocktaildb.data.manager.FavoritesManager.loadFavoritesFromFirestore { success ->
+            FavoritesManager.loadFavoritesFromFirestore { success ->
                 if (success) {
                     Log.d(TAG, "Favorites loaded successfully")
                     // Update button state after favorites are loaded
@@ -218,7 +220,7 @@ class CocktailDetailFragment : Fragment() {
             binding.btnFavorite.isEnabled = false
 
             // Toggle favorite with Firebase
-            com.example.cocktaildb.data.manager.FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
+            FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
                 // Update UI on the main thread
                 activity?.runOnUiThread {
                     binding.btnFavorite.isEnabled = true
@@ -248,7 +250,7 @@ class CocktailDetailFragment : Fragment() {
 
     private fun updateFavoriteButtonState(cocktail: Cocktail) {
         Log.d(TAG, "Updating favorite button state for cocktail ${cocktail.idDrink}")
-        val isFavorite = com.example.cocktaildb.data.manager.FavoritesManager.isFavorite(cocktail.idDrink)
+        val isFavorite = FavoritesManager.isFavorite(cocktail.idDrink)
         Log.d(TAG, "Is favorite: $isFavorite")
 
         if (isFavorite) {
@@ -267,8 +269,8 @@ class CocktailDetailFragment : Fragment() {
         imageUrl: String?,
         ingredients: Array<String>,
         measures: Array<String>
-    ): com.example.cocktaildb.data.model.Cocktail {
-        return com.example.cocktaildb.data.model.Cocktail(
+    ): Cocktail {
+        return Cocktail(
             idDrink = arguments?.getString("cocktail_id") ?: "",
             strDrink = name,
             strCategory = category,
@@ -281,10 +283,10 @@ class CocktailDetailFragment : Fragment() {
         )
     }
 
-    private fun addToHistory(cocktail: com.example.cocktaildb.data.model.Cocktail) {
+    private fun addToHistory(cocktail: Cocktail) {
         try {
             // Use HistoryPresenter companion method to add to history
-            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
+            HistoryPresenter.addToHistory(requireContext(), cocktail)
         } catch (e: Exception) {
             // Handle error silently
         }

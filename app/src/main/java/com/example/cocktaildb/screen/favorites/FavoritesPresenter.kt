@@ -5,10 +5,7 @@ import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.service.FavoriteFirebaseService
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class FavoritesPresenter : FavoritesContract.Presenter {
 
@@ -16,7 +13,7 @@ class FavoritesPresenter : FavoritesContract.Presenter {
     private val favoriteFirebaseService = FavoriteFirebaseService()
     private val cocktailRepository = CocktailRepository()
     private val auth = FirebaseAuth.getInstance()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val presenterScope = CoroutineScope(Dispatchers.Main + Job())
     private val TAG = "FavoritesPresenter"
 
     override fun setView(view: FavoritesContract.View?) {
@@ -32,7 +29,8 @@ class FavoritesPresenter : FavoritesContract.Presenter {
     }
 
     override fun onStop() {
-        // Called when the presenter stops
+        presenterScope.cancel() // Cancel all coroutines when stopping
+        view = null
     }
 
     override fun loadFavorites() {
@@ -49,7 +47,7 @@ class FavoritesPresenter : FavoritesContract.Presenter {
 
         Log.d(TAG, "loadFavorites: Loading favorites for user ${currentUser.uid}")
 
-        coroutineScope.launch {
+        presenterScope.launch {
             try {
                 // Get user's favorites from Firebase
                 Log.d(TAG, "loadFavorites: Fetching favorites from Firebase")
@@ -67,24 +65,16 @@ class FavoritesPresenter : FavoritesContract.Presenter {
                     Log.d(TAG, "loadFavorites: Found ${favorites.size} favorites")
 
                     if (favorites.isNotEmpty()) {
-                        // Fetch cocktail details from the API for each favorite ID
-                        val cocktails = mutableListOf<Cocktail>()
-
-                        for (favorite in favorites) {
-                            Log.d(TAG, "loadFavorites: Fetching cocktail details for ID: ${favorite.cocktailId}")
-
-                            // Use the CocktailRepository to get cocktail details from API
-                            val cocktail = withContext(Dispatchers.IO) {
+                        // Fetch all cocktail details in parallel using async/await
+                        val deferredCocktails = favorites.map { favorite ->
+                            async(Dispatchers.IO) {
+                                Log.d(TAG, "loadFavorites: Fetching cocktail details for ID: ${favorite.cocktailId}")
                                 cocktailRepository.getCocktailById(favorite.cocktailId)
                             }
-
-                            if (cocktail != null) {
-                                Log.d(TAG, "loadFavorites: Found cocktail: ${cocktail.strDrink}")
-                                cocktails.add(cocktail)
-                            } else {
-                                Log.d(TAG, "loadFavorites: No cocktail found for ID: ${favorite.cocktailId}")
-                            }
                         }
+
+                        // Wait for all requests to complete
+                        val cocktails = deferredCocktails.awaitAll().filterNotNull()
 
                         Log.d(TAG, "loadFavorites: Successfully fetched ${cocktails.size} cocktails")
                         if (cocktails.isNotEmpty()) {
@@ -117,7 +107,7 @@ class FavoritesPresenter : FavoritesContract.Presenter {
     override fun addToFavorites(cocktail: Cocktail) {
         val currentUser = auth.currentUser ?: return
 
-        coroutineScope.launch {
+        presenterScope.launch {
             try {
                 // Add to favorites directly without checking or saving cocktail
                 val result = withContext(Dispatchers.IO) {
@@ -140,7 +130,7 @@ class FavoritesPresenter : FavoritesContract.Presenter {
     override fun removeFromFavorites(cocktail: Cocktail) {
         val currentUser = auth.currentUser ?: return
 
-        coroutineScope.launch {
+        presenterScope.launch {
             try {
                 // Get the favorite document
                 val favoriteResult = withContext(Dispatchers.IO) {
@@ -172,7 +162,7 @@ class FavoritesPresenter : FavoritesContract.Presenter {
     override fun toggleFavorite(cocktail: Cocktail) {
         val currentUser = auth.currentUser ?: return
 
-        coroutineScope.launch {
+        presenterScope.launch {
             try {
                 // Check if the cocktail is already a favorite
                 val isFavorite = withContext(Dispatchers.IO) {

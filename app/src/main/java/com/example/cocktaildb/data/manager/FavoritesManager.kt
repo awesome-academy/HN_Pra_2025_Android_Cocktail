@@ -132,27 +132,43 @@ object FavoritesManager {
     fun toggleFavorite(cocktail: Cocktail, onComplete: (Boolean) -> Unit) {
         if (isFavorite(cocktail.idDrink)) {
             removeFavoriteFromFirestore(cocktail) { success ->
-                onComplete(false)
+                if (success) {
+                    removeFavorite(cocktail)
+                }
+                onComplete(success)
             }
         } else {
             addFavoriteToFirestore(cocktail) { success ->
-                onComplete(true)
+                if (success) {
+                    addFavorite(cocktail)
+                }
+                onComplete(success)
             }
         }
     }
 
     // Toggle favorite status (simplified for immediate UI response)
     fun toggleFavorite(cocktail: Cocktail): Boolean {
-        return if (isFavorite(cocktail.idDrink)) {
+        val isFavorite = isFavorite(cocktail.idDrink)
+        if (isFavorite) {
+            removeFavoriteFromFirestore(cocktail) { success ->
+                if (!success) {
+                    // Revert local state if Firestore operation failed
+                    addFavorite(cocktail)
+                    Log.e(TAG, "Failed to remove favorite from Firestore, reverting local state")
+                }
+            }
             removeFavorite(cocktail)
-            // Async call, don't wait for response
-            removeFavoriteFromFirestore(cocktail) { _ -> }
-            false
         } else {
+            addFavoriteToFirestore(cocktail) { success ->
+                if (!success) {
+                    // Revert local state if Firestore operation failed
+                    removeFavorite(cocktail)
+                    Log.e(TAG, "Failed to add favorite to Firestore, reverting local state")
+                }
+            }
             addFavorite(cocktail)
-            // Async call, don't wait for response
-            addFavoriteToFirestore(cocktail) { _ -> }
-            true
         }
+        return !isFavorite
     }
 }
