@@ -216,11 +216,11 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
     // Implement CocktailClickListener interface method
     override fun onCocktailClicked(cocktail: Cocktail) {
         Log.e("ProfileFragment", "onCocktailClicked: ${cocktail.strDrink} (${cocktail.idDrink})")
-        
+
         // Add to history using Firebase
         val authRepository = AuthRepository(requireContext())
         val currentUser = authRepository.getCurrentUser()
-        
+
         if (currentUser != null) {
             Log.e("ProfileFragment", "User authenticated: ${currentUser.uid}")
             val historyFirebaseService = HistoryFirebaseService()

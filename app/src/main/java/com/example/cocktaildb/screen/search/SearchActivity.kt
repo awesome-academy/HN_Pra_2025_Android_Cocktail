@@ -18,7 +18,6 @@ import com.example.cocktaildb.screen.detail.CocktailDetailFragment
 import com.example.cocktaildb.screen.filter.FilterDialog
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseActivity
-import kotlinx.coroutines.launch
 import com.example.cocktaildb.utils.pagination.PaginationUI
 import java.util.concurrent.Executors
 import android.view.View
@@ -114,7 +113,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
 
     private fun showCocktailDetail(cocktail: Cocktail) {
         Log.d("SearchActivity", "Showing cocktail detail: ${cocktail.strDrink} (${cocktail.idDrink})")
-        
+
         // Add to history first
         addCocktailToHistory(cocktail)
         
@@ -153,14 +152,14 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
 
     private fun addCocktailToHistory(cocktail: Cocktail) {
         Log.d("SearchActivity", "addCocktailToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
-        
+
         val authRepository = AuthRepository(this)
         val currentUser = authRepository.getCurrentUser()
-        
+
         if (currentUser != null) {
             Log.e("SearchActivity", "User authenticated: ${currentUser.uid}")
             val historyFirebaseService = HistoryFirebaseService()
-            
+
             lifecycleScope.launch {
                 try {
                     Log.e("SearchActivity", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")

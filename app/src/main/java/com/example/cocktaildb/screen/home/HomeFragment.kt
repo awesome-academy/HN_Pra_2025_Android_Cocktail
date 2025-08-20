@@ -72,7 +72,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             items = emptyList(),
             onCocktailClick = { cocktail ->
                 Log.e("HomeFragment", "onCocktailClick: ${cocktail.strDrink} (${cocktail.idDrink})")
-                
+
                 // Add to history first
                 addCocktailToHistory(cocktail)
                 
@@ -141,14 +141,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
     private fun addCocktailToHistory(cocktail: Cocktail) {
         Log.e("HomeFragment", "addCocktailToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
-        
+
         val authRepository = AuthRepository(requireContext())
         val currentUser = authRepository.getCurrentUser()
-        
+
         if (currentUser != null) {
             Log.e("HomeFragment", "User authenticated: ${currentUser.uid}")
             val historyFirebaseService = HistoryFirebaseService()
-            
+
             viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     Log.e("HomeFragment", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")

@@ -31,7 +31,6 @@ class HistoryPresenter(
     }
 
     override fun onStart() {
-        // Refresh data when view starts
         loadHistoryCocktails()
     }
 
