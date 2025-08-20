@@ -1,10 +1,12 @@
 package com.example.cocktaildb.screen.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.cocktaildb.R
@@ -12,12 +14,31 @@ import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.databinding.FragmentCocktailDetailBinding
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
+import com.example.cocktaildb.data.manager.FavoritesManager
+import com.example.cocktaildb.screen.history.HistoryPresenter
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class CocktailDetailFragment : Fragment() {
+
+    companion object {
+        const val KEY_COCKTAIL_ID = "cocktail_id"
+        const val KEY_COCKTAIL_NAME = "cocktail_name"
+        const val KEY_COCKTAIL_CATEGORY = "cocktail_category"
+        const val KEY_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        const val KEY_COCKTAIL_GLASS = "cocktail_glass"
+        const val KEY_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        const val KEY_COCKTAIL_IMAGE = "cocktail_image"
+        const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
+    }
 
     private var _binding: FragmentCocktailDetailBinding? = null
     private val binding get() = _binding!!
     private var cocktail: Cocktail? = null
+    private val TAG = "CocktailDetailFragment"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,6 +54,39 @@ class CocktailDetailFragment : Fragment() {
         setupToolbar()
         loadCocktailData()
         setupClickListeners()
+
+        // Ensure favorites are loaded before checking status
+        ensureFavoritesLoaded()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh favorite button state when returning to this screen
+        cocktail?.let {
+            updateFavoriteButtonState(it)
+        }
+    }
+
+    private fun ensureFavoritesLoaded() {
+        // Make sure favorites are loaded before checking favorite status
+        if (!FavoritesManager.isInitialized()) {
+            Log.d(TAG, "Favorites not initialized, loading them now")
+            FavoritesManager.loadFavoritesFromFirestore { success ->
+                if (success) {
+                    Log.d(TAG, "Favorites loaded successfully")
+                    // Update button state after favorites are loaded
+                    activity?.runOnUiThread {
+                        cocktail?.let {
+                            updateFavoriteButtonState(it)
+                        }
+                    }
+                } else {
+                    Log.e(TAG, "Failed to load favorites")
+                }
+            }
+        } else {
+            Log.d(TAG, "Favorites already initialized")
+        }
     }
 
     private fun setupToolbar() {
@@ -56,14 +110,15 @@ class CocktailDetailFragment : Fragment() {
     private fun loadCocktailData() {
         // Get data from arguments using Navigation component's safe args
         val args = arguments
-        val cocktailName = args?.getString("cocktail_name") ?: "Cocktail"
-        val cocktailCategory = args?.getString("cocktail_category") ?: "Cocktail"
-        val alcoholic = args?.getString("cocktail_alcoholic") ?: ""
-        val glass = args?.getString("cocktail_glass") ?: ""
-        val instructions = args?.getString("cocktail_instructions") ?: "No instructions available"
-        val imageUrl = args?.getString("cocktail_image")
-        val ingredients = args?.getStringArray("cocktail_ingredients") ?: emptyArray()
-        val measures = args?.getStringArray("cocktail_measures") ?: emptyArray()
+        val cocktailId = args?.getString(KEY_COCKTAIL_ID) ?: ""
+        val cocktailName = args?.getString(KEY_COCKTAIL_NAME) ?: "Cocktail"
+        val cocktailCategory = args?.getString(KEY_COCKTAIL_CATEGORY) ?: "Cocktail"
+        val alcoholic = args?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: ""
+        val glass = args?.getString(KEY_COCKTAIL_GLASS) ?: ""
+        val instructions = args?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "No instructions available"
+        val imageUrl = args?.getString(KEY_COCKTAIL_IMAGE)
+        val ingredients = args?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray()
+        val measures = args?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
 
         // Create cocktail object and add to history
         val cocktail = createCocktailFromArgs(
@@ -95,8 +150,11 @@ class CocktailDetailFragment : Fragment() {
         // Set instructions
         setupInstructions(instructions)
 
-        // Set ingredients (only non-null ingredients)
-        setupIngredients(ingredients, measures)
+        if (cocktailId.isNotEmpty() && (ingredients.isEmpty() || ingredients.all { it.isEmpty() })) {
+            loadRecipeIngredientsFromFirebase(cocktailId)
+        } else {
+            setupIngredients(ingredients, measures)
+        }
     }
 
     private fun setupInstructions(instructions: String) {
@@ -155,13 +213,100 @@ class CocktailDetailFragment : Fragment() {
         }
     }
 
+    private fun loadRecipeIngredientsFromFirebase(recipeId: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    com.example.cocktaildb.data.service.RecipeFirebaseService().getRecipeIngredients(recipeId)
+                }
+                
+                result.fold(
+                    onSuccess = { ingredients ->
+                        Log.d("CocktailDetailFragment", "Loaded ${ingredients.size} ingredients for recipe $recipeId")
+                        if (ingredients.isNotEmpty()) {
+                            val ingredientNames = ingredients.map { it.ingredientName }.toTypedArray()
+                            val ingredientMeasures = ingredients.map { "${it.quantity} ${it.unit}".trim() }.toTypedArray()
+                            setupIngredients(ingredientNames, ingredientMeasures)
+                        } else {
+                            setupIngredients(emptyArray(), emptyArray())
+                        }
+                    },
+                    onFailure = { exception ->
+                        Log.e("CocktailDetailFragment", "Failed to load ingredients for recipe $recipeId", exception)
+                        setupIngredients(emptyArray(), emptyArray())
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("CocktailDetailFragment", "Error loading ingredients for recipe $recipeId", e)
+                setupIngredients(emptyArray(), emptyArray())
+            }
+        }
+    }
+
     private fun setupClickListeners() {
         binding.btnBookmark.setOnClickListener {
             // TODO: Implement bookmark functionality
         }
         
+        // Get the current cocktail
+        val currentCocktail = createCocktailFromArgs(
+            arguments?.getString(KEY_COCKTAIL_NAME) ?: "",
+            arguments?.getString(KEY_COCKTAIL_CATEGORY) ?: "",
+            arguments?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: "",
+            arguments?.getString(KEY_COCKTAIL_GLASS) ?: "",
+            arguments?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "",
+            arguments?.getString(KEY_COCKTAIL_IMAGE),
+            arguments?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray(),
+            arguments?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
+        )
+
+        this.cocktail = currentCocktail
+
+        // Update favorite button based on current state
+        updateFavoriteButtonState(currentCocktail)
+
         binding.btnFavorite.setOnClickListener {
-            // TODO: Implement favorite functionality
+            // Show loading indicator on the button
+            binding.btnFavorite.isEnabled = false
+
+            // Toggle favorite with Firebase
+            FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
+                // Update UI on the main thread
+                activity?.runOnUiThread {
+                    binding.btnFavorite.isEnabled = true
+
+                    // Update button state
+                    if (isFavorite) {
+                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+                        // Show toast notification when adding to favorites
+                        Toast.makeText(
+                            requireContext(),
+                            "Added ${currentCocktail.strDrink} to favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+                        // Show toast notification when removing from favorites
+                        Toast.makeText(
+                            requireContext(),
+                            "Removed ${currentCocktail.strDrink} from favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateFavoriteButtonState(cocktail: Cocktail) {
+        Log.d(TAG, "Updating favorite button state for cocktail ${cocktail.idDrink}")
+        val isFavorite = FavoritesManager.isFavorite(cocktail.idDrink)
+        Log.d(TAG, "Is favorite: $isFavorite")
+
+        if (isFavorite) {
+            binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+        } else {
+            binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
         }
     }
 
@@ -174,9 +319,9 @@ class CocktailDetailFragment : Fragment() {
         imageUrl: String?,
         ingredients: Array<String>,
         measures: Array<String>
-    ): com.example.cocktaildb.data.model.Cocktail {
-        return com.example.cocktaildb.data.model.Cocktail(
-            idDrink = arguments?.getString("cocktail_id") ?: "",
+    ): Cocktail {
+        return Cocktail(
+            idDrink = arguments?.getString(KEY_COCKTAIL_ID) ?: "",
             strDrink = name,
             strCategory = category,
             strAlcoholic = alcoholic,
@@ -188,10 +333,10 @@ class CocktailDetailFragment : Fragment() {
         )
     }
 
-    private fun addToHistory(cocktail: com.example.cocktaildb.data.model.Cocktail) {
+    private fun addToHistory(cocktail: Cocktail) {
         try {
             // Use HistoryPresenter companion method to add to history
-            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
+            HistoryPresenter.addToHistory(requireContext(), cocktail)
         } catch (e: Exception) {
             // Handle error silently
         }
@@ -202,4 +347,4 @@ class CocktailDetailFragment : Fragment() {
         _binding = null
     }
 
-} 
+}

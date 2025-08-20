@@ -49,11 +49,10 @@ class RecipeFirebaseService {
 
     suspend fun getAllRecipes(): Result<List<Recipe>> {
         return try {
-            val querySnapshot = recipesCollection
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .get().await()
+            val querySnapshot = recipesCollection.get().await()
             val recipes = querySnapshot.toObjects(Recipe::class.java)
-            Result.success(recipes)
+            val sortedRecipes = recipes.sortedByDescending { it.createdAt }
+            Result.success(sortedRecipes)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -63,10 +62,10 @@ class RecipeFirebaseService {
         return try {
             val querySnapshot = recipesCollection
                 .whereEqualTo("uid", uid)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get().await()
             val recipes = querySnapshot.toObjects(Recipe::class.java)
-            Result.success(recipes)
+            val sortedRecipes = recipes.sortedByDescending { it.createdAt }
+            Result.success(sortedRecipes)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -76,10 +75,10 @@ class RecipeFirebaseService {
         return try {
             val querySnapshot = recipesCollection
                 .whereEqualTo("isPublic", true)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get().await()
             val recipes = querySnapshot.toObjects(Recipe::class.java)
-            Result.success(recipes)
+            val sortedRecipes = recipes.sortedByDescending { it.createdAt }
+            Result.success(sortedRecipes)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -89,11 +88,10 @@ class RecipeFirebaseService {
         return try {
             val querySnapshot = recipesCollection
                 .whereEqualTo("isPublic", true)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
-                .limit(limit.toLong())
                 .get().await()
             val recipes = querySnapshot.toObjects(Recipe::class.java)
-            Result.success(recipes)
+            val sortedRecipes = recipes.sortedByDescending { it.createdAt }.take(limit)
+            Result.success(sortedRecipes)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -175,10 +173,10 @@ class RecipeFirebaseService {
         return try {
             val querySnapshot = recipeImagesCollection
                 .whereEqualTo("recipeId", recipeId)
-                .orderBy("uploadedAt", Query.Direction.ASCENDING)
                 .get().await()
             val images = querySnapshot.toObjects(RecipeImage::class.java)
-            Result.success(images)
+            val sortedImages = images.sortedBy { it.uploadedAt }
+            Result.success(sortedImages)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -249,10 +247,10 @@ class RecipeFirebaseService {
         return try {
             val querySnapshot = similarRecipesCollection
                 .whereEqualTo("recipeId", recipeId)
-                .orderBy("similarityScore", Query.Direction.DESCENDING)
                 .get().await()
             val similarRecipes = querySnapshot.toObjects(SimilarRecipe::class.java)
-            Result.success(similarRecipes)
+            val sortedRecipes = similarRecipes.sortedByDescending { it.similarityScore }
+            Result.success(sortedRecipes)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -262,6 +260,31 @@ class RecipeFirebaseService {
         return try {
             similarRecipesCollection.document(similarId).delete().await()
             Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun cleanupInvalidImageUrls(): Result<Int> {
+        return try {
+            val querySnapshot = recipeImagesCollection.get().await()
+            var cleanedCount = 0
+            
+            querySnapshot.documents.forEach { document ->
+                val imageUrl = document.getString("imageUrl") ?: ""
+                
+                // Check for temporary/invalid URIs
+                if (imageUrl.contains("com.miui.gallery.open") || 
+                    imageUrl.contains("gallery.open") ||
+                    (imageUrl.startsWith("content://") && !imageUrl.startsWith("file://"))) {
+                    
+                    // Delete this invalid image record
+                    document.reference.delete()
+                    cleanedCount++
+                }
+            }
+            
+            Result.success(cleanedCount)
         } catch (e: Exception) {
             Result.failure(e)
         }

@@ -1,53 +1,94 @@
 package com.example.cocktaildb.screen.myrecipe
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
-import com.example.cocktaildb.data.model.Cocktail
-import com.example.cocktaildb.databinding.ItemCocktailBinding
+import com.example.cocktaildb.data.model.Recipe
+import com.example.cocktaildb.data.model.RecipeImage
+import com.example.cocktaildb.databinding.ItemCocktailCardBinding
 import com.example.cocktaildb.utils.ImageLoader
 
 class RecipeAdapter : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
 
-    private val recipes: MutableList<Cocktail> = mutableListOf()
+    private val recipes: MutableList<Recipe> = mutableListOf()
+    private val recipeImages: MutableMap<String, RecipeImage?> = mutableMapOf()
+    private var onItemClickListener: ((Recipe) -> Unit)? = null
+    
+    companion object {
+        private const val TAG = "RecipeAdapter"
+    }
 
-    fun setRecipes(recipes: Collection<Cocktail>) {
+    fun setRecipes(recipes: Collection<Recipe>) {
         this.recipes.clear()
         this.recipes.addAll(recipes)
-        notifyDataSetChanged() // Consider using more specific change notifications
+        notifyDataSetChanged()
+    }
+
+    fun setRecipeImage(recipeId: String, image: RecipeImage?) {
+        recipeImages[recipeId] = image
+        val position = recipes.indexOfFirst { it.id == recipeId }
+        if (position != -1) {
+            notifyItemChanged(position)
+        }
+    }
+
+    fun setOnItemClickListener(listener: (Recipe) -> Unit) {
+        onItemClickListener = listener
+    }
+
+    fun getRecipeImageUrl(recipeId: String): String? {
+        return recipeImages[recipeId]?.imageUrl
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecipeViewHolder {
-        val binding = ItemCocktailBinding.inflate(
+        val binding = ItemCocktailCardBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
         return RecipeViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: RecipeViewHolder, position: Int) {
-        holder.bind(recipes[position])
+        val recipe = recipes[position]
+        holder.bind(recipe, recipeImages[recipe.id])
+
+        holder.itemView.setOnClickListener {
+            onItemClickListener?.invoke(recipe)
+        }
     }
 
     override fun getItemCount(): Int = recipes.size
 
-    class RecipeViewHolder(private val binding: ItemCocktailBinding) :
+    class RecipeViewHolder(private val binding: ItemCocktailCardBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(cocktail: Cocktail) {
-            binding.tvCocktailName.text = cocktail.strDrink
-            binding.tvCocktailCategory.text = cocktail.strCategory ?:
+        fun bind(recipe: Recipe, image: RecipeImage?) {
+            binding.cocktailTitleTextView.text = recipe.name
+            binding.cocktailCategoryTextView.text = recipe.category.ifEmpty { 
                 binding.root.context.getString(R.string.custom_recipe)
+            }
 
-            // Load the cocktail image using our custom ImageLoader
-            ImageLoader.loadImage(
-                url = cocktail.strDrinkThumb,
-                imageView = binding.ivCocktail,
-                placeholderResId = R.drawable.ic_launcher_background
-            )
-
-            // Set rating for my recipes
-            binding.tvRating.text = binding.root.context.getString(R.string.my_recipe)
+            val imageUrl = image?.imageUrl ?: ""
+            Log.d(TAG, "Loading image for recipe ${recipe.name}, URL: $imageUrl")
+            
+            if (imageUrl.isNotEmpty()) {
+                try {
+                    ImageLoader.loadImage(
+                        url = imageUrl,
+                        imageView = binding.cocktailImageView,
+                        placeholderResId = R.mipmap.chocolate_milk
+                    )
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error loading image: ${e.message}")
+                    binding.cocktailImageView.setImageResource(R.mipmap.chocolate_milk)
+                }
+            } else {
+                Log.d(TAG, "No image URL, using placeholder")
+                binding.cocktailImageView.setImageResource(R.mipmap.chocolate_milk)
+            }
+            binding.ratingChip.text = binding.root.context.getString(R.string.my_recipe)
         }
     }
 }
+

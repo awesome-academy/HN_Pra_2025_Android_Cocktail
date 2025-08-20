@@ -1,5 +1,7 @@
 package com.example.cocktaildb.data.repository
 
+import android.content.Context
+import android.net.Uri
 import com.example.cocktaildb.data.model.User
 import com.example.cocktaildb.data.model.Favorite
 import com.example.cocktaildb.data.model.Checkmark
@@ -15,6 +17,7 @@ import com.example.cocktaildb.data.service.CheckmarkFirebaseService
 import com.example.cocktaildb.data.service.CocktailFirebaseService
 import com.example.cocktaildb.data.service.RecipeFirebaseService
 import com.example.cocktaildb.data.service.HistoryFirebaseService
+import com.example.cocktaildb.data.service.ImageUploadService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -25,6 +28,7 @@ class FirebaseRepository {
     private val cocktailService = CocktailFirebaseService()
     private val recipeService = RecipeFirebaseService()
     private val historyService = HistoryFirebaseService()
+    private val imageUploadService = ImageUploadService()
 
     suspend fun createUser(user: User): Result<String> = withContext(Dispatchers.IO) {
         userService.createUser(user)
@@ -168,6 +172,18 @@ class FirebaseRepository {
 
     suspend fun clearUserHistory(userId: String): Result<Boolean> = withContext(Dispatchers.IO) {
         historyService.clearUserHistory(userId)
+    }
+
+    suspend fun uploadRecipeImage(context: Context, imageUri: Uri, recipeId: String): Result<String> = withContext(Dispatchers.IO) {
+        imageUploadService.uploadRecipeImage(context, imageUri, recipeId)
+    }
+
+    suspend fun deleteRecipeImage(imageUrl: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        imageUploadService.deleteRecipeImage(imageUrl)
+    }
+
+    fun isImgBBUrl(url: String): Boolean {
+        return imageUploadService.isImgBBUrl(url)
     }
 
     suspend fun getUserStats(userId: String): Result<UserStats> = withContext(Dispatchers.IO) {

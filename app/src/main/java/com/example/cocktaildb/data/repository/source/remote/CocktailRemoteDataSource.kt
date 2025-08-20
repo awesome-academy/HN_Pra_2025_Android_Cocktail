@@ -25,8 +25,8 @@ class CocktailRemoteDataSource : CocktailDataSource {
     }
 
     override fun getCocktailById(id: String): Cocktail? {
-        val cocktails = CocktailService.searchByName("")
-        return cocktails.find { it.idDrink == id }
+        Log.d(TAG, "Getting cocktail by ID: $id using direct lookup")
+        return CocktailService.lookupById(id)
     }
 
     override fun searchCocktails(query: String): List<Cocktail> {
@@ -148,4 +148,3 @@ class CocktailRemoteDataSource : CocktailDataSource {
         )
     }
 }
-

@@ -27,9 +27,10 @@ class FavoriteFirebaseService {
 
     suspend fun getUserFavorites(uid: String): Result<List<Favorite>> {
         return try {
+            // Modified query to avoid the composite index requirement
+            // Simply get all favorites for the user without ordering by createdAt
             val querySnapshot = favoritesCollection
                 .whereEqualTo("uid", uid)
-                .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get().await()
             val favorites = querySnapshot.toObjects(Favorite::class.java)
             Result.success(favorites)
