@@ -123,4 +123,11 @@
     <string name="warning_recipe_saved_image_upload_failed">Warning: Recipe saved but image could not be uploaded: %1$s</string>
     <string name="warning_recipe_saved_image_save_failed">Warning: Recipe saved but image could not be saved: %1$s</string>
     <string name="no_instructions_available">No instructions available</string>
+    <string name="default_cocktail_name">Cocktail</string>
+    <string name="default_category_cocktail">Cocktail</string>
+    <string name="desc_cocktail_base">A delicious %1$s cocktail</string>
+    <string name="desc_alcoholic_suffix"> (%1$s)</string>
+    <string name="desc_glass_suffix"> served in a %1$s</string>
+    <string name="desc_tail"> with carefully selected ingredients.</string>
+    <string name="error_loading_related_cocktails">Error loading related cocktails: %1$s</string>
 </resources>

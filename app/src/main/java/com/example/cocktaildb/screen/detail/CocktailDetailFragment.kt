@@ -17,7 +17,6 @@ import com.example.cocktaildb.databinding.FragmentCocktailDetailBinding
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.data.manager.FavoritesManager
-import com.example.cocktaildb.screen.history.HistoryPresenter
 import com.example.cocktaildb.utils.adapter.RelatedCocktailAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +36,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		const val KEY_COCKTAIL_IMAGE = "cocktail_image"
 		const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
 		const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
+		const val KEY_FROM_TODAY_DRINK = "from_today_drink"
 	}
 
 	private val binding get() = viewBinding
@@ -93,7 +93,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		binding.toolbar.setNavigationOnClickListener {
 			if (activity is SearchActivity) {
 				val searchActivity = activity as SearchActivity
-				if (searchActivity.intent.getBooleanExtra("from_today_drink", false)) {
+				if (searchActivity.intent.getBooleanExtra(KEY_FROM_TODAY_DRINK, false)) {
 					searchActivity.finish()
 				} else {
 					searchActivity.onBackPressedDispatcher.onBackPressed()
@@ -107,7 +107,6 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 	private fun setupRelatedCocktailsRecyclerView() {
 		relatedCocktailAdapter = RelatedCocktailAdapter(
 			emptyList(),
-			{ cocktail -> navigateToCocktailDetail(cocktail) },
 			{ cocktail -> navigateToCocktailDetail(cocktail) }
 		)
 		binding.rvRelatedCocktails.apply {
@@ -119,11 +118,11 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 	private fun loadCocktailData() {
 		val args = arguments
 		val cocktailId = args?.getString(KEY_COCKTAIL_ID) ?: ""
-		val cocktailName = args?.getString(KEY_COCKTAIL_NAME) ?: "Cocktail"
-		val cocktailCategory = args?.getString(KEY_COCKTAIL_CATEGORY) ?: "Cocktail"
+		val cocktailName = args?.getString(KEY_COCKTAIL_NAME) ?: getString(R.string.default_cocktail_name)
+		val cocktailCategory = args?.getString(KEY_COCKTAIL_CATEGORY) ?: getString(R.string.default_category_cocktail)
 		val alcoholic = args?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: ""
 		val glass = args?.getString(KEY_COCKTAIL_GLASS) ?: ""
-		val instructions = args?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "No instructions available"
+		val instructions = args?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: getString(R.string.no_instructions_available)
 		val imageUrl = args?.getString(KEY_COCKTAIL_IMAGE)
 		val ingredients = args?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray()
 		val measures = args?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
@@ -135,13 +134,12 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
 		binding.tvCocktailName.text = cocktailName
 
-		val description = buildString {
-			append("A delicious $cocktailCategory cocktail")
-			if (alcoholic.isNotEmpty()) append(" ($alcoholic)")
-			if (glass.isNotEmpty()) append(" served in a $glass")
-			append(" with carefully selected ingredients.")
-		}
-		binding.tvDescription.text = description
+		val descriptionBuilder = StringBuilder()
+		descriptionBuilder.append(getString(R.string.desc_cocktail_base, cocktailCategory))
+		if (alcoholic.isNotEmpty()) descriptionBuilder.append(getString(R.string.desc_alcoholic_suffix, alcoholic))
+		if (glass.isNotEmpty()) descriptionBuilder.append(getString(R.string.desc_glass_suffix, glass))
+		descriptionBuilder.append(getString(R.string.desc_tail))
+		binding.tvDescription.text = descriptionBuilder.toString()
 
 		ImageLoader.loadImage(imageUrl, binding.ivCocktail, R.drawable.imgstart)
 		setupInstructions(instructions)
@@ -163,7 +161,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 			if (instruction.isNotBlank()) {
 				val instructionView = TextView(requireContext()).apply {
 					text = "${index + 1}. $instruction"
-					textSize = 16f
+					textSize = resources.getDimension(R.dimen.text_size_16) / resources.displayMetrics.scaledDensity
 					setTextColor(resources.getColor(R.color.dark_gray, null))
 					setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
 				}
@@ -244,10 +242,10 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 					binding.btnFavorite.isEnabled = true
 					if (isFavorite) {
 						binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
-						Toast.makeText(requireContext(), "Added ${currentCocktail.strDrink} to favorites", Toast.LENGTH_SHORT).show()
+						Toast.makeText(requireContext(), getString(R.string.msg_added_to_favorites, currentCocktail.strDrink), Toast.LENGTH_SHORT).show()
 					} else {
 						binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
-						Toast.makeText(requireContext(), "Removed ${currentCocktail.strDrink} from favorites", Toast.LENGTH_SHORT).show()
+						Toast.makeText(requireContext(), getString(R.string.msg_removed_from_favorites, currentCocktail.strDrink), Toast.LENGTH_SHORT).show()
 					}
 				}
 			}
@@ -265,14 +263,14 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
 	private fun navigateToCocktailDetail(cocktail: Cocktail) {
 		val args = Bundle().apply {
-			putString("cocktail_id", cocktail.idDrink)
-			putString("cocktail_name", cocktail.strDrink)
-			putString("cocktail_category", cocktail.strCategory ?: "Cocktail")
-			putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
-			putString("cocktail_glass", cocktail.strGlass ?: "")
-			putString("cocktail_image", cocktail.strDrinkThumb)
-			putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
-			putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+			putString(KEY_COCKTAIL_ID, cocktail.idDrink)
+			putString(KEY_COCKTAIL_NAME, cocktail.strDrink)
+			putString(KEY_COCKTAIL_CATEGORY, cocktail.strCategory ?: getString(R.string.default_category_cocktail))
+			putString(KEY_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+			putString(KEY_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+			putString(KEY_COCKTAIL_IMAGE, cocktail.strDrinkThumb)
+			putStringArray(KEY_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+			putStringArray(KEY_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
 		}
 		findNavController().navigate(R.id.action_cocktailDetailFragment_self, args)
 	}

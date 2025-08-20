@@ -1,7 +1,6 @@
 package com.example.cocktaildb.screen.detail
 
 import com.example.cocktaildb.data.repository.CocktailRepository
-import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -49,7 +48,7 @@ class CocktailDetailPresenter(
                 }
                 view?.showRelatedCocktails(relatedCocktails)
             } catch (e: Exception) {
-                view?.showError("Error loading related cocktails: ${e.message}")
+                view?.showError("${e.message}")
             }
         }
     }

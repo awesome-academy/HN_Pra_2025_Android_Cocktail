@@ -10,8 +10,7 @@ import com.example.cocktaildb.utils.ImageLoader
 
 class RelatedCocktailAdapter(
     private var items: List<Cocktail>,
-    private val onCocktailClick: (Cocktail) -> Unit,
-    private val onCocktailItemClick: (Cocktail) -> Unit
+    private val onCocktailClick: (Cocktail) -> Unit
 ) : RecyclerView.Adapter<RelatedCocktailAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -37,11 +36,11 @@ class RelatedCocktailAdapter(
 
         fun bind(cocktail: Cocktail) {
             binding.tvCocktailName.text = cocktail.strDrink
-            binding.tvCocktailCategory.text = cocktail.strCategory ?: "Cocktail"
+            val defaultCategory = itemView.context.getString(R.string.default_category_cocktail)
+            binding.tvCocktailCategory.text = cocktail.strCategory ?: defaultCategory
             ImageLoader.loadImage(cocktail.strDrinkThumb, binding.ivCocktail, R.drawable.imgstart)
             itemView.setOnClickListener {
                 onCocktailClick(cocktail)
-                onCocktailItemClick(cocktail)
             }
         }
     }
