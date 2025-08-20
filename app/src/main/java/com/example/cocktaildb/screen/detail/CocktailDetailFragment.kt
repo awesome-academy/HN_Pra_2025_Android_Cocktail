@@ -105,10 +105,10 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 	}
 
 	private fun setupRelatedCocktailsRecyclerView() {
-		relatedCocktailAdapter = RelatedCocktailAdapter(
-			emptyList(),
-			{ cocktail -> navigateToCocktailDetail(cocktail) }
-		)
+			relatedCocktailAdapter = RelatedCocktailAdapter(
+		emptyList(),
+		{ cocktail -> navigateToCocktailDetail(cocktail) }
+	)
 		binding.rvRelatedCocktails.apply {
 			layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 			adapter = relatedCocktailAdapter
