@@ -131,7 +131,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
     override fun showCocktails(cocktails: List<Cocktail>) {
         if (cocktails.isEmpty()) {
-            Toast.makeText(context, "No cocktails found", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.msg_no_cocktails_found), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -146,7 +146,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         }
 
         if (filteredCocktails.isEmpty()) {
-            Toast.makeText(context, "No cocktails available after filtering", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.msg_no_cocktails_after_filtering), Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -154,7 +154,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         cocktailAdapter.submit(filteredCocktails)
 
         // Show success message
-        Toast.makeText(context, "Loaded ${filteredCocktails.size} cocktails", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, getString(R.string.msg_loaded_cocktails, filteredCocktails.size), Toast.LENGTH_SHORT).show()
     }
 }
 

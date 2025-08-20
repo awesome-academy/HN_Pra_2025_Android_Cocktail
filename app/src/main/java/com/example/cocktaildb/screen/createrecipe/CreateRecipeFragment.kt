@@ -117,7 +117,7 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
                 // Hide the ingredient input form after successfully adding
                 viewBinding.layoutNewIngredient.visibility = View.GONE
             } else {
-                Toast.makeText(requireContext(), "Please fill in both fields", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.msg_please_fill_both_fields), Toast.LENGTH_SHORT).show()
             }
         }
 

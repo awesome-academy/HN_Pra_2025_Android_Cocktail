@@ -30,6 +30,22 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
 
     companion object {
         private const val TAG = "MyRecipeFragment"
+        
+        // Bundle keys for navigation
+        private const val KEY_COCKTAIL_ID = "cocktail_id"
+        private const val KEY_COCKTAIL_NAME = "cocktail_name"
+        private const val KEY_COCKTAIL_CATEGORY = "cocktail_category"
+        private const val KEY_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        private const val KEY_COCKTAIL_GLASS = "cocktail_glass"
+        private const val KEY_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        private const val KEY_COCKTAIL_IMAGE = "cocktail_image"
+        private const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        private const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
+        
+        // Default values
+        private const val DEFAULT_ALCOHOLIC_VALUE = "Unknown"
+        private const val DEFAULT_GLASS_TYPE = "Cocktail Glass"
+        
         fun newInstance() = MyRecipeFragment()
     }
 
@@ -157,25 +173,25 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     private fun navigateToRecipeDetail(recipe: Recipe) {
         try {
             val bundle = Bundle().apply {
-                putString("cocktail_id", recipe.id)
-                putString("cocktail_name", recipe.name)
-                putString("cocktail_category", recipe.category)
-                putString("cocktail_alcoholic", recipe.alcoholic.ifEmpty { "Unknown" })
-                putString("cocktail_glass", "Cocktail Glass")
-                putString("cocktail_instructions", recipe.instructions)
+                putString(KEY_COCKTAIL_ID, recipe.id)
+                putString(KEY_COCKTAIL_NAME, recipe.name)
+                putString(KEY_COCKTAIL_CATEGORY, recipe.category)
+                putString(KEY_COCKTAIL_ALCOHOLIC, recipe.alcoholic.ifEmpty { DEFAULT_ALCOHOLIC_VALUE })
+                putString(KEY_COCKTAIL_GLASS, DEFAULT_GLASS_TYPE)
+                putString(KEY_COCKTAIL_INSTRUCTIONS, recipe.instructions)
 
                 val imageUrl = recipeAdapter.getRecipeImageUrl(recipe.id) ?: ""
-                putString("cocktail_image", imageUrl)
+                putString(KEY_COCKTAIL_IMAGE, imageUrl)
 
-                putStringArray("cocktail_ingredients", emptyArray())
-                putStringArray("cocktail_measures", emptyArray())
+                putStringArray(KEY_COCKTAIL_INGREDIENTS, emptyArray())
+                putStringArray(KEY_COCKTAIL_MEASURES, emptyArray())
             }
 
             navigateToDetailFragment(bundle)
             
         } catch (e: Exception) {
             Log.e(TAG, "Error navigating to detail: ${e.message}")
-            Toast.makeText(context, "Error opening recipe details", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, getString(R.string.error_opening_recipe_details), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -194,7 +210,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                     .commit()
             } catch (ex: Exception) {
                 Log.e(TAG, "Fragment transaction failed: ${ex.message}")
-                Toast.makeText(context, "Unable to open recipe details", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, getString(R.string.error_unable_to_open_recipe_details), Toast.LENGTH_SHORT).show()
             }
         }
     }
