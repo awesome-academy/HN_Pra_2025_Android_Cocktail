@@ -294,27 +294,72 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 activity?.runOnUiThread {
                     binding.btnFavorite.isEnabled = true
 
-                    // Update button state
-                    if (isFavorite) {
-                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
-                        // Show toast notification when adding to favorites
-                        Toast.makeText(
-                            requireContext(),
-                            "Added ${currentCocktail.strDrink} to favorites",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
-                        // Show toast notification when removing from favorites
-                        Toast.makeText(
-                            requireContext(),
-                            "Removed ${currentCocktail.strDrink} from favorites",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        // Update button state
+                        if (isFavorite) {
+                            binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+                            // Show toast notification when adding to favorites
+                            Toast.makeText(
+                                requireContext(),
+                                "Added ${currentCocktail.strDrink} to favorites",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        } else {
+                            binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+                            // Show toast notification when removing from favorites
+                            Toast.makeText(
+                                requireContext(),
+                                "Removed ${currentCocktail.strDrink} from favorites",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
                     }
                 }
             }
+
+            binding.btnBookmark.setOnClickListener {
+                // Show loading indicator on the button
+                binding.btnBookmark.isEnabled = false
+
+                // Toggle bookmark using presenter
+                presenter.toggleBookmark(currentCocktail)
+
+            }
         }
+    }
+
+    // Implement CocktailDetailContract.View methods
+    override fun updateBookmarkButtonState(isBookmarked: Boolean) {
+        binding.btnBookmark.isEnabled = true
+
+        if (isBookmarked) {
+            binding.btnBookmark.setImageResource(R.drawable.ic_bookmark_filled)
+            binding.btnBookmark.setColorFilter(resources.getColor(R.color.pink_primary, null))
+
+            cocktail?.let { currentCocktail ->
+                Toast.makeText(
+                    requireContext(),
+                    "Added ${currentCocktail.strDrink} to bookmarks",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        } else {
+            binding.btnBookmark.setImageResource(R.drawable.ic_bookmark)
+            binding.btnBookmark.setColorFilter(resources.getColor(R.color.red, null))
+
+
+            cocktail?.let { currentCocktail ->
+                Toast.makeText(
+                    requireContext(),
+                    "Removed ${currentCocktail.strDrink} from bookmarks",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    override fun showError(message: String) {
+        binding.btnBookmark.isEnabled = true
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     private fun updateFavoriteButtonState(cocktail: Cocktail) {
