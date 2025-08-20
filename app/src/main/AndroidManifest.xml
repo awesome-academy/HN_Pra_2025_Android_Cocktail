@@ -5,6 +5,11 @@
     <!-- Add Internet permission -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- Notification permissions -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
 
     <application
         android:allowBackup="true"
@@ -36,6 +41,15 @@
         <activity android:name=".screen.auth.SignUpActivity"  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".screen.search.SearchActivity"  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity android:name=".screen.todaydrink.TodayDrinkActivity"  android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
+        
+        <!-- Register BroadcastReceiver for daily notifications -->
+        <receiver
+            android:name=".service.DailyNotificationReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.cocktaildb.DAILY_NOTIFICATION" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
