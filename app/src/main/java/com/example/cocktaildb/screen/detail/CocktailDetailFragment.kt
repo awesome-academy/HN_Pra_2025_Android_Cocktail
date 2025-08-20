@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.cocktaildb.utils.base.BaseFragment
 
-class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), CocktailDetailContract.View {
+class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), CocktailDetailContract.View, CocktailDetailContract.View {
 
 	companion object {
 		const val KEY_COCKTAIL_ID = "cocktail_id"
@@ -43,6 +43,8 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 	private var cocktail: Cocktail? = null
 	private val TAG = "CocktailDetailFragment"
 
+    private val presenter = CocktailDetailPresenter()
+
 	private lateinit var relatedCocktailAdapter: RelatedCocktailAdapter
 	private lateinit var presenter: CocktailDetailPresenter
 
@@ -54,18 +56,38 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		setupPresenter()
 		setupToolbar()
 		setupRelatedCocktailsRecyclerView()
+
+        // Set view for presenter
+        presenter.setView(this)
+
 		setupClickListeners()
 		ensureFavoritesLoaded()
+
+        // Check bookmark status for current cocktail
+        cocktail?.let {
+            presenter.checkBookmarkStatus(it.idDrink)
+        }
 	}
 
 	override fun initData() {
 		loadCocktailData()
 	}
 
-	override fun onResume() {
-		super.onResume()
-		cocktail?.let { updateFavoriteButtonState(it) }
-	}
+    override fun onResume() {
+        super.onResume()
+        // Refresh favorite button state when returning to this screen
+        cocktail?.let {
+            updateFavoriteButtonState(it)
+            presenter.checkBookmarkStatus(it.idDrink)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        presenter.onStop()
+        _binding = null
+    }
+
 
 	private fun ensureFavoritesLoaded() {
 		if (!FavoritesManager.isInitialized()) {
@@ -127,10 +149,13 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		val ingredients = args?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray()
 		val measures = args?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
 
-		val cocktail = createCocktailFromArgs(
-			cocktailName, cocktailCategory, alcoholic, glass,
-			instructions, imageUrl, ingredients, measures
-		)
+        // Create cocktail object and add to history
+        val cocktail = createCocktailFromArgs(
+            cocktailName, cocktailCategory, alcoholic, glass,
+            instructions, imageUrl, ingredients, measures
+        )
+        // Note: History is already added when navigating from other screens
+        // This prevents duplicate entries
 
 		binding.tvCocktailName.text = cocktailName
 
@@ -153,45 +178,61 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		}
 	}
 
-	private fun setupInstructions(instructions: String) {
-		val instructionLines = instructions.split(". ")
-		val instructionsContainer = binding.llInstructions
-		instructionsContainer.removeAllViews()
-		instructionLines.forEachIndexed { index, instruction ->
-			if (instruction.isNotBlank()) {
-				val instructionView = TextView(requireContext()).apply {
-					text = "${index + 1}. $instruction"
-					textSize = resources.getDimension(R.dimen.text_size_16) / resources.displayMetrics.scaledDensity
-					setTextColor(resources.getColor(R.color.dark_gray, null))
-					setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
-				}
-				instructionsContainer.addView(instructionView)
-			}
-		}
-	}
+    private fun setupInstructions(instructions: String) {
+        val instructionLines = instructions.split(". ")
+        val instructionsContainer = binding.llInstructions
 
-	private fun setupIngredients(ingredients: Array<String>, measures: Array<String>) {
-		val ingredientsContainer = binding.llIngredients
-		ingredientsContainer.removeAllViews()
-		val validIngredients = ingredients.filterIndexed { _, ingredient ->
-			ingredient.isNotBlank() && ingredient != "null"
-		}
-		val ingredientsCount = validIngredients.size
-		binding.tvIngredientsHeader.text = getString(R.string.ingredients) + " ($ingredientsCount)"
-		validIngredients.forEach { ingredient ->
-			val ingredientView = LayoutInflater.from(requireContext())
-				.inflate(R.layout.item_ingredient, ingredientsContainer, false)
-			val ingredientName = ingredientView.findViewById<TextView>(R.id.tvIngredientName)
-			val ingredientMeasure = ingredientView.findViewById<TextView>(R.id.tvIngredientMeasure)
-			ingredientName.text = ingredient
-			val originalIndex = ingredients.indexOf(ingredient)
-			val measure = if (originalIndex < measures.size && originalIndex >= 0) {
-				measures[originalIndex]?.takeIf { it.isNotBlank() && it != "null" } ?: ""
-			} else ""
-			ingredientMeasure.text = measure
-			ingredientsContainer.addView(ingredientView)
-		}
-	}
+        // Clear existing instructions
+        instructionsContainer.removeAllViews()
+
+        instructionLines.forEachIndexed { index, instruction ->
+            if (instruction.isNotBlank()) {
+                val instructionView = TextView(requireContext()).apply {
+                    text = "${index + 1}. $instruction"
+                    textSize = 16f
+                    setTextColor(resources.getColor(R.color.dark_gray, null))
+                    setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
+                }
+                instructionsContainer.addView(instructionView)
+            }
+        }
+    }
+
+    private fun setupIngredients(ingredients: Array<String>, measures: Array<String>) {
+        val ingredientsContainer = binding.llIngredients
+
+        // Clear existing ingredients
+        ingredientsContainer.removeAllViews()
+
+        // Filter out null/empty ingredients
+        val validIngredients = ingredients.filterIndexed { index, ingredient ->
+            ingredient.isNotBlank() && ingredient != "null"
+        }
+
+        // Update ingredients count in header
+        val ingredientsCount = validIngredients.size
+        binding.tvIngredientsHeader.text = getString(R.string.ingredients) + " ($ingredientsCount)"
+
+        validIngredients.forEachIndexed { index, ingredient ->
+            val ingredientView = LayoutInflater.from(requireContext())
+                .inflate(R.layout.item_ingredient, ingredientsContainer, false)
+
+            val ingredientName = ingredientView.findViewById<TextView>(R.id.tvIngredientName)
+            val ingredientMeasure = ingredientView.findViewById<TextView>(R.id.tvIngredientMeasure)
+
+            ingredientName.text = ingredient
+
+            // Find corresponding measure
+            val originalIndex = ingredients.indexOf(ingredient)
+            val measure = if (originalIndex < measures.size && originalIndex >= 0) {
+                measures[originalIndex]?.takeIf { it.isNotBlank() && it != "null" } ?: ""
+            } else ""
+
+            ingredientMeasure.text = measure
+
+            ingredientsContainer.addView(ingredientView)
+        }
+    }
 
 	private fun loadRecipeIngredientsFromFirebase(recipeId: String) {
 		CoroutineScope(Dispatchers.Main).launch {
@@ -221,37 +262,73 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		}
 	}
 
-	private fun setupClickListeners() {
-		binding.btnBookmark.setOnClickListener { }
-		val currentCocktail = createCocktailFromArgs(
-			arguments?.getString(KEY_COCKTAIL_NAME) ?: "",
-			arguments?.getString(KEY_COCKTAIL_CATEGORY) ?: "",
-			arguments?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: "",
-			arguments?.getString(KEY_COCKTAIL_GLASS) ?: "",
-			arguments?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "",
-			arguments?.getString(KEY_COCKTAIL_IMAGE),
-			arguments?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray(),
-			arguments?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
-		)
-		this.cocktail = currentCocktail
-		updateFavoriteButtonState(currentCocktail)
-		binding.btnFavorite.setOnClickListener {
-			binding.btnFavorite.isEnabled = false
-			FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
-				activity?.runOnUiThread {
-					binding.btnFavorite.isEnabled = true
-					if (isFavorite) {
-						binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
-						Toast.makeText(requireContext(), getString(R.string.msg_added_to_favorites, currentCocktail.strDrink), Toast.LENGTH_SHORT).show()
-					} else {
-						binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
-						Toast.makeText(requireContext(), getString(R.string.msg_removed_from_favorites, currentCocktail.strDrink), Toast.LENGTH_SHORT).show()
-					}
-				}
-			}
-		}
-	}
+    private fun setupClickListeners() {
+        binding.btnBookmark.setOnClickListener {
+            // TODO: Implement bookmark functionality
+        }
 
+        // Get the current cocktail
+        val currentCocktail = createCocktailFromArgs(
+            arguments?.getString(KEY_COCKTAIL_NAME) ?: "",
+            arguments?.getString(KEY_COCKTAIL_CATEGORY) ?: "",
+            arguments?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: "",
+            arguments?.getString(KEY_COCKTAIL_GLASS) ?: "",
+            arguments?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "",
+            arguments?.getString(KEY_COCKTAIL_IMAGE),
+            arguments?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray(),
+            arguments?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
+        )
+
+        this.cocktail = currentCocktail
+
+        // Update favorite button based on current state
+        updateFavoriteButtonState(currentCocktail)
+
+        binding.btnFavorite.setOnClickListener {
+            // Show loading indicator on the button
+            binding.btnFavorite.isEnabled = false
+
+            // Toggle favorite with Firebase
+            FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
+                // Update UI on the main thread
+                activity?.runOnUiThread {
+                    binding.btnFavorite.isEnabled = true
+
+                    // Update button state
+                    if (isFavorite) {
+                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+                        // Show toast notification when adding to favorites
+                        Toast.makeText(
+                            requireContext(),
+                            "Added ${currentCocktail.strDrink} to favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+                        // Show toast notification when removing from favorites
+                        Toast.makeText(
+                            requireContext(),
+                            "Removed ${currentCocktail.strDrink} from favorites",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun updateFavoriteButtonState(cocktail: Cocktail) {
+        Log.d(TAG, "Updating favorite button state for cocktail ${cocktail.idDrink}")
+        val isFavorite = FavoritesManager.isFavorite(cocktail.idDrink)
+        Log.d(TAG, "Is favorite: $isFavorite")
+
+        if (isFavorite) {
+            binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+        } else {
+            binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+        }
+    }
+}
 	private fun updateFavoriteButtonState(cocktail: Cocktail) {
 		val isFavorite = FavoritesManager.isFavorite(cocktail.idDrink)
 		if (isFavorite) {
@@ -312,5 +389,3 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		presenter.onStop()
 	}
 }
-
-
