@@ -3,9 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/white"
+    android:background="@drawable/imgstart"
     android:padding="@dimen/dp_16">
-    
+
     <LinearLayout
         android:id="@+id/searchHeader"
         android:layout_width="match_parent"
@@ -14,18 +14,18 @@
 
         <LinearLayout
             android:layout_width="@dimen/dp_0"
-            android:layout_weight="1"
             android:layout_height="match_parent"
+            android:layout_weight="1"
             android:orientation="horizontal"
-            android:background="@drawable/search_bg"
+            android:background="@drawable/bg_search_box_dark"
             android:gravity="center_vertical"
-            android:paddingHorizontal="@dimen/dp_8">
+            android:paddingHorizontal="@dimen/dp_12">
 
             <ImageView
-                android:layout_width="@dimen/dp_24"
-                android:layout_height="@dimen/dp_24"
+                android:layout_width="@dimen/dp_20"
+                android:layout_height="@dimen/dp_20"
                 android:src="@drawable/ic_search"
-                android:scaleType="centerInside"
+                android:tint="@color/gray_300"
                 android:layout_marginEnd="@dimen/dp_8" />
 
             <EditText
@@ -34,6 +34,8 @@
                 android:layout_height="wrap_content"
                 android:background="@null"
                 android:hint="@string/Search"
+                android:textColor="@color/white"
+                android:textColorHint="@color/gray_400"
                 android:inputType="text"
                 android:imeOptions="actionSearch" />
         </LinearLayout>
@@ -43,14 +45,13 @@
             android:layout_width="@dimen/dp_48"
             android:layout_height="@dimen/dp_48"
             android:layout_marginStart="@dimen/dp_8"
-            android:background="@drawable/circle_bg"
+            android:background="@drawable/bg_circle_primary"
             android:src="@drawable/ic_filter_list"
             android:scaleType="centerInside"
             android:padding="@dimen/dp_12"
-            />
+            android:tint="@color/white" />
     </LinearLayout>
 
-    <!-- Container for search results -->
     <LinearLayout
         android:id="@+id/searchResultsContainer"
         android:layout_width="match_parent"
@@ -63,8 +64,8 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/dp_0"
             android:layout_weight="1"
-            android:layout_marginTop="@dimen/dp_12"
             android:clipToPadding="false"
+            android:paddingVertical="@dimen/dp_12"
             android:paddingBottom="@dimen/dp_72" />
 
         <LinearLayout
@@ -74,7 +75,7 @@
             android:orientation="horizontal"
             android:gravity="center_vertical"
             android:padding="@dimen/dp_12"
-            android:background="@color/white"
+            android:background="@android:color/transparent"
             android:elevation="@dimen/dp_4"
             android:visibility="gone">
 
@@ -88,11 +89,12 @@
                 android:enabled="false"
                 android:alpha="0.5"
                 android:layout_marginEnd="@dimen/dp_8"
+                android:tint="@color/white"
                 android:scaleType="centerInside" />
 
             <LinearLayout
                 android:id="@+id/layoutPageNumbers"
-                android:layout_width="@dimen/dp_0"
+                android:layout_width="0dp"
                 android:layout_weight="1"
                 android:layout_height="@dimen/dp_36"
                 android:orientation="horizontal"
@@ -108,17 +110,16 @@
                 android:enabled="false"
                 android:alpha="0.5"
                 android:layout_marginStart="@dimen/dp_8"
+                android:tint="@color/white"
                 android:scaleType="centerInside" />
 
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Container for detail fragment -->
     <FrameLayout
         android:id="@+id/detailContainer"
         android:layout_width="match_parent"
         android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:visibility="gone" />
-
 </LinearLayout>

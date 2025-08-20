@@ -53,7 +53,7 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         // Initialize presenter
         val firebaseRepository = FirebaseRepository()
         val authRepository = AuthRepository(requireContext())
-        presenter = CreateRecipePresenter(firebaseRepository, authRepository)
+        presenter = CreateRecipePresenter(requireContext(), firebaseRepository, authRepository)
         presenter.setView(this)
 
         // Setup RecyclerView for ingredients
@@ -117,7 +117,7 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
                 // Hide the ingredient input form after successfully adding
                 viewBinding.layoutNewIngredient.visibility = View.GONE
             } else {
-                Toast.makeText(requireContext(), "Please fill in both fields", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), getString(R.string.msg_please_fill_both_fields), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -135,10 +135,12 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
     private fun saveRecipe() {
         val name = viewBinding.editTextRecipeTitle.text.toString().trim()
         val instructions = viewBinding.editTextPreparation.text.toString().trim()
-
         val imageUrl = selectedImageUri?.toString() ?: ""
 
+        saveRecipeWithImageUrl(name, instructions, imageUrl)
+    }
 
+    private fun saveRecipeWithImageUrl(name: String, instructions: String, imageUrl: String) {
         val category = "Cocktail" // Default category if spinner not available
         val glass = "Cocktail glass" // Default glass if spinner not available
 
@@ -157,30 +159,6 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         )
     }
 
-    /**
-     * Example method for uploading an image to Firebase Storage
-     * This would need Firebase Storage dependency and proper setup
-     */
-    private fun uploadImageToFirebaseStorage(uri: Uri, onComplete: (String) -> Unit) {
-        // This is example code that would need to be implemented with actual Firebase dependencies
-
-        // Create a storage reference
-        // val storageRef = FirebaseStorage.getInstance().reference
-        // val imageRef = storageRef.child("recipe_images/${UUID.randomUUID()}.jpg")
-
-        // Upload the file
-        // imageRef.putFile(uri)
-        //     .addOnSuccessListener {
-        //         // Get download URL
-        //         imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-        //             onComplete(downloadUrl.toString())
-        //         }
-        //     }
-        //     .addOnFailureListener { e ->
-        //         Toast.makeText(requireContext(), "Image upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
-        //         onComplete("")
-        //     }
-    }
 
     override fun showLoading(show: Boolean) {
         viewBinding.buttonSaveRecipe.isEnabled = !show

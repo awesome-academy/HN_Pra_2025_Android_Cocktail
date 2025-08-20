@@ -70,11 +70,11 @@ class PaginationUI(private val context: Context) {
             height = buttonSize
             
             if (page == currentPage) {
-                background = ContextCompat.getDrawable(context, R.drawable.current_page_bg)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_page_selected)
                 setTextColor(ContextCompat.getColor(context, R.color.white))
                 typeface = Typeface.DEFAULT_BOLD
             } else {
-                background = ContextCompat.getDrawable(context, R.drawable.page_button_bg)
+                background = ContextCompat.getDrawable(context, R.drawable.bg_page_unselected)
                 setTextColor(ContextCompat.getColor(context, R.color.black))
                 typeface = Typeface.DEFAULT
             }
@@ -102,7 +102,7 @@ class PaginationUI(private val context: Context) {
             gravity = android.view.Gravity.CENTER
             width = buttonSize
             height = buttonSize
-            setTextColor(ContextCompat.getColor(context, R.color.black))
+            setTextColor(ContextCompat.getColor(context, R.color.white))
         }
         
         val params = LinearLayout.LayoutParams(

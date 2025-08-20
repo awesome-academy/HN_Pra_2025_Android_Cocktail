@@ -1,5 +1,7 @@
 package com.example.cocktaildb.data.model
 
+import com.google.firebase.firestore.PropertyName
+
 data class Recipe(
     val id: String = "",
     val uid: String = "",
@@ -13,7 +15,8 @@ data class Recipe(
     val servings: Int = 1,
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis(),
-    val isPublic: Boolean = true,
+    @get:PropertyName("public") @set:PropertyName("public")
+    var isPublic: Boolean = true,
     val likeCount: Int = 0,
     val viewCount: Int = 0
 )

@@ -1,10 +1,14 @@
 package com.example.cocktaildb.screen.createrecipe
-
+import android.content.Context
+import android.net.Uri
 import android.util.Log
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Recipe
+import com.example.cocktaildb.data.model.RecipeImage
 import com.example.cocktaildb.data.model.RecipeIngredient
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.FirebaseRepository
+import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -14,6 +18,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.cancel
 
 class CreateRecipePresenter(
+    private val context: Context,
     private val firebaseRepository: FirebaseRepository,
     private val authRepository: AuthRepository
 ) : CreateRecipeContract.Presenter {
@@ -46,17 +51,17 @@ class CreateRecipePresenter(
     ) {
         // Validation
         if (name.isBlank()) {
-            view?.showError("Recipe name cannot be empty")
+            view?.showError(context.getString(R.string.error_recipe_name_empty))
             return
         }
 
         if (instructions.isBlank()) {
-            view?.showError("Instructions cannot be empty")
+            view?.showError(context.getString(R.string.error_instructions_empty))
             return
         }
 
         if (ingredients.isEmpty() || ingredients.any { it.isBlank() }) {
-            view?.showError("Please add at least one ingredient")
+            view?.showError(context.getString(R.string.error_add_at_least_one_ingredient))
             return
         }
 
@@ -70,7 +75,7 @@ class CreateRecipePresenter(
                 val uid = currentUser?.uid ?: run {
                     withContext(Dispatchers.Main) {
                         view?.showLoading(false)
-                        view?.showError("User not authenticated")
+                        view?.showError(context.getString(R.string.error_user_not_authenticated))
                     }
                     return@launch
                 }
@@ -105,8 +110,7 @@ class CreateRecipePresenter(
 
                     // Save recipe image if provided
                     if (imageUrl.isNotBlank()) {
-                        // TODO: Implement saving recipe image
-                        // saveRecipeImage(recipeId, imageUrl)
+                        saveRecipeImage(recipeId, imageUrl)
                     }
 
                     withContext(Dispatchers.Main) {
@@ -118,14 +122,14 @@ class CreateRecipePresenter(
                     val error = result.exceptionOrNull()
                     withContext(Dispatchers.Main) {
                         view?.showLoading(false)
-                        view?.showError("Failed to save recipe: ${error?.message}")
+                        view?.showError(context.getString(R.string.error_failed_to_save_recipe, error?.message ?: "Unknown error"))
                     }
                 }
 
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     view?.showLoading(false)
-                    view?.showError("Failed to save recipe: ${e.message}")
+                    view?.showError(context.getString(R.string.error_failed_to_save_recipe, e.message ?: "Unknown error"))
                 }
             }
         }
@@ -156,13 +160,69 @@ class CreateRecipePresenter(
             }
             if (failedIngredients.isNotEmpty()) {
                 withContext(Dispatchers.Main) {
-                    view?.showError("Warning: The following ingredients could not be saved: ${failedIngredients.joinToString(", ")}")
+                    view?.showError(context.getString(R.string.warning_ingredients_not_saved, failedIngredients.joinToString(", ")))
                 }
             }
         } catch (e: Exception) {
             Log.e("CreateRecipePresenter", "Error saving ingredients: ${e.message}")
             withContext(Dispatchers.Main) {
-                view?.showError("Error saving ingredients: ${e.message}")
+                view?.showError(context.getString(R.string.error_saving_ingredients, e.message ?: "Unknown error"))
+            }
+        }
+    }
+
+    private suspend fun saveRecipeImage(recipeId: String, imageUrl: String) {
+        try {
+            Log.d("CreateRecipePresenter", "Starting to save image with URL: $imageUrl")
+
+            val uploadResult = if (imageUrl.startsWith("content://")) {
+                Log.d("CreateRecipePresenter", "Uploading content:// URI to ImgBB")
+                val sourceUri = Uri.parse(imageUrl)
+                firebaseRepository.uploadRecipeImage(context, sourceUri, recipeId)
+            } else if (firebaseRepository.isImgBBUrl(imageUrl)) {
+                Log.d("CreateRecipePresenter", "Using existing ImgBB URL: $imageUrl")
+                Result.success(imageUrl)
+            } else {
+                Log.w("CreateRecipePresenter", "Unknown image URL format: $imageUrl, attempting upload")
+                val sourceUri = Uri.parse(imageUrl)
+                firebaseRepository.uploadRecipeImage(context, sourceUri, recipeId)
+            }
+
+            if (uploadResult.isSuccess) {
+                val downloadUrl = uploadResult.getOrThrow()
+                Log.d("CreateRecipePresenter", "Image uploaded successfully to ImgBB: $downloadUrl")
+                
+                val recipeImage = RecipeImage(
+                    id = "",
+                    recipeId = recipeId,
+                    imageUrl = downloadUrl,
+                    isPrimary = true,
+                    caption = "",
+                    uploadedAt = System.currentTimeMillis()
+                )
+                
+                Log.d("CreateRecipePresenter", "Saving image record to Firestore")
+                val result = firebaseRepository.addRecipeImage(recipeImage)
+                if (result.isSuccess) {
+                    Log.d("CreateRecipePresenter", "Recipe image saved successfully")
+                } else {
+                    val error = result.exceptionOrNull()
+                    Log.e("CreateRecipePresenter", "Failed to save image record: ${error?.message}")
+                    withContext(Dispatchers.Main) {
+                        view?.showError(context.getString(R.string.warning_image_uploaded_save_failed))
+                    }
+                }
+            } else {
+                val error = uploadResult.exceptionOrNull()
+                Log.e("CreateRecipePresenter", "Failed to upload image: ${error?.message}")
+                withContext(Dispatchers.Main) {
+                    view?.showError(context.getString(R.string.warning_recipe_saved_image_upload_failed, error?.message ?: "Unknown error"))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("CreateRecipePresenter", "Error saving recipe image: ${e.message}", e)
+            withContext(Dispatchers.Main) {
+                view?.showError(context.getString(R.string.warning_recipe_saved_image_save_failed, e.message ?: "Unknown error"))
             }
         }
     }
