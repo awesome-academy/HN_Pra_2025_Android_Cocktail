@@ -19,8 +19,6 @@ import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.data.manager.FavoritesManager
 import com.example.cocktaildb.screen.history.HistoryPresenter
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.example.cocktaildb.utils.adapter.RelatedCocktailAdapter
