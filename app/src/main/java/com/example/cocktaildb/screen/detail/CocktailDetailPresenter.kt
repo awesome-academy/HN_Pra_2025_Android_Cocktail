@@ -11,6 +11,10 @@ class CocktailDetailPresenter(
     private val repository: CocktailRepository
 ) : CocktailDetailContract.Presenter {
 
+    companion object {
+        private const val RELATED_COCKTAIL_LIMIT = 6
+    }
+
     private var view: CocktailDetailContract.View? = null
 
     override fun setView(view: CocktailDetailContract.View?) {
@@ -29,27 +33,20 @@ class CocktailDetailPresenter(
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val relatedCocktails = withContext(Dispatchers.IO) {
-                    // Get cocktails by category first
                     val categoryCocktails = repository.filterByCategory(category)
-                    
-                    // Filter out the current cocktail and get up to 6 related ones
                     val relatedCocktails = categoryCocktails
                         .filter { it.strDrink != cocktailName }
-                        .take(6)
-                    
-                    // If we don't have enough from category, try to get some random cocktails
-                    if (relatedCocktails.size < 6) {
+                        .take(RELATED_COCKTAIL_LIMIT)
+                    if (relatedCocktails.size < RELATED_COCKTAIL_LIMIT) {
                         val allCocktails = repository.getCocktails()
                         val additionalCocktails = allCocktails
                             .filter { it.strDrink != cocktailName && !relatedCocktails.contains(it) }
-                            .take(6 - relatedCocktails.size)
-                        
-                        (relatedCocktails + additionalCocktails).take(6)
+                            .take(RELATED_COCKTAIL_LIMIT - relatedCocktails.size)
+                        (relatedCocktails + additionalCocktails).take(RELATED_COCKTAIL_LIMIT)
                     } else {
                         relatedCocktails
                     }
                 }
-                
                 view?.showRelatedCocktails(relatedCocktails)
             } catch (e: Exception) {
                 view?.showError("Error loading related cocktails: ${e.message}")

@@ -2,11 +2,11 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="160dp"
-    android:layout_height="200dp"
-    android:layout_marginEnd="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
+    android:layout_width="@dimen/dp_160"
+    android:layout_height="@dimen/dp_200"
+    android:layout_marginEnd="@dimen/dp_12"
+    app:cardCornerRadius="@dimen/dp_12"
+    app:cardElevation="@dimen/dp_4"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground">
@@ -20,7 +20,7 @@
         <ImageView
             android:id="@+id/ivCocktail"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="@dimen/dp_120"
             android:scaleType="centerCrop"
             android:background="@drawable/cocktail_image_bg"
             tools:src="@drawable/imgstart" />
@@ -31,7 +31,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="@dimen/dp_12">
 
             <!-- Cocktail Name -->
             <TextView
@@ -39,12 +39,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Cocktail Name"
-                android:textSize="14sp"
+                android:textSize="@dimen/text_size_14"
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:layout_marginBottom="4dp"
+                android:layout_marginBottom="@dimen/dp_4"
                 tools:text="Mojito" />
 
             <!-- Category -->
@@ -53,7 +53,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Category"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_size_12"
                 android:textColor="@color/dark_gray"
                 android:maxLines="1"
                 android:ellipsize="end"
