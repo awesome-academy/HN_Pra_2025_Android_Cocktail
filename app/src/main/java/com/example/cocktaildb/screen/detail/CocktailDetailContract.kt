@@ -12,4 +12,5 @@ interface CocktailDetailContract {
     interface Presenter : BasePresenter<View> {
         fun loadRelatedCocktails(cocktailName: String, category: String)
     }
-} 
+}
+
