@@ -1,14 +1,18 @@
 package com.example.cocktaildb.data.manager
 
+import android.content.Context
 import android.util.Log
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.model.Favorite
+import com.example.cocktaildb.utils.ImageLoader
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.util.UUID
 
 /**
- * Manages favorite cocktails in memory and syncs with Firestore
+ * Manages favorite cocktails in memory, supports offline cache, and syncs with Firestore
  */
 object FavoritesManager {
     private val favoriteCocktails = mutableSetOf<Cocktail>()
@@ -20,6 +24,11 @@ object FavoritesManager {
     private val auth = FirebaseAuth.getInstance()
 
     private const val FAVORITES_COLLECTION = "favorites"
+
+    // Offline storage
+    private const val OFFLINE_PREFS = "cocktail_favorites"
+    private const val OFFLINE_KEY = "favorites"
+    private val gson = Gson()
 
     // Check if manager is initialized with user favorites
     fun isInitialized(): Boolean = isInitialized
@@ -53,6 +62,40 @@ object FavoritesManager {
                 Log.e(TAG, "Failed to load favorites: ${it.message}")
                 onComplete(false)
             }
+    }
+
+    // Load offline favorites into memory (does not change isInitialized)
+    fun preloadOfflineFavorites(context: Context) {
+        val list = getOfflineFavorites(context)
+        favoriteCocktails.clear()
+        favoriteCocktails.addAll(list)
+    }
+
+    // Get offline favorites
+    fun getOfflineFavorites(context: Context): List<Cocktail> {
+        return try {
+            val prefs = context.getSharedPreferences(OFFLINE_PREFS, Context.MODE_PRIVATE)
+            val json = prefs.getString(OFFLINE_KEY, "[]")
+            val type = object : TypeToken<List<Cocktail>>() {}.type
+            gson.fromJson<List<Cocktail>>(json, type) ?: emptyList()
+        } catch (_: Exception) {
+            emptyList()
+        }
+    }
+
+    private fun saveOfflineFavorites(context: Context, items: List<Cocktail>) {
+        runCatching {
+            val prefs = context.getSharedPreferences(OFFLINE_PREFS, Context.MODE_PRIVATE)
+            prefs.edit().putString(OFFLINE_KEY, gson.toJson(items)).apply()
+        }
+    }
+
+    private fun ensureLocalThumb(context: Context, cocktail: Cocktail): Cocktail {
+        val url = cocktail.strDrinkThumb
+        return if (!url.isNullOrEmpty() && (url.startsWith("http://") || url.startsWith("https://"))) {
+            val path = ImageLoader.saveImageFromUrlToInternalStorage(context, url)
+            if (path != null) cocktail.copy(strDrinkThumb = ImageLoader.getFileUri(path)) else cocktail
+        } else cocktail
     }
 
     // Add a favorite to Firestore (prevents duplicates)
@@ -110,65 +153,105 @@ object FavoritesManager {
             }
     }
 
-    // In-memory operations (synced with Firestore)
-    fun addFavorite(cocktail: Cocktail) {
-        favoriteCocktails.add(cocktail)
-    }
-
-    fun removeFavorite(cocktail: Cocktail) {
-        favoriteCocktails.remove(cocktail)
-    }
+    // In-memory operations
+    fun addFavorite(cocktail: Cocktail) { favoriteCocktails.add(cocktail) }
+    fun removeFavorite(cocktail: Cocktail) { favoriteCocktails.remove(cocktail) }
 
     fun isFavorite(cocktailId: String): Boolean {
-        return favoritesById.containsKey(cocktailId) ||
-               favoriteCocktails.any { it.idDrink == cocktailId }
+        return favoritesById.containsKey(cocktailId) || favoriteCocktails.any { it.idDrink == cocktailId }
     }
 
-    fun getFavorites(): List<Cocktail> {
-        return favoriteCocktails.toList()
+    fun getFavorites(): List<Cocktail> = favoriteCocktails.toList()
+
+    // Offline operations
+    fun addFavoriteOffline(context: Context, cocktail: Cocktail): Boolean {
+        val items = getOfflineFavorites(context).toMutableList()
+        items.removeAll { it.idDrink == cocktail.idDrink }
+        val updated = ensureLocalThumb(context, cocktail)
+        items.add(0, updated)
+        saveOfflineFavorites(context, items)
+        favoriteCocktails.add(updated)
+        return true
     }
 
-    // Toggle favorite status with Firestore sync
-    fun toggleFavorite(cocktail: Cocktail, onComplete: (Boolean) -> Unit) {
+    fun removeFavoriteOffline(context: Context, cocktail: Cocktail): Boolean {
+        val items = getOfflineFavorites(context).toMutableList()
+        val removed = items.removeAll { it.idDrink == cocktail.idDrink }
+        saveOfflineFavorites(context, items)
+        favoriteCocktails.removeIf { it.idDrink == cocktail.idDrink }
+        return removed
+    }
+
+    // Toggle favorite with Firestore if possible, otherwise fallback to offline
+    fun toggleFavoriteOfflineAware(context: Context, cocktail: Cocktail, onComplete: (Boolean) -> Unit) {
+        val currentUser = auth.currentUser
+        if (currentUser == null) {
+            val newState = if (isFavorite(cocktail.idDrink)) {
+                removeFavoriteOffline(context, cocktail)
+                false
+            } else {
+                addFavoriteOffline(context, cocktail)
+                true
+            }
+            onComplete(newState)
+            return
+        }
+
         if (isFavorite(cocktail.idDrink)) {
             removeFavoriteFromFirestore(cocktail) { success ->
                 if (success) {
-                    removeFavorite(cocktail)
+                    removeFavoriteOffline(context, cocktail) // keep offline in sync
+                    onComplete(false)
+                } else {
+                    // Fallback offline
+                    val removed = removeFavoriteOffline(context, cocktail)
+                    onComplete(!removed)
                 }
+            }
+        } else {
+            // Ensure local thumb even when online so it's available offline later
+            val updated = ensureLocalThumb(context, cocktail)
+            addFavoriteToFirestore(updated) { success ->
+                if (success) {
+                    addFavoriteOffline(context, updated) // mirror offline
+                    onComplete(true)
+                } else {
+                    // Fallback offline
+                    addFavoriteOffline(context, updated)
+                    onComplete(true)
+                }
+            }
+        }
+    }
+
+    // Backward-compatible toggles
+    fun toggleFavorite(cocktail: Cocktail, onComplete: (Boolean) -> Unit) {
+        if (isFavorite(cocktail.idDrink)) {
+            removeFavoriteFromFirestore(cocktail) { success ->
+                if (success) removeFavorite(cocktail)
                 onComplete(success)
             }
         } else {
             addFavoriteToFirestore(cocktail) { success ->
-                if (success) {
-                    addFavorite(cocktail)
-                }
+                if (success) addFavorite(cocktail)
                 onComplete(success)
             }
         }
     }
 
-    // Toggle favorite status (simplified for immediate UI response)
     fun toggleFavorite(cocktail: Cocktail): Boolean {
-        val isFavorite = isFavorite(cocktail.idDrink)
-        if (isFavorite) {
+        val isFav = isFavorite(cocktail.idDrink)
+        if (isFav) {
             removeFavoriteFromFirestore(cocktail) { success ->
-                if (!success) {
-                    // Revert local state if Firestore operation failed
-                    addFavorite(cocktail)
-                    Log.e(TAG, "Failed to remove favorite from Firestore, reverting local state")
-                }
+                if (!success) { addFavorite(cocktail); Log.e(TAG, "Failed to remove favorite from Firestore, reverting local state") }
             }
             removeFavorite(cocktail)
         } else {
             addFavoriteToFirestore(cocktail) { success ->
-                if (!success) {
-                    // Revert local state if Firestore operation failed
-                    removeFavorite(cocktail)
-                    Log.e(TAG, "Failed to add favorite to Firestore, reverting local state")
-                }
+                if (!success) { removeFavorite(cocktail); Log.e(TAG, "Failed to add favorite to Firestore, reverting local state") }
             }
             addFavorite(cocktail)
         }
-        return !isFavorite
+        return !isFav
     }
 }

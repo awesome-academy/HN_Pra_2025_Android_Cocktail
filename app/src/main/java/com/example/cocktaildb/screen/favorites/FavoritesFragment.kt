@@ -1,10 +1,8 @@
 package com.example.cocktaildb.screen.favorites
 
 import android.graphics.Rect
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
@@ -16,7 +14,7 @@ import com.example.cocktaildb.utils.base.BaseFragment
 
 class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesContract.View {
 
-    private val presenter = FavoritesPresenter()
+    private lateinit var presenter: FavoritesPresenter
     private lateinit var favoritesAdapter: FavoritesAdapter
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentFavoritesBinding {
@@ -24,6 +22,7 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
     }
 
     override fun initView() {
+        presenter = FavoritesPresenter(requireContext())
         setupRecyclerView()
     }
 
