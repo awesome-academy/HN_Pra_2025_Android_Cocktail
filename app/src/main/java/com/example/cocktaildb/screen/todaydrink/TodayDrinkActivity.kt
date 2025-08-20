@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.databinding.ActivityTodayDrinkBinding
 import com.example.cocktaildb.utils.base.BaseActivity
@@ -15,6 +16,20 @@ import android.view.View
 import java.util.UUID
 
 class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
+
+    companion object {
+        private const val EXTRA_SHOW_DETAIL = "show_detail"
+        private const val EXTRA_FROM_TODAY_DRINK = "from_today_drink"
+        private const val EXTRA_COCKTAIL_ID = "cocktail_id"
+        private const val EXTRA_COCKTAIL_NAME = "cocktail_name"
+        private const val EXTRA_COCKTAIL_CATEGORY = "cocktail_category"
+        private const val EXTRA_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        private const val EXTRA_COCKTAIL_GLASS = "cocktail_glass"
+        private const val EXTRA_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        private const val EXTRA_COCKTAIL_IMAGE = "cocktail_image"
+        private const val EXTRA_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        private const val EXTRA_COCKTAIL_MEASURES = "cocktail_measures"
+    }
 
     private lateinit var todayDrinkManager: TodayDrinkManager
     private var currentDrink: Cocktail? = null
@@ -37,14 +52,14 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
             currentDrink?.let { drink ->
                 navigateToCocktailDetail(drink)
             } ?: run {
-                Toast.makeText(this, "No drink data available", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.msg_no_drink_data_available), Toast.LENGTH_SHORT).show()
             }
         }
 
         viewBinding.tvTitle.setOnLongClickListener {
             todayDrinkManager.forceRefresh()
             loadTodayDrink()
-            Toast.makeText(this, "Refreshed today's drink!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, getString(R.string.msg_refreshed_today_drink), Toast.LENGTH_SHORT).show()
             true
         }
     }
@@ -64,7 +79,7 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 Toast.makeText(this@TodayDrinkActivity, 
-                    "Failed to load today's drink", Toast.LENGTH_SHORT).show()
+                    getString(R.string.msg_failed_load_today_drink), Toast.LENGTH_SHORT).show()
 
             } finally {
                 showLoading(false)
@@ -84,48 +99,24 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
 
     private fun navigateToCocktailDetail(drink: Cocktail) {
         val intent = Intent(this, SearchActivity::class.java).apply {
-            putExtra("show_detail", true)
-            putExtra("from_today_drink", true)
-            putExtra("cocktail_id", drink.idDrink)
-            putExtra("cocktail_name", drink.strDrink)
-            putExtra("cocktail_category", drink.strCategory)
-            putExtra("cocktail_alcoholic", drink.strAlcoholic)
-            putExtra("cocktail_glass", drink.strGlass)
-            putExtra("cocktail_instructions", drink.strInstructions)
-            putExtra("cocktail_image", drink.strDrinkThumb)
-            putExtra("cocktail_ingredients", drink.ingredients.toTypedArray())
-            putExtra("cocktail_measures", drink.measures.toTypedArray())
+            putExtra(EXTRA_SHOW_DETAIL, true)
+            putExtra(EXTRA_FROM_TODAY_DRINK, true)
+            putExtra(EXTRA_COCKTAIL_ID, drink.idDrink)
+            putExtra(EXTRA_COCKTAIL_NAME, drink.strDrink)
+            putExtra(EXTRA_COCKTAIL_CATEGORY, drink.strCategory)
+            putExtra(EXTRA_COCKTAIL_ALCOHOLIC, drink.strAlcoholic)
+            putExtra(EXTRA_COCKTAIL_GLASS, drink.strGlass)
+            putExtra(EXTRA_COCKTAIL_INSTRUCTIONS, drink.strInstructions)
+            putExtra(EXTRA_COCKTAIL_IMAGE, drink.strDrinkThumb)
+            putExtra(EXTRA_COCKTAIL_INGREDIENTS, drink.ingredients.toTypedArray())
+            putExtra(EXTRA_COCKTAIL_MEASURES, drink.measures.toTypedArray())
         }
         startActivity(intent)
     }
 
-    private fun createSampleDrink(): Cocktail {
-        val drinkNames = listOf(
-            "Avocado Milkshake",
-            "Chocolate Smoothie", 
-            "Vanilla Latte",
-            "Green Tea Frappe",
-            "Strawberry Shake"
-        )
-
-        val categories = listOf("Drink", "Smoothie", "Coffee", "Tea", "Milkshake")
-
-        return Cocktail(
-            idDrink = "sample_${UUID.randomUUID()}",
-            strDrink = drinkNames.random(),
-            strCategory = categories.random(),
-            strAlcoholic = "Non alcoholic",
-            strGlass = "Glass",
-            strInstructions = "Mix all ingredients and enjoy! Perfect for any time of the day.",
-            strDrinkThumb = null,
-            ingredients = listOf("Avocado", "Milk", "Sugar", "Ice"),
-            measures = listOf("1", "200ml", "2 tsp", "As needed")
-        )
-    }
-
     private fun displayDrink(drink: Cocktail) {
         viewBinding.tvDrinkName.text = drink.strDrink
-        viewBinding.tvDrinkCategory.text = drink.strCategory ?: "Drink"
+        viewBinding.tvDrinkCategory.text = drink.strCategory ?: getString(R.string.default_drink_category)
 
         if (!drink.strDrinkThumb.isNullOrEmpty()) {
             ImageLoader.loadImage(
@@ -144,7 +135,7 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
 
         if (isHotDrink) {
             viewBinding.cardHotBadge.visibility = View.VISIBLE
-            viewBinding.tvHotBadge.text = "HOT"
+            viewBinding.tvHotBadge.text = getString(R.string.hot_badge)
         } else {
             viewBinding.cardHotBadge.visibility = View.GONE
         }

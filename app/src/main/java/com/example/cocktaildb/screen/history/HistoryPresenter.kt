@@ -1,17 +1,27 @@
 package com.example.cocktaildb.screen.history
 
 import android.content.Context
+import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
+import com.example.cocktaildb.utils.CocktailContextWrapper
+import kotlinx.coroutines.launch
+
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 class HistoryPresenter(
-    private val context: Context,
-    private val cocktailRepository: CocktailRepository
+    private val cocktailRepository: CocktailRepository,
+    private val contextWrapper: CocktailContextWrapper
 ) : HistoryContract.Presenter {
 
     private var view: HistoryContract.View? = null
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
+    private val gson = Gson()
 
     override fun setView(view: HistoryContract.View?) {
         this.view = view

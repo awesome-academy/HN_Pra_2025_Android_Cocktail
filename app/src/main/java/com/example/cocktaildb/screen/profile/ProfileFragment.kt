@@ -12,18 +12,34 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import android.util.Log
+import kotlinx.coroutines.GlobalScope
 import androidx.navigation.fragment.findNavController
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSource
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.databinding.FragmentProfileBinding
 import com.example.cocktaildb.screen.auth.SignInActivity
 import com.example.cocktaildb.utils.base.BaseFragment
+import kotlinx.coroutines.launch
 
 
 class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.View, ProfileAdapter.HeaderClickListener, ProfileAdapter.CocktailClickListener {
+
+    companion object {
+        private const val EXTRA_COCKTAIL_ID = "cocktail_id"
+        private const val EXTRA_COCKTAIL_NAME = "cocktail_name"
+        private const val EXTRA_COCKTAIL_CATEGORY = "cocktail_category"
+        private const val EXTRA_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        private const val EXTRA_COCKTAIL_GLASS = "cocktail_glass"
+        private const val EXTRA_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        private const val EXTRA_COCKTAIL_IMAGE = "cocktail_image"
+        private const val EXTRA_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        private const val EXTRA_COCKTAIL_MEASURES = "cocktail_measures"
+    }
 
     private lateinit var presenter: ProfileContract.Presenter
     private lateinit var profileAdapter: ProfileAdapter
@@ -145,7 +161,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
             // Fallback in case navigation fails
             Toast.makeText(
                 context,
-                "My Recipes feature coming soon!",
+                getString(R.string.msg_my_recipes_coming_soon),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -163,7 +179,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
             // Fallback in case navigation fails
             Toast.makeText(
                 context,
-                "History feature coming soon!",
+                getString(R.string.msg_history_coming_soon),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -198,24 +214,43 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
 
     // Implement CocktailClickListener interface method
     override fun onCocktailClicked(cocktail: Cocktail) {
-        // Add to history first
-        try {
-            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
-        } catch (e: Exception) {
-            // Handle error silently
+        Log.e("ProfileFragment", "onCocktailClicked: ${cocktail.strDrink} (${cocktail.idDrink})")
+        
+        // Add to history using Firebase
+        val authRepository = AuthRepository(requireContext())
+        val currentUser = authRepository.getCurrentUser()
+        
+        if (currentUser != null) {
+            Log.e("ProfileFragment", "User authenticated: ${currentUser.uid}")
+            val historyFirebaseService = HistoryFirebaseService()
+            GlobalScope.launch {
+                try {
+                    Log.e("ProfileFragment", "Adding cocktail details to history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
+                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
+                    if (result.isSuccess) {
+                        Log.e("ProfileFragment", "Successfully added detailed history: ${result.getOrNull()}")
+                    } else {
+                        Log.e("ProfileFragment", "Failed to add detailed history: ${result.exceptionOrNull()?.message}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("ProfileFragment", "Exception adding detailed history: ${e.message}", e)
+                }
+            }
+        } else {
+            Log.e("ProfileFragment", "User not authenticated, skipping history add")
         }
         
         // Navigate to cocktail detail fragment using Navigation Component
         val bundle = Bundle().apply {
-            putString("cocktail_id", cocktail.idDrink)
-            putString("cocktail_name", cocktail.strDrink)
-            putString("cocktail_category", cocktail.strCategory ?: "")
-            putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
-            putString("cocktail_glass", cocktail.strGlass ?: "")
-            putString("cocktail_instructions", cocktail.strInstructions ?: "")
-            putString("cocktail_image", cocktail.strDrinkThumb ?: "")
-            putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
-            putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+            putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+            putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+            putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+            putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+            putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+            putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+            putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+            putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+            putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
         }
         findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }

@@ -4,16 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.databinding.ActivitySearchBinding
 import com.example.cocktaildb.screen.detail.CocktailDetailFragment
 import com.example.cocktaildb.screen.filter.FilterDialog
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseActivity
+import kotlinx.coroutines.launch
 import com.example.cocktaildb.utils.pagination.PaginationUI
 import java.util.concurrent.Executors
 import android.view.View
@@ -108,12 +113,10 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     }
 
     private fun showCocktailDetail(cocktail: Cocktail) {
+        Log.d("SearchActivity", "Showing cocktail detail: ${cocktail.strDrink} (${cocktail.idDrink})")
+        
         // Add to history first
-        try {
-            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(this, cocktail)
-        } catch (e: Exception) {
-            // Handle error silently
-        }
+        addCocktailToHistory(cocktail)
         
         // Hide search results and show detail container
         viewBinding.searchResultsContainer.visibility = View.GONE
@@ -146,6 +149,34 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         }
         
         transaction.commit()
+    }
+
+    private fun addCocktailToHistory(cocktail: Cocktail) {
+        Log.e("SearchActivity", "addCocktailToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
+        
+        val authRepository = AuthRepository(this)
+        val currentUser = authRepository.getCurrentUser()
+        
+        if (currentUser != null) {
+            Log.e("SearchActivity", "User authenticated: ${currentUser.uid}")
+            val historyFirebaseService = HistoryFirebaseService()
+            
+            lifecycleScope.launch {
+                try {
+                    Log.e("SearchActivity", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
+                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
+                    if (result.isSuccess) {
+                        Log.e("SearchActivity", "Successfully added detailed history: ${result.getOrNull()}")
+                    } else {
+                        Log.e("SearchActivity", "Failed to add detailed history: ${result.exceptionOrNull()?.message}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("SearchActivity", "Exception adding detailed history: ${e.message}", e)
+                }
+            }
+        } else {
+            Log.e("SearchActivity", "User not authenticated, skipping history add")
+        }
     }
 
     private fun showSearchResults() {

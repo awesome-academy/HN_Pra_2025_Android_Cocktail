@@ -2,26 +2,44 @@ package com.example.cocktaildb.screen.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.graphics.Rect
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import kotlinx.coroutines.GlobalScope
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentHomeBinding
 import com.example.cocktaildb.screen.search.SearchActivity
-import com.example.cocktaildb.screen.todaydrink.TodayDrinkActivity
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
 import androidx.navigation.fragment.findNavController
+import kotlinx.coroutines.launch
 import kotlin.math.min
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
+
+    companion object {
+        private const val EXTRA_COCKTAIL_ID = "cocktail_id"
+        private const val EXTRA_COCKTAIL_NAME = "cocktail_name"
+        private const val EXTRA_COCKTAIL_CATEGORY = "cocktail_category"
+        private const val EXTRA_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        private const val EXTRA_COCKTAIL_GLASS = "cocktail_glass"
+        private const val EXTRA_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        private const val EXTRA_COCKTAIL_IMAGE = "cocktail_image"
+        private const val EXTRA_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        private const val EXTRA_COCKTAIL_MEASURES = "cocktail_measures"
+    }
 
     private lateinit var presenter: HomePresenter
     private lateinit var cocktailAdapter: CocktailAdapter
@@ -45,8 +63,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             startActivity(intent)
         }
         viewBinding.tvViewAll.setOnClickListener {
-            val intent = Intent(requireContext(), TodayDrinkActivity::class.java)
-            startActivity(intent)
+            findNavController().navigate(R.id.navigation_messages)
         }
     }
 
@@ -54,24 +71,22 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         cocktailAdapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
+                Log.e("HomeFragment", "onCocktailClick: ${cocktail.strDrink} (${cocktail.idDrink})")
+                
                 // Add to history first
-                try {
-                    com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
-                } catch (e: Exception) {
-                    // Handle error silently
-                }
+                addCocktailToHistory(cocktail)
                 
                 // Navigate to cocktail detail fragment using Navigation Component
                 val bundle = Bundle().apply {
-                    putString("cocktail_id", cocktail.idDrink)
-                    putString("cocktail_name", cocktail.strDrink)
-                    putString("cocktail_category", cocktail.strCategory ?: "")
-                    putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
-                    putString("cocktail_glass", cocktail.strGlass ?: "")
-                    putString("cocktail_instructions", cocktail.strInstructions ?: "")
-                    putString("cocktail_image", cocktail.strDrinkThumb ?: "")
-                    putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
-                    putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
+                    putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+                    putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+                    putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+                    putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+                    putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+                    putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+                    putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+                    putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+                    putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
                 }
                 findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
             }
@@ -122,6 +137,34 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
     override fun initData() {
         presenter.onStart()
         presenter.loadCocktails()
+    }
+
+    private fun addCocktailToHistory(cocktail: Cocktail) {
+        Log.e("HomeFragment", "addCocktailToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
+        
+        val authRepository = AuthRepository(requireContext())
+        val currentUser = authRepository.getCurrentUser()
+        
+        if (currentUser != null) {
+            Log.e("HomeFragment", "User authenticated: ${currentUser.uid}")
+            val historyFirebaseService = HistoryFirebaseService()
+            
+            GlobalScope.launch {
+                try {
+                    Log.e("HomeFragment", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
+                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
+                    if (result.isSuccess) {
+                        Log.e("HomeFragment", "Successfully added detailed history: ${result.getOrNull()}")
+                    } else {
+                        Log.e("HomeFragment", "Failed to add detailed history: ${result.exceptionOrNull()?.message}")
+                    }
+                } catch (e: Exception) {
+                    Log.e("HomeFragment", "Exception adding detailed history: ${e.message}", e)
+                }
+            }
+        } else {
+            Log.e("HomeFragment", "User not authenticated, skipping history add")
+        }
     }
 
     override fun onDestroyView() {

@@ -2,6 +2,7 @@
     <string name="app_name">cocktaildb</string>
     <string name="title_home">Home</string>
     <string name="title_messages">Messages</string>
+    <string name="title_today_drink">Today Drink</string>
     <string name="title_add">Add</string>
     <string name="title_favorites">Favorites</string>
 
@@ -131,6 +132,23 @@
     <string name="desc_tail"> with carefully selected ingredients.</string>
     <string name="error_loading_related_cocktails">Error loading related cocktails: %1$s</string>
 
+    <!-- Profile Screen Messages -->
+    <string name="msg_history_coming_soon">History feature coming soon!</string>
+    <string name="msg_my_recipes_coming_soon">My Recipes feature coming soon!</string>
+
+    <!-- Dashboard/Today Drink Messages -->
+    <string name="msg_no_today_drink_available">No today\'s drink available</string>
+    <string name="msg_failed_load_today_drink">Failed to load today\'s drink</string>
+    <string name="msg_today_special_drink">Today\'s Special Drink</string>
+    <string name="default_drink_category">Drink</string>
+
+    <!-- History Messages -->
+    <string name="msg_sign_in_to_view_history">Please sign in to view history</string>
+    <string name="msg_sign_in_to_clear_history">Please sign in to clear history</string>
+    <string name="msg_error_loading_history">Error loading history</string>
+    <string name="msg_error_clearing_history">Error clearing history</string>
+    <string name="msg_context_error">Context error</string>
+
     <string name="notif_channel_name">Cocktail Notifications</string>
     <string name="notif_channel_description">Notifications for cocktail app</string>
     <string name="notif_default_title">Cocktail App</string>
@@ -158,5 +176,3 @@
     <string name="instruction_numbered">%1$d. %2$s</string>
     <string name="ingredients_count">Ingredients (%1$d)</string>
 </resources>
-
-
