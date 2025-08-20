@@ -315,3 +315,4 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 	}
 }
 
+
