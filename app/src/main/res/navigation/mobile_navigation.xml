@@ -74,6 +74,10 @@
         <argument
             android:name="cocktail_measures"
             app:argType="string[]" />
+        
+        <action
+            android:id="@+id/action_cocktailDetailFragment_self"
+            app:destination="@id/navigation_cocktail_detail" />
     </fragment>
 
     <fragment

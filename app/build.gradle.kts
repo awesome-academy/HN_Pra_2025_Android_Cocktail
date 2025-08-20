@@ -46,7 +46,7 @@ android {
     }
     buildTypes {
         getByName("debug") {
-            signingConfig = signingConfigs.getByName("release")
+            // Remove signing config for debug builds - use default debug keystore
         }
         getByName("release") {
             isMinifyEnabled = false
