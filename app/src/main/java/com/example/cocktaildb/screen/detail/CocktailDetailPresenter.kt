@@ -1,15 +1,19 @@
 package com.example.cocktaildb.screen.detail
 
+import android.util.Log
+import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.service.CheckmarkFirebaseService
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class CocktailDetailPresenter(
     private val repository: CocktailRepository
 ) : CocktailDetailContract.Presenter {
-
     companion object {
         private const val RELATED_COCKTAIL_LIMIT = 6
     }
@@ -25,7 +29,7 @@ class CocktailDetailPresenter(
     }
 
     override fun onStart() {
-        // Initialize if needed
+        // No-op for now
     }
 
     override fun onStop() {
@@ -54,7 +58,7 @@ class CocktailDetailPresenter(
                 }
                 view?.showRelatedCocktails(relatedCocktails)
             } catch (e: Exception) {
-                view?.showError("${e.message}")
+                view?.showError(e.message ?: "Unknown error")
             }
         }
     }
@@ -65,33 +69,26 @@ class CocktailDetailPresenter(
             view?.showError("Please sign in to bookmark cocktails")
             return
         }
-
         presenterJob?.cancel()
         presenterJob = CoroutineScope(Dispatchers.Main).launch {
             try {
-                // Check current bookmark status
                 val isBookmarked = withContext(Dispatchers.IO) {
                     checkmarkService.isCheckmarked(currentUser.uid, cocktail.idDrink)
                 }
-
                 if (isBookmarked.isSuccess) {
                     if (isBookmarked.getOrNull() == true) {
-                        // Remove bookmark
                         val result = withContext(Dispatchers.IO) {
                             checkmarkService.removeCheckmark(currentUser.uid, cocktail.idDrink)
                         }
-
                         if (result.isSuccess) {
                             view?.updateBookmarkButtonState(false)
                         } else {
                             view?.showError("Failed to remove bookmark")
                         }
                     } else {
-                        // Add bookmark
                         val result = withContext(Dispatchers.IO) {
                             checkmarkService.addCheckmark(currentUser.uid, cocktail.idDrink)
                         }
-
                         if (result.isSuccess) {
                             view?.updateBookmarkButtonState(true)
                         } else {
@@ -114,14 +111,12 @@ class CocktailDetailPresenter(
             view?.updateBookmarkButtonState(false)
             return
         }
-
         presenterJob?.cancel()
         presenterJob = CoroutineScope(Dispatchers.Main).launch {
             try {
                 val isBookmarked = withContext(Dispatchers.IO) {
                     checkmarkService.isCheckmarked(currentUser.uid, cocktailId)
                 }
-
                 if (isBookmarked.isSuccess) {
                     view?.updateBookmarkButtonState(isBookmarked.getOrNull() == true)
                 } else {
@@ -134,4 +129,3 @@ class CocktailDetailPresenter(
         }
     }
 }
-

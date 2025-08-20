@@ -7,41 +7,15 @@ interface CocktailDetailContract {
     interface View {
         fun showRelatedCocktails(cocktails: List<Cocktail>)
         fun showError(message: String)
+        fun updateBookmarkButtonState(isBookmarked: Boolean)
     }
 
     interface Presenter : BasePresenter<View> {
         fun loadRelatedCocktails(cocktailName: String, category: String)
-    }
-}
-
-package com.example.cocktaildb.screen.detail
-
-import com.example.cocktaildb.data.model.Cocktail
-
-
-interface CocktailDetailContract {
-
-    interface View {
-
-        fun updateBookmarkButtonState(isBookmarked: Boolean)
-
-
-        fun showError(message: String)
-    }
-
-
-    interface Presenter {
-
-        fun setView(view: View?)
-
-
+        override fun setView(view: View?)
         fun checkBookmarkStatus(cocktailId: String)
-
-
         fun toggleBookmark(cocktail: Cocktail)
-
-
-        fun onStop()
+        override fun onStart()
+        override fun onStop()
     }
 }
-
