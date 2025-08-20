@@ -152,7 +152,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     }
 
     private fun addCocktailToHistory(cocktail: Cocktail) {
-        Log.e("SearchActivity", "addCocktailToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
+        Log.d("SearchActivity", "addCocktailToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
         
         val authRepository = AuthRepository(this)
         val currentUser = authRepository.getCurrentUser()

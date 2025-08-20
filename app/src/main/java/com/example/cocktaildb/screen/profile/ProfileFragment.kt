@@ -13,6 +13,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.GlobalScope
 import androidx.navigation.fragment.findNavController
 import com.example.cocktaildb.R
@@ -223,7 +224,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         if (currentUser != null) {
             Log.e("ProfileFragment", "User authenticated: ${currentUser.uid}")
             val historyFirebaseService = HistoryFirebaseService()
-            GlobalScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     Log.e("ProfileFragment", "Adding cocktail details to history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
                     val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)

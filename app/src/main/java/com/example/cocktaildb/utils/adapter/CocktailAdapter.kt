@@ -69,7 +69,7 @@ class CocktailAdapter(
             ImageLoader.loadImage(cocktail.strDrinkThumb, binding.ivCocktail, R.drawable.imgstart)
 
             itemView.setOnClickListener {
-                Log.e("CocktailAdapter", "Item clicked: ${cocktail.strDrink} (${cocktail.idDrink})")
+                Log.d("CocktailAdapter", "Item clicked: ${cocktail.strDrink} (${cocktail.idDrink})")
                 onCocktailClick(cocktail)
             }
         }
@@ -96,7 +96,7 @@ class CocktailAdapter(
             ImageLoader.loadImage(cocktail.strDrinkThumb, binding.ivThumb, R.drawable.imgstart)
 
             itemView.setOnClickListener {
-                Log.e("CocktailAdapter", "Search Item clicked: ${cocktail.strDrink} (${cocktail.idDrink})")
+                Log.d("CocktailAdapter", "Search Item clicked: ${cocktail.strDrink} (${cocktail.idDrink})")
                 onCocktailClick(cocktail)
             }
         }

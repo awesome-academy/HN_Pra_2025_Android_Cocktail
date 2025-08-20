@@ -149,7 +149,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             Log.e("HomeFragment", "User authenticated: ${currentUser.uid}")
             val historyFirebaseService = HistoryFirebaseService()
             
-            GlobalScope.launch {
+            viewLifecycleOwner.lifecycleScope.launch {
                 try {
                     Log.e("HomeFragment", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
                     val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
