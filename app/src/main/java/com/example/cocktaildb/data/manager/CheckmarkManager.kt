@@ -27,9 +27,7 @@ object CheckmarkManager {
 
     fun isInitialized(): Boolean = initialized
 
-    /**
-     * Toggle checkmark status for a cocktail
-     */
+
     fun toggleCheckmark(cocktail: Cocktail, callback: CheckmarkCallback) {
         val currentUser = auth.currentUser
         if (currentUser == null) {
@@ -69,16 +67,12 @@ object CheckmarkManager {
         }
     }
 
-    /**
-     * Check if a cocktail is checkmarked
-     */
+
     fun isCheckmarked(cocktailId: String): Boolean {
         return checkmarkedCocktailIds.contains(cocktailId)
     }
 
-    /**
-     * Load all checkmarks from Firestore
-     */
+
     fun loadCheckmarksFromFirestore(callback: (Boolean) -> Unit) {
         val currentUser = auth.currentUser
         if (currentUser == null) {
@@ -117,9 +111,7 @@ object CheckmarkManager {
         }
     }
 
-    /**
-     * Check the checkmark status in Firestore and update local cache
-     */
+
     fun checkCheckmarkStatus(cocktailId: String, callback: CheckmarkCallback) {
         val currentUser = auth.currentUser
         if (currentUser == null) {
@@ -152,3 +144,4 @@ object CheckmarkManager {
         }
     }
 }
+

@@ -6,3 +6,4 @@ data class Checkmark(
     val cocktailId: String = "",
     val checkedAt: Long = System.currentTimeMillis()
 )
+

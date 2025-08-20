@@ -44,3 +44,4 @@ interface CocktailDetailContract {
         fun onStop()
     }
 }
+

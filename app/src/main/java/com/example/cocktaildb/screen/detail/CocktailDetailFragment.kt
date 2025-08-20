@@ -1,10 +1,8 @@
 package com.example.cocktaildb.screen.detail
 
-import android.os.Bundle
+
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
@@ -18,6 +16,7 @@ import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.data.manager.FavoritesManager
 import com.example.cocktaildb.utils.adapter.RelatedCocktailAdapter
+import com.example.cocktaildb.utils.base.BaseFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -85,7 +84,6 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
     override fun onDestroyView() {
         super.onDestroyView()
         presenter.onStop()
-        _binding = null
     }
 
 
@@ -150,23 +148,39 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 		val measures = args?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
 
         // Create cocktail object and add to history
-        val cocktail = createCocktailFromArgs(
-            cocktailName, cocktailCategory, alcoholic, glass,
-            instructions, imageUrl, ingredients, measures
+        val cocktail = Cocktail(
+            idDrink = cocktailId,
+            strDrink = cocktailName,
+            strCategory = cocktailCategory,
+            strAlcoholic = alcoholic,
+            strGlass = glass,
+            strInstructions = instructions,
+            strDrinkThumb = imageUrl,
+            ingredients = ingredients.toList(),
+            measures = measures.toList()
         )
-        // Note: History is already added when navigating from other screens
-        // This prevents duplicate entries
 
-		binding.tvCocktailName.text = cocktailName
+        this.cocktail = cocktail
+
+        try {
+            // Add to history
+            HistoryPresenter.addToHistory(requireContext(), cocktail)
+        } catch (e: Exception) {
+            // Handle error silently
+            Log.e(TAG, "Error adding to history", e)
+        }
+
+        // Set cocktail name
+        viewBinding.tvCocktailName.text = cocktailName
 
 		val descriptionBuilder = StringBuilder()
 		descriptionBuilder.append(getString(R.string.desc_cocktail_base, cocktailCategory))
 		if (alcoholic.isNotEmpty()) descriptionBuilder.append(getString(R.string.desc_alcoholic_suffix, alcoholic))
 		if (glass.isNotEmpty()) descriptionBuilder.append(getString(R.string.desc_glass_suffix, glass))
 		descriptionBuilder.append(getString(R.string.desc_tail))
-		binding.tvDescription.text = descriptionBuilder.toString()
+		viewBinding.tvDescription.text = descriptionBuilder.toString()
 
-		ImageLoader.loadImage(imageUrl, binding.ivCocktail, R.drawable.imgstart)
+		ImageLoader.loadImage(imageUrl, viewBinding.ivCocktail, R.drawable.imgstart)
 		setupInstructions(instructions)
 		setupIngredients(ingredients, measures)
 
@@ -180,7 +194,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
     private fun setupInstructions(instructions: String) {
         val instructionLines = instructions.split(". ")
-        val instructionsContainer = binding.llInstructions
+        val instructionsContainer = viewBinding.llInstructions
 
         // Clear existing instructions
         instructionsContainer.removeAllViews()
@@ -199,7 +213,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
     }
 
     private fun setupIngredients(ingredients: Array<String>, measures: Array<String>) {
-        val ingredientsContainer = binding.llIngredients
+        val ingredientsContainer = viewBinding.llIngredients
 
         // Clear existing ingredients
         ingredientsContainer.removeAllViews()
@@ -211,7 +225,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
         // Update ingredients count in header
         val ingredientsCount = validIngredients.size
-        binding.tvIngredientsHeader.text = getString(R.string.ingredients) + " ($ingredientsCount)"
+        viewBinding.tvIngredientsHeader.text = getString(R.string.ingredients) + " ($ingredientsCount)"
 
         validIngredients.forEachIndexed { index, ingredient ->
             val ingredientView = LayoutInflater.from(requireContext())
@@ -284,19 +298,19 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         // Update favorite button based on current state
         updateFavoriteButtonState(currentCocktail)
 
-        binding.btnFavorite.setOnClickListener {
+        viewBinding.btnFavorite.setOnClickListener {
             // Show loading indicator on the button
-            binding.btnFavorite.isEnabled = false
+            viewBinding.btnFavorite.isEnabled = false
 
             // Toggle favorite with Firebase
             FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
                 // Update UI on the main thread
                 activity?.runOnUiThread {
-                    binding.btnFavorite.isEnabled = true
+                    viewBinding.btnFavorite.isEnabled = true
 
                         // Update button state
                         if (isFavorite) {
-                            binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+                            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
                             // Show toast notification when adding to favorites
                             Toast.makeText(
                                 requireContext(),
@@ -304,7 +318,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                                 Toast.LENGTH_SHORT
                             ).show()
                         } else {
-                            binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+                            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
                             // Show toast notification when removing from favorites
                             Toast.makeText(
                                 requireContext(),
@@ -316,9 +330,9 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 }
             }
 
-            binding.btnBookmark.setOnClickListener {
+            viewBinding.btnBookmark.setOnClickListener {
                 // Show loading indicator on the button
-                binding.btnBookmark.isEnabled = false
+                viewBinding.btnBookmark.isEnabled = false
 
                 // Toggle bookmark using presenter
                 presenter.toggleBookmark(currentCocktail)
@@ -329,11 +343,11 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
     // Implement CocktailDetailContract.View methods
     override fun updateBookmarkButtonState(isBookmarked: Boolean) {
-        binding.btnBookmark.isEnabled = true
+        viewBinding.btnBookmark.isEnabled = true
 
         if (isBookmarked) {
-            binding.btnBookmark.setImageResource(R.drawable.ic_bookmark_filled)
-            binding.btnBookmark.setColorFilter(resources.getColor(R.color.pink_primary, null))
+            viewBinding.btnBookmark.setImageResource(R.drawable.ic_bookmark_filled)
+            viewBinding.btnBookmark.setColorFilter(resources.getColor(R.color.pink_primary, null))
 
             cocktail?.let { currentCocktail ->
                 Toast.makeText(
@@ -343,8 +357,8 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 ).show()
             }
         } else {
-            binding.btnBookmark.setImageResource(R.drawable.ic_bookmark)
-            binding.btnBookmark.setColorFilter(resources.getColor(R.color.red, null))
+            viewBinding.btnBookmark.setImageResource(R.drawable.ic_bookmark)
+            viewBinding.btnBookmark.setColorFilter(resources.getColor(R.color.red, null))
 
 
             cocktail?.let { currentCocktail ->
@@ -357,20 +371,18 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         }
     }
 
-    override fun showError(message: String) {
-        binding.btnBookmark.isEnabled = true
+    fun showBookmarkError(message: String) {
+        viewBinding.btnBookmark.isEnabled = true
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     private fun updateFavoriteButtonState(cocktail: Cocktail) {
-        Log.d(TAG, "Updating favorite button state for cocktail ${cocktail.idDrink}")
         val isFavorite = FavoritesManager.isFavorite(cocktail.idDrink)
-        Log.d(TAG, "Is favorite: $isFavorite")
 
         if (isFavorite) {
-            binding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
         } else {
-            binding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
         }
     }
 }
