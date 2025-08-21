@@ -37,7 +37,7 @@ object ImageLoader {
         "/cache/"
     )
     private val LOCAL_URI_SCHEMES = listOf("content://", "file://")
-    
+
     // Schemes that indicate remote content
     private val REMOTE_URI_SCHEMES = listOf("http://", "https://")
 
@@ -46,14 +46,14 @@ object ImageLoader {
             url.contains(pattern, ignoreCase = true)
         }
     }
-    
+
 
     private fun isLocalUri(url: String): Boolean {
         return LOCAL_URI_SCHEMES.any { scheme ->
             url.startsWith(scheme, ignoreCase = true)
         }
     }
-    
+
 
     private fun isRemoteUri(url: String): Boolean {
         return REMOTE_URI_SCHEMES.any { scheme ->
@@ -94,8 +94,8 @@ object ImageLoader {
                         imageView.setImageResource(placeholderResId)
                         return
                     }
-                    
-                    val uri = android.net.Uri.parse(url)
+
+                    val uri = Uri.parse(url)
                     imageView.setImageURI(uri)
                     Log.d(TAG, "Loaded local image: $url")
                 } catch (e: Exception) {
@@ -136,7 +136,7 @@ object ImageLoader {
                 connection.connectTimeout = 10000
                 connection.readTimeout = 10000
                 connection.connect()
-                
+
                 if (connection.responseCode == HttpURLConnection.HTTP_OK) {
                     val input: InputStream = connection.inputStream
                     val bitmap = BitmapFactory.decodeStream(input)
@@ -154,13 +154,38 @@ object ImageLoader {
         }
     }
 
+    // Save a remote image URL to internal storage and return absolute file path, or null on failure
+    fun saveImageFromUrlToInternalStorage(context: Context, imageUrl: String): String? {
+        return try {
+            val bitmap = runCatching {
+                // Synchronous download using a background coroutine
+                kotlinx.coroutines.runBlocking(Dispatchers.IO) {
+                    downloadImage(imageUrl)
+                }
+            }.getOrNull() ?: return null
+
+            val imagesDir = File(context.filesDir, "recipe_images")
+            if (!imagesDir.exists()) imagesDir.mkdirs()
+            val fileName = "history_${UUID.randomUUID()}.jpg"
+            val destinationFile = File(imagesDir, fileName)
+            FileOutputStream(destinationFile).use { out ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+            }
+            destinationFile.absolutePath
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed saving image locally: ${e.message}")
+            null
+        }
+    }
+
+
     fun copyImageToInternalStorage(context: Context, sourceUri: Uri): String? {
         val uriString = sourceUri.toString()
 
         if (isTemporaryUri(uriString)) {
             Log.w(TAG, "Attempting to copy temporary URI, this may fail: $uriString")
         }
-        
+
         return try {
             Log.d(TAG, "Starting to copy image from URI: $sourceUri")
 
@@ -182,7 +207,7 @@ object ImageLoader {
                     Log.d(TAG, "Copied $bytesWritten bytes")
                 }
             }
-            
+
             if (destinationFile.exists() && destinationFile.length() > 0) {
                 Log.d(TAG, "Image copied successfully to: ${destinationFile.absolutePath}, size: ${destinationFile.length()} bytes")
                 destinationFile.absolutePath
@@ -190,7 +215,7 @@ object ImageLoader {
                 Log.e(TAG, "File was not created or is empty")
                 null
             }
-            
+
         } catch (e: IOException) {
             Log.e(TAG, "IOException copying image: ${e.message}", e)
             null

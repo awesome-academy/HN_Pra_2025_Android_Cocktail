@@ -223,6 +223,17 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                             val ingredientNames = ingredients.map { it.ingredientName }.toTypedArray()
                             val ingredientMeasures = ingredients.map { "${it.quantity} ${it.unit}".trim() }.toTypedArray()
                             setupIngredients(ingredientNames, ingredientMeasures)
+                            // Update history with enriched ingredients for offline access
+                            try {
+                                val updated = this@CocktailDetailFragment.cocktail?.copy(
+                                    ingredients = ingredientNames.toList(),
+                                    measures = ingredientMeasures.toList()
+                                )
+                                if (updated != null) {
+                                    this@CocktailDetailFragment.cocktail = updated
+                                    HistoryPresenter.addToHistory(requireContext(), updated)
+                                }
+                            } catch (_: Exception) { }
                         } else {
                             setupIngredients(emptyArray(), emptyArray())
                         }
@@ -257,7 +268,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         updateFavoriteButtonState(currentCocktail)
         viewBinding.btnFavorite.setOnClickListener {
             viewBinding.btnFavorite.isEnabled = false
-            FavoritesManager.toggleFavorite(currentCocktail) { isFavorite ->
+            FavoritesManager.toggleFavoriteOfflineAware(requireContext(), currentCocktail) { isFavorite ->
                 activity?.runOnUiThread {
                     viewBinding.btnFavorite.isEnabled = true
                     if (isFavorite) {

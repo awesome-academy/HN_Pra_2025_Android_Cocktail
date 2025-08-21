@@ -19,7 +19,6 @@ import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSour
 import com.example.cocktaildb.databinding.FragmentHistoryBinding
 import com.example.cocktaildb.utils.base.BaseFragment
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
-import com.example.cocktaildb.screen.history.HistoryPresenter
 
 class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.View {
 
@@ -128,7 +127,7 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
     override fun initData() {
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
-        presenter = HistoryPresenter(repository, requireContext())
+        presenter = HistoryPresenter(requireContext(), repository)
         presenter.setView(this)
     }
 
@@ -191,4 +190,4 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
             .setNegativeButton("Cancel", null)
             .show()
     }
-} 
+}
