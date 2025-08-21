@@ -144,6 +144,15 @@
     <string name="desc_glass_suffix"> served in a %1$s</string>
     <string name="desc_tail"> with carefully selected ingredients.</string>
     <string name="error_loading_related_cocktails">Error loading related cocktails: %1$s</string>
+    <!-- Today Drink Screen -->
+    <string name="error_loading_images">Failed to load images for recipe</string>
+    <string name="error_loading_ingredients">Failed to load ingredients for recipe</string>
+    <string name="msg_no_recipes_found">No recipes found</string>
+    <string name="msg_recipe_loading">Loading recipes...</string>
+    <string name="msg_no_drink_data_available">No drink data available</string>
+    <string name="msg_refreshed_today_drink">Refreshed today\'s drink!</string>
+    <string name="msg_added_to_favorites">%1$s added to favorites</string>
+    <string name="msg_removed_from_favorites">%1$s removed from favorites</string>
     <string name="instruction_numbered">%1$d. %2$s</string>
     <string name="ingredients_count">Ingredients (%1$d)</string>
 </resources>
