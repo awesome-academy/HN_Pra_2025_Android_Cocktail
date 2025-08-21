@@ -128,7 +128,8 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
     override fun initData() {
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
-        presenter = HistoryPresenter(repository, requireContext())
+        val contextWrapper = com.example.cocktaildb.utils.CocktailContextWrapper(requireContext(), this)
+        presenter = HistoryPresenter(repository, contextWrapper)
         presenter.setView(this)
     }
 

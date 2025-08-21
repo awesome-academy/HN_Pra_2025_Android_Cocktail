@@ -1,16 +1,14 @@
 package com.example.cocktaildb.screen.history
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
-import androidx.lifecycle.lifecycleScope
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.utils.CocktailContextWrapper
-import kotlinx.coroutines.launch
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -20,8 +18,7 @@ class HistoryPresenter(
 ) : HistoryContract.Presenter {
 
     private var view: HistoryContract.View? = null
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
-    private val gson = Gson()
+    private val sharedPreferences: SharedPreferences = contextWrapper.context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
 
     override fun setView(view: HistoryContract.View?) {
         this.view = view
@@ -41,7 +38,7 @@ class HistoryPresenter(
     override fun loadHistoryCocktails() {
         view?.displayLoading(true)
         try {
-            val cocktails = cocktailRepository.getHistoryCocktails(context)
+            val cocktails = cocktailRepository.getHistoryCocktails(contextWrapper.context)
             view?.displayLoading(false)
             if (cocktails.isEmpty()) {
                 view?.showEmptyState()
@@ -63,7 +60,7 @@ class HistoryPresenter(
     override fun clearHistory() {
         try {
             // Delete any locally cached images associated with history items
-            val historyString = cocktailRepository.getHistoryString(context)
+            val historyString = cocktailRepository.getHistoryString(contextWrapper.context)
             val historyCocktails: List<Cocktail> = if (historyString.isEmpty()) {
                 emptyList()
             } else {
@@ -79,12 +76,12 @@ class HistoryPresenter(
                 if (!thumb.isNullOrEmpty() && thumb.startsWith("file://")) {
                     val path = thumb.removePrefix("file://")
                     kotlin.runCatching {
-                        com.example.cocktaildb.utils.ImageLoader.deleteImageFile(context, path)
+                        com.example.cocktaildb.utils.ImageLoader.deleteImageFile(contextWrapper.context, path)
                     }
                 }
             }
 
-            cocktailRepository.clearHistory(context)
+            cocktailRepository.clearHistory(contextWrapper.context)
             view?.showEmptyState()
         } catch (e: Exception) {
             view?.displayError("Error clearing history: ${e.message}")
