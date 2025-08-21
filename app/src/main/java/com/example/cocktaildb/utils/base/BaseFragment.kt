@@ -42,4 +42,3 @@ abstract class BaseFragment<T : ViewBinding> : Fragment() {
         // TODO: Hide loading indicator
     }
 }
-

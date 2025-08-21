@@ -130,4 +130,6 @@
     <string name="desc_glass_suffix"> served in a %1$s</string>
     <string name="desc_tail"> with carefully selected ingredients.</string>
     <string name="error_loading_related_cocktails">Error loading related cocktails: %1$s</string>
+    <string name="instruction_numbered">%1$d. %2$s</string>
+    <string name="ingredients_count">Ingredients (%1$d)</string>
 </resources>

@@ -1,22 +1,21 @@
 package com.example.cocktaildb.screen.favorites
 
 import android.graphics.Rect
-import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.databinding.FragmentFavoritesBinding
 import com.example.cocktaildb.utils.base.BaseFragment
 
 class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesContract.View {
 
-    private val presenter = FavoritesPresenter()
+    private lateinit var presenter: FavoritesPresenter
     private lateinit var favoritesAdapter: FavoritesAdapter
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentFavoritesBinding {
@@ -24,31 +23,24 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
     }
 
     override fun initView() {
+        presenter = FavoritesPresenter(requireContext(), CocktailRepository())
         setupRecyclerView()
     }
 
     override fun initData() {
         presenter.setView(this)
-        presenter.onStart()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Ensure presenter has a view reference before loading
-        presenter.setView(this)
-        // Force reload favorites
         presenter.loadFavorites()
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // Clear view reference to avoid memory leaks
-        presenter.setView(null)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         presenter.onStop()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload favorites when returning from other screens
+        presenter.loadFavorites()
     }
 
     private fun setupRecyclerView() {
@@ -96,28 +88,27 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
 
     // Implement FavoritesContract.View methods with names that don't conflict with BaseFragment
     override fun displayLoading(show: Boolean) {
-        if (show) {
-            super.showLoading()
-            viewBinding.favoritesRecyclerView.visibility = View.GONE
-            viewBinding.emptyStateView.visibility = View.GONE
-        } else {
-            super.hideLoading()
-        }
+        viewBinding.loadingProgressBar.visibility = if (show) View.VISIBLE else View.GONE
+        viewBinding.favoritesRecyclerView.visibility = if (show) View.GONE else View.VISIBLE
+        viewBinding.emptyStateView.visibility = View.GONE
     }
 
     override fun displayFavorites(favorites: List<Cocktail>) {
-        viewBinding.favoritesRecyclerView.visibility = View.VISIBLE
-        viewBinding.emptyStateView.visibility = View.GONE
+        viewBinding.loadingProgressBar.visibility = View.GONE
+        viewBinding.emptyStateView.visibility = if (favorites.isEmpty()) View.VISIBLE else View.GONE
+        viewBinding.favoritesRecyclerView.visibility = if (favorites.isEmpty()) View.GONE else View.VISIBLE
         favoritesAdapter.submitList(favorites)
     }
 
     override fun displayEmptyState() {
+        viewBinding.loadingProgressBar.visibility = View.GONE
         viewBinding.favoritesRecyclerView.visibility = View.GONE
         viewBinding.emptyStateView.visibility = View.VISIBLE
     }
 
     override fun displayError(message: String) {
-        super.showError(message)
+        viewBinding.loadingProgressBar.visibility = View.GONE
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
     override fun showFavoriteAdded(cocktail: Cocktail) {
