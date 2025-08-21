@@ -10,11 +10,13 @@ import com.example.cocktaildb.data.service.FavoriteFirebaseService
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.*
 
-class FavoritesPresenter(private val context: Context) : FavoritesContract.Presenter {
+class FavoritesPresenter(
+    private val context: Context,
+    private val cocktailRepository: CocktailRepository
+) : FavoritesContract.Presenter {
 
     private var view: FavoritesContract.View? = null
     private val favoriteFirebaseService = FavoriteFirebaseService()
-    private val cocktailRepository = CocktailRepository()
     private val auth = FirebaseAuth.getInstance()
     private var presenterJob: Job? = null
     private val TAG = "FavoritesPresenter"
@@ -24,8 +26,8 @@ class FavoritesPresenter(private val context: Context) : FavoritesContract.Prese
 
     override fun setView(view: FavoritesContract.View?) {
         this.view = view
-        // Preload offline favorites into memory for quick access
-        FavoritesManager.preloadOfflineFavorites(context)
+        // Preload offline favorites into memory for quick access via repository
+        cocktailRepository.preloadOfflineFavorites(context)
         // Show cached data only if we're not currently loading
         if (!isLoading) {
             cachedFavorites?.let { favorites ->
@@ -91,7 +93,7 @@ class FavoritesPresenter(private val context: Context) : FavoritesContract.Prese
     }
 
     private fun displayOfflineFavorites() {
-        val offline = FavoritesManager.getOfflineFavorites(context)
+        val offline = cocktailRepository.getOfflineFavorites(context)
         cachedFavorites = offline
         if (offline.isEmpty()) {
             view?.displayEmptyState()

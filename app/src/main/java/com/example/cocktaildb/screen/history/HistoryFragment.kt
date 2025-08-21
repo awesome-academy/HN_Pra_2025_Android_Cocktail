@@ -127,7 +127,7 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
     override fun initData() {
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
-        presenter = HistoryPresenter(requireContext())
+        presenter = HistoryPresenter(requireContext(), repository)
         presenter.setView(this)
     }
 
@@ -190,4 +190,4 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
             .setNegativeButton("Cancel", null)
             .show()
     }
-} 
+}

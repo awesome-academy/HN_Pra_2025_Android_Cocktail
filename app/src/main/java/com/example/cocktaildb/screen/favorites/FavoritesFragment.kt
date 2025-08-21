@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.databinding.FragmentFavoritesBinding
 import com.example.cocktaildb.utils.base.BaseFragment
 
@@ -22,7 +23,7 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
     }
 
     override fun initView() {
-        presenter = FavoritesPresenter(requireContext())
+        presenter = FavoritesPresenter(requireContext(), CocktailRepository())
         setupRecyclerView()
     }
 

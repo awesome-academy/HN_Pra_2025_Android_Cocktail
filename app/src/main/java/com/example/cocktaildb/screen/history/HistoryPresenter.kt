@@ -1,17 +1,17 @@
 package com.example.cocktaildb.screen.history
 
 import android.content.Context
-import android.content.SharedPreferences
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.CocktailRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 class HistoryPresenter(
-    private val context: Context
+    private val context: Context,
+    private val cocktailRepository: CocktailRepository
 ) : HistoryContract.Presenter {
 
     private var view: HistoryContract.View? = null
-    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
 
     override fun setView(view: HistoryContract.View?) {
         this.view = view
@@ -31,22 +31,9 @@ class HistoryPresenter(
 
     override fun loadHistoryCocktails() {
         view?.displayLoading(true)
-
         try {
-            val historyString = sharedPreferences.getString("cocktail_history", "") ?: ""
-            val cocktails: List<Cocktail> = if (historyString.isEmpty()) {
-                emptyList()
-            } else {
-                historyString.split("||").mapNotNull { entry ->
-                    val fields = entry.split("|:|")
-                    if (fields.size >= 3) {
-                        Cocktail(idDrink = fields[0], strDrink = fields[1], strDrinkThumb = fields[2])
-                    } else null
-                }
-            }
-
+            val cocktails = cocktailRepository.getHistoryCocktails(context)
             view?.displayLoading(false)
-
             if (cocktails.isEmpty()) {
                 view?.showEmptyState()
             } else {
@@ -67,7 +54,7 @@ class HistoryPresenter(
     override fun clearHistory() {
         try {
             // Delete any locally cached images associated with history items
-            val historyString = sharedPreferences.getString("cocktail_history", "") ?: ""
+            val historyString = cocktailRepository.getHistoryString(context)
             val historyCocktails: List<Cocktail> = if (historyString.isEmpty()) {
                 emptyList()
             } else {
@@ -88,7 +75,7 @@ class HistoryPresenter(
                 }
             }
 
-            sharedPreferences.edit().remove("cocktail_history").apply()
+            cocktailRepository.clearHistory(context)
             view?.showEmptyState()
         } catch (e: Exception) {
             view?.displayError("Error clearing history: ${e.message}")
