@@ -1,10 +1,14 @@
 package com.example.cocktaildb.screen.detail
 
+import android.content.Context
 import android.util.Log
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.service.CheckmarkFirebaseService
-import com.google.firebase.auth.FirebaseAuth
+import com.example.cocktaildb.data.service.HistoryFirebaseService
+import com.example.cocktaildb.data.manager.FavoritesManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,7 +16,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class CocktailDetailPresenter(
-    private val repository: CocktailRepository
+    private val repository: CocktailRepository,
+    private val authRepository: AuthRepository
 ) : CocktailDetailContract.Presenter {
     companion object {
         private const val RELATED_COCKTAIL_LIMIT = 6
@@ -20,7 +25,7 @@ class CocktailDetailPresenter(
 
     private var view: CocktailDetailContract.View? = null
     private val checkmarkService = CheckmarkFirebaseService()
-    private val auth = FirebaseAuth.getInstance()
+    private val historyFirebaseService = HistoryFirebaseService()
     private var presenterJob: Job? = null
     private val TAG = "CocktailDetailPresenter"
 
@@ -29,7 +34,14 @@ class CocktailDetailPresenter(
     }
 
     override fun onStart() {
-        // No-op for now
+        // Initialize favorites manager if needed
+        if (!FavoritesManager.isInitialized()) {
+            FavoritesManager.loadFavoritesFromFirestore { success ->
+                if (!success) {
+                    Log.e(TAG, "Failed to load favorites")
+                }
+            }
+        }
     }
 
     override fun onStop() {
@@ -58,15 +70,14 @@ class CocktailDetailPresenter(
                 }
                 view?.showRelatedCocktails(relatedCocktails)
             } catch (e: Exception) {
-                view?.showError(e.message ?: "Unknown error")
             }
         }
     }
 
     override fun toggleBookmark(cocktail: Cocktail) {
-        val currentUser = auth.currentUser
+        val currentUser = authRepository.getCurrentUser()
         if (currentUser == null) {
-            view?.showError("Please sign in to bookmark cocktails")
+            view?.showErrorResource(R.string.error_please_sign_in_to_bookmark)
             return
         }
         presenterJob?.cancel()
@@ -83,7 +94,7 @@ class CocktailDetailPresenter(
                         if (result.isSuccess) {
                             view?.updateBookmarkButtonState(false)
                         } else {
-                            view?.showError("Failed to remove bookmark")
+                            view?.showErrorResource(R.string.error_failed_to_remove_bookmark)
                         }
                     } else {
                         val result = withContext(Dispatchers.IO) {
@@ -92,21 +103,21 @@ class CocktailDetailPresenter(
                         if (result.isSuccess) {
                             view?.updateBookmarkButtonState(true)
                         } else {
-                            view?.showError("Failed to add bookmark")
+                            view?.showErrorResource(R.string.error_failed_to_add_bookmark)
                         }
                     }
                 } else {
-                    view?.showError("Failed to check bookmark status")
+                    view?.showErrorResource(R.string.error_failed_to_check_bookmark_status)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error toggling bookmark", e)
-                view?.showError("Error updating bookmark status")
+                view?.showErrorResource(R.string.error_updating_bookmark_status)
             }
         }
     }
 
     override fun checkBookmarkStatus(cocktailId: String) {
-        val currentUser = auth.currentUser
+        val currentUser = authRepository.getCurrentUser()
         if (currentUser == null) {
             view?.updateBookmarkButtonState(false)
             return
@@ -126,6 +137,23 @@ class CocktailDetailPresenter(
                 Log.e(TAG, "Error checking bookmark status", e)
                 view?.updateBookmarkButtonState(false)
             }
+        }
+    }
+
+    override fun checkFavoriteStatus(cocktailId: String) {
+        val isFavorite = FavoritesManager.isFavorite(cocktailId)
+        view?.updateFavoriteButtonState(isFavorite)
+    }
+
+    override fun toggleFavorite(cocktail: Cocktail) {
+        FavoritesManager.toggleFavorite(cocktail) { isFavorite ->
+            view?.updateFavoriteButtonState(isFavorite)
+            val message = if (isFavorite) {
+                "Added ${cocktail.strDrink} to favorites"
+            } else {
+                "Removed ${cocktail.strDrink} from favorites"
+            }
+            view?.showMessage(message)
         }
     }
 }

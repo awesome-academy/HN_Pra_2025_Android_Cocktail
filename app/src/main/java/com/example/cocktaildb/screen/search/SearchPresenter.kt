@@ -1,17 +1,31 @@
 package com.example.cocktaildb.screen.search
 
+import android.util.Log
+import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.utils.pagination.PaginationData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.cancel
 import java.util.concurrent.Executors
 
-class SearchPresenter : SearchContract.Presenter {
+class SearchPresenter(
+    private val cocktailRepository: CocktailRepository,
+    private val authRepository: AuthRepository,
+    private val historyFirebaseService: HistoryFirebaseService
+) : SearchContract.Presenter {
 
     private var view: SearchContract.View? = null
-    private val cocktailRepository = CocktailRepository(CocktailRemoteDataSource())
     private val executor = Executors.newSingleThreadExecutor()
+    private val presenterScope = CoroutineScope(Dispatchers.Main + Job())
     private var currentSearchQuery: String = ""
-    private val paginationData = PaginationData<com.example.cocktaildb.data.model.Cocktail>(10)
+    private val paginationData = PaginationData<Cocktail>(10)
 
     override fun setView(view: SearchContract.View?) {
         this.view = view
@@ -22,6 +36,7 @@ class SearchPresenter : SearchContract.Presenter {
     }
 
     override fun onStop() {
+        presenterScope.cancel()
         view = null
     }
 
@@ -35,9 +50,9 @@ class SearchPresenter : SearchContract.Presenter {
                 } else {
                     cocktailRepository.searchCocktails(query)
                 }
-                
+
                 paginationData.setData(cocktails)
-                
+
                 view?.let { v ->
                     android.os.Handler(android.os.Looper.getMainLooper()).post {
                         v.hideLoading()
@@ -161,6 +176,10 @@ class SearchPresenter : SearchContract.Presenter {
             view?.showCocktails(paginationData.currentPageItems)
             updatePaginationUI()
         }
+    }
+
+    override fun onCocktailClicked(cocktail: Cocktail) {
+        view?.navigateToCocktailDetail(cocktail)
     }
 
     private fun updatePaginationUI() {

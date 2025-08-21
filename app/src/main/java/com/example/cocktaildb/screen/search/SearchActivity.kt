@@ -4,11 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.databinding.ActivitySearchBinding
 import com.example.cocktaildb.screen.detail.CocktailDetailFragment
 import com.example.cocktaildb.screen.filter.FilterDialog
@@ -91,7 +94,14 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     }
 
     private fun initPresenter() {
-        presenter = SearchPresenter()
+        // Initialize presenter with dependency injection
+        val cocktailRepository = com.example.cocktaildb.data.repository.CocktailRepository(
+            com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource()
+        )
+        val authRepository = AuthRepository(this)
+        val historyFirebaseService = HistoryFirebaseService()
+
+        presenter = SearchPresenter(cocktailRepository, authRepository, historyFirebaseService)
         presenter.setView(this)
     }
 
@@ -99,7 +109,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         adapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
-                showCocktailDetail(cocktail)
+                presenter.onCocktailClicked(cocktail)
             },
             useSearchLayout = true
         )
@@ -107,14 +117,13 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         viewBinding.recyclerView.adapter = adapter
     }
 
+    override fun navigateToCocktailDetail(cocktail: Cocktail) {
+        showCocktailDetail(cocktail)
+    }
+
     private fun showCocktailDetail(cocktail: Cocktail) {
-        // Add to history first
-        try {
-            com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(this, cocktail)
-        } catch (e: Exception) {
-            // Handle error silently
-        }
-        
+        Log.d("SearchActivity", "Showing cocktail detail: ${cocktail.strDrink} (${cocktail.idDrink})")
+
         // Hide search results and show detail container
         viewBinding.searchResultsContainer.visibility = View.GONE
         viewBinding.detailContainer.visibility = View.VISIBLE
@@ -122,7 +131,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         if (intent.getBooleanExtra("from_today_drink", false)) {
             viewBinding.searchHeader.visibility = View.GONE
         }
-        
+
         // Create and show detail fragment
         val fragment = CocktailDetailFragment().apply {
             arguments = Bundle().apply {
@@ -144,7 +153,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         if (!intent.getBooleanExtra("from_today_drink", false)) {
             transaction.addToBackStack(null)
         }
-        
+
         transaction.commit()
     }
 
@@ -179,7 +188,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         viewBinding.btnNext.setOnClickListener {
             presenter.nextPage()
         }
-        
+
         viewBinding.btnPrevious.setOnClickListener {
             presenter.previousPage()
         }
@@ -201,7 +210,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
 
     private fun applyFilter(category: String?, alcoholicType: String?) {
         val currentQuery = viewBinding.etSearch.text?.toString() ?: ""
-        
+
         when {
             category != null && alcoholicType != null -> {
                 presenter.filterByCategory(category)
@@ -241,7 +250,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     override fun updatePagination(currentPage: Int, totalPages: Int, hasNext: Boolean, hasPrevious: Boolean) {
         viewBinding.btnNext.isEnabled = hasNext
         viewBinding.btnNext.alpha = if (hasNext) 1.0f else 0.5f
-        
+
         viewBinding.btnPrevious.isEnabled = hasPrevious
         viewBinding.btnPrevious.alpha = if (hasPrevious) 1.0f else 0.5f
 

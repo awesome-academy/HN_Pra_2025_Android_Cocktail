@@ -15,7 +15,7 @@ class RecipeAdapter : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
     private val recipes: MutableList<Recipe> = mutableListOf()
     private val recipeImages: MutableMap<String, RecipeImage?> = mutableMapOf()
     private var onItemClickListener: ((Recipe) -> Unit)? = null
-    
+
     companion object {
         private const val TAG = "RecipeAdapter"
     }
@@ -65,13 +65,13 @@ class RecipeAdapter : RecyclerView.Adapter<RecipeAdapter.RecipeViewHolder>() {
 
         fun bind(recipe: Recipe, image: RecipeImage?) {
             binding.cocktailTitleTextView.text = recipe.name
-            binding.cocktailCategoryTextView.text = recipe.category.ifEmpty { 
+            binding.cocktailCategoryTextView.text = recipe.category.ifEmpty {
                 binding.root.context.getString(R.string.custom_recipe)
             }
 
             val imageUrl = image?.imageUrl ?: ""
             Log.d(TAG, "Loading image for recipe ${recipe.name}, URL: $imageUrl")
-            
+
             if (imageUrl.isNotEmpty()) {
                 try {
                     ImageLoader.loadImage(
