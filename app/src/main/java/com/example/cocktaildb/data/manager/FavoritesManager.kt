@@ -7,8 +7,6 @@ import com.example.cocktaildb.data.model.Favorite
 import com.example.cocktaildb.utils.ImageLoader
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import java.util.UUID
 
 /**
@@ -28,7 +26,6 @@ object FavoritesManager {
     // Offline storage
     private const val OFFLINE_PREFS = "cocktail_favorites"
     private const val OFFLINE_KEY = "favorites"
-    private val gson = Gson()
 
     // Check if manager is initialized with user favorites
     fun isInitialized(): Boolean = isInitialized
@@ -75,9 +72,13 @@ object FavoritesManager {
     fun getOfflineFavorites(context: Context): List<Cocktail> {
         return try {
             val prefs = context.getSharedPreferences(OFFLINE_PREFS, Context.MODE_PRIVATE)
-            val json = prefs.getString(OFFLINE_KEY, "[]")
-            val type = object : TypeToken<List<Cocktail>>() {}.type
-            gson.fromJson<List<Cocktail>>(json, type) ?: emptyList()
+            val dataString = prefs.getString(OFFLINE_KEY, "") ?: ""
+            if (dataString.isEmpty()) emptyList() else dataString.split("||").mapNotNull { entry ->
+                val fields = entry.split("|:|")
+                if (fields.size >= 3) {
+                    Cocktail(idDrink = fields[0], strDrink = fields[1], strDrinkThumb = fields[2])
+                } else null
+            }
         } catch (_: Exception) {
             emptyList()
         }
@@ -86,7 +87,8 @@ object FavoritesManager {
     private fun saveOfflineFavorites(context: Context, items: List<Cocktail>) {
         runCatching {
             val prefs = context.getSharedPreferences(OFFLINE_PREFS, Context.MODE_PRIVATE)
-            prefs.edit().putString(OFFLINE_KEY, gson.toJson(items)).apply()
+            val dataString = items.joinToString("||") { "${it.idDrink}|:|${it.strDrink}|:|${it.strDrinkThumb ?: ""}" }
+            prefs.edit().putString(OFFLINE_KEY, dataString).apply()
         }
     }
 
