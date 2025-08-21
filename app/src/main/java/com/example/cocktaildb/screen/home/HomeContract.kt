@@ -13,7 +13,6 @@ interface HomeContract {
     interface Presenter : BasePresenter<View> {
         fun loadCocktails()
         fun onCocktailClicked(cocktail: Cocktail)
-        fun addToHistory(cocktail: Cocktail)
     }
 }
 

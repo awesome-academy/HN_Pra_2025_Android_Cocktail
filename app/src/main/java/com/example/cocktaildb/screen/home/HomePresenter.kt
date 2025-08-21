@@ -53,33 +53,6 @@ class HomePresenter(
     }
 
     override fun onCocktailClicked(cocktail: Cocktail) {
-        addToHistory(cocktail)
         view?.navigateToCocktailDetail(cocktail)
-    }
-
-    override fun addToHistory(cocktail: Cocktail) {
-        Log.e("HomePresenter", "addToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
-
-        val currentUser = authRepository.getCurrentUser()
-
-        if (currentUser != null) {
-            Log.e("HomePresenter", "User authenticated: ${currentUser.uid}")
-
-            presenterScope.launch {
-                try {
-                    Log.e("HomePresenter", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
-                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
-                    if (result.isSuccess) {
-                        Log.e("HomePresenter", "Successfully added detailed history: ${result.getOrNull()}")
-                    } else {
-                        Log.e("HomePresenter", "Failed to add detailed history: ${result.exceptionOrNull()?.message}")
-                    }
-                } catch (e: Exception) {
-                    Log.e("HomePresenter", "Exception adding detailed history: ${e.message}", e)
-                }
-            }
-        } else {
-            Log.e("HomePresenter", "User not authenticated, skipping history add")
-        }
     }
 }

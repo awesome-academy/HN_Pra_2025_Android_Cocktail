@@ -2,6 +2,7 @@ package com.example.cocktaildb.screen.detail
 
 import android.content.Context
 import android.util.Log
+import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.AuthRepository
@@ -69,7 +70,6 @@ class CocktailDetailPresenter(
                 }
                 view?.showRelatedCocktails(relatedCocktails)
             } catch (e: Exception) {
-                view?.showError(e.message ?: "Unknown error")
             }
         }
     }
@@ -77,7 +77,7 @@ class CocktailDetailPresenter(
     override fun toggleBookmark(cocktail: Cocktail) {
         val currentUser = authRepository.getCurrentUser()
         if (currentUser == null) {
-            view?.showError("Please sign in to bookmark cocktails")
+            view?.showErrorResource(R.string.error_please_sign_in_to_bookmark)
             return
         }
         presenterJob?.cancel()
@@ -94,7 +94,7 @@ class CocktailDetailPresenter(
                         if (result.isSuccess) {
                             view?.updateBookmarkButtonState(false)
                         } else {
-                            view?.showError("Failed to remove bookmark")
+                            view?.showErrorResource(R.string.error_failed_to_remove_bookmark)
                         }
                     } else {
                         val result = withContext(Dispatchers.IO) {
@@ -103,15 +103,15 @@ class CocktailDetailPresenter(
                         if (result.isSuccess) {
                             view?.updateBookmarkButtonState(true)
                         } else {
-                            view?.showError("Failed to add bookmark")
+                            view?.showErrorResource(R.string.error_failed_to_add_bookmark)
                         }
                     }
                 } else {
-                    view?.showError("Failed to check bookmark status")
+                    view?.showErrorResource(R.string.error_failed_to_check_bookmark_status)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error toggling bookmark", e)
-                view?.showError("Error updating bookmark status")
+                view?.showErrorResource(R.string.error_updating_bookmark_status)
             }
         }
     }
@@ -154,26 +154,6 @@ class CocktailDetailPresenter(
                 "Removed ${cocktail.strDrink} from favorites"
             }
             view?.showMessage(message)
-        }
-    }
-
-    override fun addToHistory(cocktail: Cocktail) {
-        val currentUser = authRepository.getCurrentUser()
-        if (currentUser != null) {
-            CoroutineScope(Dispatchers.IO).launch {
-                try {
-                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
-                    if (result.isSuccess) {
-                        Log.d(TAG, "Successfully added to history: ${cocktail.strDrink}")
-                    } else {
-                        Log.e(TAG, "Failed to add to history: ${result.exceptionOrNull()?.message}")
-                    }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Exception adding to history: ${e.message}", e)
-                }
-            }
-        } else {
-            Log.e(TAG, "User not authenticated, skipping history add")
         }
     }
 }

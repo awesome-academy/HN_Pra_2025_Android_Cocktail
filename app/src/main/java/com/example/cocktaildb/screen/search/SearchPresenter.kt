@@ -179,34 +179,7 @@ class SearchPresenter(
     }
 
     override fun onCocktailClicked(cocktail: Cocktail) {
-        addToHistory(cocktail)
         view?.navigateToCocktailDetail(cocktail)
-    }
-
-    override fun addToHistory(cocktail: Cocktail) {
-        Log.e("SearchPresenter", "addToHistory called for: ${cocktail.strDrink} (${cocktail.idDrink})")
-
-        val currentUser = authRepository.getCurrentUser()
-
-        if (currentUser != null) {
-            Log.e("SearchPresenter", "User authenticated: ${currentUser.uid}")
-
-            presenterScope.launch {
-                try {
-                    Log.e("SearchPresenter", "Adding cocktail details to Firebase history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
-                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
-                    if (result.isSuccess) {
-                        Log.e("SearchPresenter", "Successfully added detailed history: ${result.getOrNull()}")
-                    } else {
-                        Log.e("SearchPresenter", "Failed to add detailed history: ${result.exceptionOrNull()?.message}")
-                    }
-                } catch (e: Exception) {
-                    Log.e("SearchPresenter", "Exception adding detailed history: ${e.message}", e)
-                }
-            }
-        } else {
-            Log.e("SearchPresenter", "User not authenticated, skipping history add")
-        }
     }
 
     private fun updatePaginationUI() {

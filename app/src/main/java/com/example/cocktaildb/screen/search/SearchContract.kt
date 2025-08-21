@@ -26,7 +26,6 @@ interface SearchContract {
         fun previousPage()
         fun goToPage(page: Int)
         fun onCocktailClicked(cocktail: Cocktail)
-        fun addToHistory(cocktail: Cocktail)
     }
 }
 

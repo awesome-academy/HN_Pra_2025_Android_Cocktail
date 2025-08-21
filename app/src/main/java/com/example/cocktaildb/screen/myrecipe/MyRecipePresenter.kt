@@ -18,21 +18,23 @@ class MyRecipePresenter(
     private var view: MyRecipeContract.View? = null
     private var job: Job? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private var isDataLoaded = false
+    private var cachedRecipes: List<Recipe> = emptyList()
 
     override fun setView(view: MyRecipeContract.View?) {
         this.view = view
-        if (view != null) {
-            loadUserRecipes()
+        if (view != null && isDataLoaded && cachedRecipes.isNotEmpty()) {
+            view.showUserRecipes(cachedRecipes)
         }
     }
 
     override fun onStart() {
-        // Refresh data if needed
-        loadUserRecipes()
+        if (isDataLoaded && cachedRecipes.isNotEmpty()) {
+            view?.showUserRecipes(cachedRecipes)
+        }
     }
 
     override fun onStop() {
-        // Clean up resources
         job?.cancel()
         view = null
     }
@@ -44,6 +46,8 @@ class MyRecipePresenter(
             return
         }
 
+        job?.cancel()
+        
         view?.displayLoading(true)
 
         job = coroutineScope.launch {
@@ -56,17 +60,29 @@ class MyRecipePresenter(
                     onSuccess = { recipes ->
                         view?.displayLoading(false)
                         view?.showUserRecipes(recipes)
+                        cachedRecipes = recipes
+                        isDataLoaded = true
                     },
                     onFailure = { exception ->
                         view?.displayLoading(false)
                         view?.displayError("Failed to load recipes: ${exception.message}")
+                        cachedRecipes = emptyList()
+                        isDataLoaded = false
                     }
                 )
             } catch (e: Exception) {
                 view?.displayLoading(false)
                 view?.displayError("Error loading recipes: ${e.message}")
+                cachedRecipes = emptyList()
+                isDataLoaded = false
             }
         }
+    }
+
+    override fun refreshUserRecipes() {
+        isDataLoaded = false
+        cachedRecipes = emptyList()
+        loadUserRecipes()
     }
 }
 

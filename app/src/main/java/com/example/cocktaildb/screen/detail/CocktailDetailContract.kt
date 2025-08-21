@@ -7,6 +7,7 @@ interface CocktailDetailContract {
     interface View {
         fun showRelatedCocktails(cocktails: List<Cocktail>)
         fun showError(message: String)
+        fun showErrorResource(resourceId: Int)
         fun updateBookmarkButtonState(isBookmarked: Boolean)
         fun updateFavoriteButtonState(isFavorite: Boolean)
         fun showMessage(message: String)
@@ -18,7 +19,6 @@ interface CocktailDetailContract {
         fun toggleBookmark(cocktail: Cocktail)
         fun checkFavoriteStatus(cocktailId: String)
         fun toggleFavorite(cocktail: Cocktail)
-        fun addToHistory(cocktail: Cocktail)
         override fun setView(view: View?)
         override fun onStart()
         override fun onStop()

@@ -215,32 +215,6 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
 
     // Implement CocktailClickListener interface method
     override fun onCocktailClicked(cocktail: Cocktail) {
-        Log.e("ProfileFragment", "onCocktailClicked: ${cocktail.strDrink} (${cocktail.idDrink})")
-
-        // Add to history using Firebase
-        val authRepository = AuthRepository(requireContext())
-        val currentUser = authRepository.getCurrentUser()
-
-        if (currentUser != null) {
-            Log.e("ProfileFragment", "User authenticated: ${currentUser.uid}")
-            val historyFirebaseService = HistoryFirebaseService()
-            viewLifecycleOwner.lifecycleScope.launch {
-                try {
-                    Log.e("ProfileFragment", "Adding cocktail details to history: uid=${currentUser.uid}, cocktail=${cocktail.strDrink}")
-                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
-                    if (result.isSuccess) {
-                        Log.e("ProfileFragment", "Successfully added detailed history: ${result.getOrNull()}")
-                    } else {
-                        Log.e("ProfileFragment", "Failed to add detailed history: ${result.exceptionOrNull()?.message}")
-                    }
-                } catch (e: Exception) {
-                    Log.e("ProfileFragment", "Exception adding detailed history: ${e.message}", e)
-                }
-            }
-        } else {
-            Log.e("ProfileFragment", "User not authenticated, skipping history add")
-        }
-        
         // Navigate to cocktail detail fragment using Navigation Component
         val bundle = Bundle().apply {
             putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)

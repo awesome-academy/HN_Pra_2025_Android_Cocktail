@@ -27,6 +27,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     private lateinit var presenter: MyRecipePresenter
     private lateinit var recipeAdapter: RecipeAdapter
     private lateinit var recipeFirebaseService: RecipeFirebaseService
+    private var isPresenterInitialized = false
 
     companion object {
         private const val TAG = "MyRecipeFragment"
@@ -41,6 +42,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
         private const val KEY_COCKTAIL_IMAGE = "cocktail_image"
         private const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
         private const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
+        private const val KEY_FROM_MY_RECIPE = "from_my_recipe"
         
         // Default values
         private const val DEFAULT_ALCOHOLIC_VALUE = "Unknown"
@@ -102,20 +104,47 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     }
 
     override fun initData() {
-        recipeFirebaseService = RecipeFirebaseService()
-        val authRepository = AuthRepository()
-        presenter = MyRecipePresenter(recipeFirebaseService, authRepository)
-        presenter.setView(this)
+        if (!isPresenterInitialized) {
+            recipeFirebaseService = RecipeFirebaseService()
+            val authRepository = AuthRepository()
+            presenter = MyRecipePresenter(recipeFirebaseService, authRepository)
+            presenter.setView(this)
+            isPresenterInitialized = true
+        } else {
+            presenter.setView(this)
+        }
+        if (!hasDataLoaded()) {
+            presenter.loadUserRecipes()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         presenter.onStart()
+        if (!hasDataLoaded()) {
+            presenter.loadUserRecipes()
+        }
+    }
+
+    private fun hasDataLoaded(): Boolean {
+        return ::recipeAdapter.isInitialized && recipeAdapter.itemCount > 0
     }
 
     override fun onPause() {
         presenter.onStop()
         super.onPause()
+    }
+
+    override fun onDestroyView() {
+        presenter.setView(null)
+        super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        if (isRemoving || requireActivity().isFinishing) {
+            isPresenterInitialized = false
+        }
+        super.onDestroy()
     }
 
     override fun showUserRecipes(recipes: List<Recipe>) {
@@ -179,6 +208,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                 putString(KEY_COCKTAIL_ALCOHOLIC, recipe.alcoholic.ifEmpty { DEFAULT_ALCOHOLIC_VALUE })
                 putString(KEY_COCKTAIL_GLASS, DEFAULT_GLASS_TYPE)
                 putString(KEY_COCKTAIL_INSTRUCTIONS, recipe.instructions)
+                putBoolean(KEY_FROM_MY_RECIPE, true) // Mark as coming from MyRecipe
 
                 val imageUrl = recipeAdapter.getRecipeImageUrl(recipe.id) ?: ""
                 putString(KEY_COCKTAIL_IMAGE, imageUrl)
@@ -237,6 +267,12 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                 Log.e(TAG, "Error loading ingredients for recipe $recipeId: ${e.message}")
                 onComplete(emptyList(), emptyList())
             }
+        }
+    }
+
+    fun refreshRecipes() {
+        if (::presenter.isInitialized) {
+            presenter.refreshUserRecipes()
         }
     }
     

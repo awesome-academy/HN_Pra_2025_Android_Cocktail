@@ -131,11 +131,24 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
         val contextWrapper = com.example.cocktaildb.utils.CocktailContextWrapper(requireContext(), this)
         presenter = HistoryPresenter(repository, contextWrapper)
         presenter.setView(this)
+        // Data will be loaded automatically via DataManager after login
+        // Only load manually if data is not available
+        if (!hasDataLoaded()) {
+            presenter.loadHistoryCocktails()
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        if (!hasDataLoaded()) {
+            presenter.loadHistoryCocktails()
+        }
         presenter.onStart()
+    }
+
+    private fun hasDataLoaded(): Boolean {
+        // Check if adapter has data
+        return ::historyAdapter.isInitialized && historyAdapter.itemCount > 0
     }
 
     override fun onPause() {
@@ -163,6 +176,10 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
     }
 
     override fun displayError(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showSyncStatus(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 

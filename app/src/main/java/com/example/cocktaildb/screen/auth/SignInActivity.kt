@@ -9,6 +9,7 @@ import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.databinding.ActivityLoginBinding
 import com.example.cocktaildb.utils.base.BaseActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.example.cocktaildb.data.manager.DataManager
 
 class SignInActivity : BaseActivity<ActivityLoginBinding>(), AuthContract.View {
 
@@ -73,6 +74,10 @@ class SignInActivity : BaseActivity<ActivityLoginBinding>(), AuthContract.View {
         } else {
             showMessage(getString(R.string.Welcome_back))
         }
+        
+        // Auto load data after successful login
+        DataManager.autoLoadDataAfterLogin(this, this)
+        
         val intent = Intent(this, MainActivity::class.java)
         startActivity(intent)
         finish()
