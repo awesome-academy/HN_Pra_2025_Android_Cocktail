@@ -103,4 +103,5 @@ class NotificationManager(private val context: Context) {
     fun scheduleDailyNotification() {
         // Sẽ được implement trong NotificationService
     }
-} 
+}
+

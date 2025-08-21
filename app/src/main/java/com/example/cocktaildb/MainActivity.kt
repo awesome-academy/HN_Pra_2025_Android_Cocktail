@@ -152,3 +152,5 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }, 2000)
     }
 }
+
+
