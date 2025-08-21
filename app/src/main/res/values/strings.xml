@@ -2,7 +2,7 @@
     <string name="app_name">cocktaildb</string>
     <string name="title_home">Home</string>
     <string name="title_messages">Messages</string>
-    <string name="title_today_drink">Today's Drink</string>
+    <string name="title_today_drink">Today Drink</string>
     <string name="title_add">Add</string>
     <string name="title_favorites">Favorites</string>
 

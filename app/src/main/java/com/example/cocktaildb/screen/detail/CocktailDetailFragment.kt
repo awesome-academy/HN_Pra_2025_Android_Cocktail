@@ -93,7 +93,8 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
     private fun setupPresenter() {
         val repository = CocktailRepository(CocktailRemoteDataSource())
-        presenter = CocktailDetailPresenter(repository)
+        val authRepository = com.example.cocktaildb.data.repository.AuthRepository()
+        presenter = CocktailDetailPresenter(repository, authRepository)
         presenter.setView(this)
     }
 
@@ -320,6 +321,14 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 isUserBookmarkAction = false
             }
         }
+    }
+
+    override fun updateFavoriteButtonState(isFavorite: Boolean) {
+        TODO("Not yet implemented")
+    }
+
+    override fun showMessage(message: String) {
+        TODO("Not yet implemented")
     }
 
     private fun updateBookmarkUI(isBookmarked: Boolean) {

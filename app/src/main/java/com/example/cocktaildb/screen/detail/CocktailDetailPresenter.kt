@@ -1,10 +1,13 @@
 package com.example.cocktaildb.screen.detail
 
+import android.content.Context
 import android.util.Log
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.service.CheckmarkFirebaseService
-import com.google.firebase.auth.FirebaseAuth
+import com.example.cocktaildb.data.service.HistoryFirebaseService
+import com.example.cocktaildb.data.manager.FavoritesManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,7 +15,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class CocktailDetailPresenter(
-    private val repository: CocktailRepository
+    private val repository: CocktailRepository,
+    private val authRepository: AuthRepository
 ) : CocktailDetailContract.Presenter {
     companion object {
         private const val RELATED_COCKTAIL_LIMIT = 6
@@ -20,7 +24,7 @@ class CocktailDetailPresenter(
 
     private var view: CocktailDetailContract.View? = null
     private val checkmarkService = CheckmarkFirebaseService()
-    private val auth = FirebaseAuth.getInstance()
+    private val historyFirebaseService = HistoryFirebaseService()
     private var presenterJob: Job? = null
     private val TAG = "CocktailDetailPresenter"
 
@@ -29,7 +33,14 @@ class CocktailDetailPresenter(
     }
 
     override fun onStart() {
-        // No-op for now
+        // Initialize favorites manager if needed
+        if (!FavoritesManager.isInitialized()) {
+            FavoritesManager.loadFavoritesFromFirestore { success ->
+                if (!success) {
+                    Log.e(TAG, "Failed to load favorites")
+                }
+            }
+        }
     }
 
     override fun onStop() {
@@ -64,7 +75,7 @@ class CocktailDetailPresenter(
     }
 
     override fun toggleBookmark(cocktail: Cocktail) {
-        val currentUser = auth.currentUser
+        val currentUser = authRepository.getCurrentUser()
         if (currentUser == null) {
             view?.showError("Please sign in to bookmark cocktails")
             return
@@ -106,7 +117,7 @@ class CocktailDetailPresenter(
     }
 
     override fun checkBookmarkStatus(cocktailId: String) {
-        val currentUser = auth.currentUser
+        val currentUser = authRepository.getCurrentUser()
         if (currentUser == null) {
             view?.updateBookmarkButtonState(false)
             return
@@ -126,6 +137,43 @@ class CocktailDetailPresenter(
                 Log.e(TAG, "Error checking bookmark status", e)
                 view?.updateBookmarkButtonState(false)
             }
+        }
+    }
+
+    override fun checkFavoriteStatus(cocktailId: String) {
+        val isFavorite = FavoritesManager.isFavorite(cocktailId)
+        view?.updateFavoriteButtonState(isFavorite)
+    }
+
+    override fun toggleFavorite(cocktail: Cocktail) {
+        FavoritesManager.toggleFavorite(cocktail) { isFavorite ->
+            view?.updateFavoriteButtonState(isFavorite)
+            val message = if (isFavorite) {
+                "Added ${cocktail.strDrink} to favorites"
+            } else {
+                "Removed ${cocktail.strDrink} from favorites"
+            }
+            view?.showMessage(message)
+        }
+    }
+
+    override fun addToHistory(cocktail: Cocktail) {
+        val currentUser = authRepository.getCurrentUser()
+        if (currentUser != null) {
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val result = historyFirebaseService.addHistoryWithDetails(currentUser.uid, cocktail)
+                    if (result.isSuccess) {
+                        Log.d(TAG, "Successfully added to history: ${cocktail.strDrink}")
+                    } else {
+                        Log.e(TAG, "Failed to add to history: ${result.exceptionOrNull()?.message}")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Exception adding to history: ${e.message}", e)
+                }
+            }
+        } else {
+            Log.e(TAG, "User not authenticated, skipping history add")
         }
     }
 }

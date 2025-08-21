@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.lifecycle.lifecycleScope
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.databinding.FragmentDashboardBinding
@@ -14,7 +13,6 @@ import com.example.cocktaildb.utils.TodayDrinkManager
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.base.BaseFragment
-import kotlinx.coroutines.launch
 
 class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardContract.View {
 
@@ -33,7 +31,6 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
     }
 
     private lateinit var presenter: DashboardPresenter
-    private lateinit var todayDrinkManager: TodayDrinkManager
     private var currentDrink: Cocktail? = null
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentDashboardBinding {
@@ -41,11 +38,11 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
     }
 
     override fun initView() {
-        // Initialize presenter
-        presenter = DashboardPresenter()
+        // Initialize presenter with dependency injection
+        val todayDrinkManager = TodayDrinkManager(requireContext())
+        presenter = DashboardPresenter(todayDrinkManager)
         presenter.setView(this)
-
-        todayDrinkManager = TodayDrinkManager(requireContext())
+        
         setupClickListeners()
     }
 
@@ -53,16 +50,14 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
         try {
             viewBinding.drinkCard?.setOnClickListener {
                 currentDrink?.let { drink ->
-                    navigateToCocktailDetail(drink)
+                    presenter.navigateToCocktailDetail(drink)
                 } ?: run {
-                    Toast.makeText(requireContext(), getString(R.string.msg_no_drink_data_available), Toast.LENGTH_SHORT).show()
+                    showMessage(getString(R.string.msg_no_drink_data_available))
                 }
             }
 
             viewBinding.tvTitle?.setOnLongClickListener {
-                todayDrinkManager.forceRefresh()
-                loadTodayDrink()
-                Toast.makeText(requireContext(), getString(R.string.msg_refreshed_today_drink), Toast.LENGTH_SHORT).show()
+                presenter.refreshTodayDrink()
                 true
             }
         } catch (e: Exception) {
@@ -73,54 +68,27 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
     override fun initData() {
         presenter.onStart()
         presenter.loadDashboardData()
-        loadTodayDrink()
+        presenter.loadTodayDrink()
     }
 
-    private fun loadTodayDrink() {
-        lifecycleScope.launch {
-            try {
-                val todayDrink = todayDrinkManager.getTodayDrink()
-                todayDrink?.let { 
-                    currentDrink = it
-                    displayDrink(it)
-                } ?: run {
-                    Toast.makeText(requireContext(), getString(R.string.msg_no_today_drink_available), Toast.LENGTH_SHORT).show()
-                    showDashboardData()
-                }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                Toast.makeText(requireContext(), getString(R.string.msg_failed_load_today_drink), Toast.LENGTH_SHORT).show()
-                showDashboardData()
-            }
-        }
+    override fun showTodayDrink(cocktail: Cocktail) {
+        displayTodayDrink(cocktail)
     }
 
-    private fun navigateToCocktailDetail(drink: Cocktail) {
-        val intent = Intent(requireContext(), SearchActivity::class.java).apply {
-            putExtra(EXTRA_SHOW_DETAIL, true)
-            putExtra(EXTRA_FROM_TODAY_DRINK, true)
-            putExtra(EXTRA_COCKTAIL_ID, drink.idDrink)
-            putExtra(EXTRA_COCKTAIL_NAME, drink.strDrink)
-            putExtra(EXTRA_COCKTAIL_CATEGORY, drink.strCategory)
-            putExtra(EXTRA_COCKTAIL_ALCOHOLIC, drink.strAlcoholic)
-            putExtra(EXTRA_COCKTAIL_GLASS, drink.strGlass)
-            putExtra(EXTRA_COCKTAIL_INSTRUCTIONS, drink.strInstructions)
-            putExtra(EXTRA_COCKTAIL_IMAGE, drink.strDrinkThumb)
-            putExtra(EXTRA_COCKTAIL_INGREDIENTS, drink.ingredients.toTypedArray())
-            putExtra(EXTRA_COCKTAIL_MEASURES, drink.measures.toTypedArray())
-        }
-        startActivity(intent)
+    override fun navigateToCocktailDetail(cocktail: Cocktail) {
+        navigateToDetail(cocktail)
     }
 
-    private fun displayDrink(drink: Cocktail) {
+    private fun displayTodayDrink(cocktail: Cocktail) {
+        currentDrink = cocktail
         try {
-            viewBinding.tvDrinkName?.text = drink.strDrink
-            viewBinding.tvDrinkCategory?.text = drink.strCategory ?: getString(R.string.default_drink_category)
+            viewBinding.tvDrinkName?.text = cocktail.strDrink
+            viewBinding.tvDrinkCategory?.text = cocktail.strCategory ?: getString(R.string.default_drink_category)
 
             viewBinding.ivDrinkImage?.let { imageView ->
-                if (!drink.strDrinkThumb.isNullOrEmpty()) {
+                if (!cocktail.strDrinkThumb.isNullOrEmpty()) {
                     ImageLoader.loadImage(
-                        drink.strDrinkThumb,
+                        cocktail.strDrinkThumb,
                         imageView,
                         R.mipmap.chocolate_milk
                     )
@@ -129,16 +97,37 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
                 }
             }
 
-            val isHotDrink = drink.strCategory?.contains("Coffee", ignoreCase = true) == true ||
-                             drink.strCategory?.contains("Tea", ignoreCase = true) == true ||
-                             drink.strAlcoholic?.contains("Alcoholic", ignoreCase = true) == true ||
-                             drink.strInstructions?.contains("hot", ignoreCase = true) == true
+            val isHotDrink = cocktail.strCategory?.contains("Coffee", ignoreCase = true) == true ||
+                             cocktail.strCategory?.contains("Tea", ignoreCase = true) == true ||
+                             cocktail.strAlcoholic?.contains("Alcoholic", ignoreCase = true) == true ||
+                             cocktail.strInstructions?.contains("hot", ignoreCase = true) == true
 
             viewBinding.cardHotBadge?.visibility = if (isHotDrink) View.VISIBLE else View.GONE
             viewBinding.tvHotBadge?.text = getString(R.string.hot_badge)
         } catch (e: Exception) {
             showDashboardData()
         }
+    }
+
+    private fun navigateToDetail(cocktail: Cocktail) {
+        val intent = Intent(requireContext(), SearchActivity::class.java).apply {
+            putExtra(EXTRA_SHOW_DETAIL, true)
+            putExtra(EXTRA_FROM_TODAY_DRINK, true)
+            putExtra(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+            putExtra(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+            putExtra(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory)
+            putExtra(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic)
+            putExtra(EXTRA_COCKTAIL_GLASS, cocktail.strGlass)
+            putExtra(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions)
+            putExtra(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb)
+            putExtra(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+            putExtra(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+        }
+        startActivity(intent)
+    }
+
+    override fun showMessage(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
