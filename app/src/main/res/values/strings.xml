@@ -130,6 +130,33 @@
     <string name="desc_glass_suffix"> served in a %1$s</string>
     <string name="desc_tail"> with carefully selected ingredients.</string>
     <string name="error_loading_related_cocktails">Error loading related cocktails: %1$s</string>
+
+    <string name="notif_channel_name">Cocktail Notifications</string>
+    <string name="notif_channel_description">Notifications for cocktail app</string>
+    <string name="notif_default_title">Cocktail App</string>
+    <string name="notif_daily_message">🍹 It’s time to enjoy a cocktail! Discover a new recipe.</string>
+    <string name="notif_test_sent">Test notification sent!</string>
+    <string name="notif_daily_scheduled">Daily notification scheduled for 12:00 PM!</string>
+    <string name="notif_daily_cancelled">Daily notification cancelled!</string>
+    <string name="notif_permission_denied">Notification permission denied</string>
+    <string name="notification_message_1">Discover a refreshing Mojito today!</string>
+    <string name="notification_message_2">How about a classic Margarita?</string>
+    <string name="notification_message_3">It’s cocktail o’clock! Try something new.</string>
+    <string name="notification_message_4">Shake it up with a Whiskey Sour.</string>
+    <string name="notification_message_5">Fancy a Piña Colada?</string>
+    <string name="notification_message_6">Explore new flavors in your bar.</string>
+    <string name="notification_message_7">A Negroni might be perfect now.</string>
+    <string name="notification_message_8">Mix and enjoy: discover a new recipe!</string>
+    <string name="notification_message_9">Try a vibrant Aperol Spritz today.</string>
+    <string name="notification_message_10">Feeling creative? Build your own cocktail.</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_description">Manage and test your cocktail notifications below.</string>
+    <string name="btn_test_notification">Send test notification</string>
+    <string name="btn_schedule_notification">Schedule daily notification</string>
+    <string name="btn_cancel_notification">Cancel daily notification</string>
+    <string name="notifications_info">You can change notification settings anytime in system settings.</string>
     <string name="instruction_numbered">%1$d. %2$s</string>
     <string name="ingredients_count">Ingredients (%1$d)</string>
 </resources>
+
+

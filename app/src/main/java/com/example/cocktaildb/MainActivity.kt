@@ -13,6 +13,8 @@ import androidx.core.view.WindowInsetsControllerCompat
 import android.view.View
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
+import com.example.cocktaildb.service.NotificationService
+import com.example.cocktaildb.utils.AppNotificationManager
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -130,6 +132,22 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     override fun initData() {
-        // TODO: Initialize data if needed
+        // Initialize notification service
+        initializeNotificationService()
+    }
+
+    private fun initializeNotificationService() {
+        val notificationService = NotificationService()
+        notificationService.scheduleDailyNotification(this)
+        showTestNotification()
+    }
+    
+    private fun showTestNotification() {
+        val notificationManager = AppNotificationManager(this)
+        viewBinding.root.postDelayed({
+            notificationManager.showImmediateNotification()
+        }, 2000)
     }
 }
+
+
