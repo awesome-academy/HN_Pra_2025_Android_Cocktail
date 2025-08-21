@@ -18,7 +18,7 @@ class HistoryPresenter(
 ) : HistoryContract.Presenter {
 
     private var view: HistoryContract.View? = null
-    private val sharedPreferences: SharedPreferences = contextWrapper.context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
+
 
     override fun setView(view: HistoryContract.View?) {
         this.view = view
@@ -140,4 +140,4 @@ class HistoryPresenter(
         }
     }
 
-} 
+}
