@@ -12,159 +12,145 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.cocktaildb.databinding.FragmentNotificationsBinding
 import com.example.cocktaildb.service.NotificationService
-import com.example.cocktaildb.utils.NotificationManager
-import com.example.cocktaildb.utils.base.BaseFragment
 import com.example.cocktaildb.R
+import com.example.cocktaildb.utils.AppNotificationManager
+import com.example.cocktaildb.utils.base.BaseFragment
 
 class NotificationsFragment : BaseFragment<FragmentNotificationsBinding>(), NotificationsContract.View {
 
-    private lateinit var presenter: NotificationsPresenter
-    private lateinit var notificationManager: NotificationManager
-    private lateinit var notificationService: NotificationService
+	private lateinit var presenter: NotificationsPresenter
+	private lateinit var appNotificationManager: AppNotificationManager
+	private lateinit var notificationService: NotificationService
 
-    // Activity result launcher for notification permission
-    private val requestPermissionLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean ->
-        if (isGranted) {
-            showImmediateNotification()
-            scheduleDailyNotification()
-        } else {
-            Toast.makeText(context, "Notification permission denied", Toast.LENGTH_SHORT).show()
-        }
-    }
+	private var hasShownInitialTest = false
 
-    override fun inflateViewBinding(inflater: LayoutInflater): FragmentNotificationsBinding {
-        return FragmentNotificationsBinding.inflate(inflater)
-    }
+	private val requestPermissionLauncher = registerForActivityResult(
+		ActivityResultContracts.RequestPermission()
+	) { isGranted: Boolean ->
+		if (isGranted) {
+			showImmediateNotification()
+			scheduleDailyNotification()
+		} else {
+			Toast.makeText(context, getString(R.string.notif_permission_denied), Toast.LENGTH_SHORT).show()
+		}
+	}
 
-    override fun initView() {
-        // Initialize presenter
-        presenter = NotificationsPresenter()
-        presenter.setView(this)
-        
-        // Initialize notification components
-        notificationManager = NotificationManager(requireContext())
-        notificationService = NotificationService()
-        
-        // Set up click listeners
-        setupClickListeners()
-    }
+	override fun inflateViewBinding(inflater: LayoutInflater): FragmentNotificationsBinding {
+		return FragmentNotificationsBinding.inflate(inflater)
+	}
 
-    override fun initData() {
-        presenter.onStart()
-        presenter.loadNotifications()
-        
-        // Check and request notification permission
-        checkNotificationPermission()
-        
-        // Hiển thị thông báo test ngay khi vào màn hình
-        showTestNotificationOnLoad()
-    }
+	override fun initView() {
+		presenter = NotificationsPresenter()
+		presenter.setView(this)
+		appNotificationManager = AppNotificationManager(requireContext())
+		notificationService = NotificationService()
+		setupClickListeners()
+	}
 
-    override fun onDestroyView() {
-        presenter.onStop()
-        super.onDestroyView()
-    }
+	override fun initData() {
+		presenter.onStart()
+		presenter.loadNotifications()
+		checkNotificationPermission()
+		showTestNotificationOnLoad()
+	}
 
-    override fun showNotifications() {
-        // Update UI with notification controls and show random notification message
-        val randomMessage = getRandomNotificationMessage()
-        viewBinding.textNotifications.text = randomMessage
-    }
-    
-    private fun getRandomNotificationMessage(): String {
-        val messages = listOf(
-            requireContext().getString(R.string.notification_message_1),
-            requireContext().getString(R.string.notification_message_2),
-            requireContext().getString(R.string.notification_message_3),
-            requireContext().getString(R.string.notification_message_4),
-            requireContext().getString(R.string.notification_message_5),
-            requireContext().getString(R.string.notification_message_6),
-            requireContext().getString(R.string.notification_message_7),
-            requireContext().getString(R.string.notification_message_8),
-            requireContext().getString(R.string.notification_message_9),
-            requireContext().getString(R.string.notification_message_10)
-        )
-        return messages.random()
-    }
+	override fun onDestroyView() {
+		presenter.onStop()
+		super.onDestroyView()
+	}
 
-    override fun showNotificationSent() {
-        // Handle notification sent event
-    }
+	override fun showNotifications() {
+		val randomMessage = getRandomNotificationMessage()
+		viewBinding.textNotifications.text = randomMessage
+	}
 
-    override fun showNotificationScheduled() {
-        // Handle notification scheduled event
-    }
+	private fun getRandomNotificationMessage(): String {
+		val messages = listOf(
+			requireContext().getString(R.string.notification_message_1),
+			requireContext().getString(R.string.notification_message_2),
+			requireContext().getString(R.string.notification_message_3),
+			requireContext().getString(R.string.notification_message_4),
+			requireContext().getString(R.string.notification_message_5),
+			requireContext().getString(R.string.notification_message_6),
+			requireContext().getString(R.string.notification_message_7),
+			requireContext().getString(R.string.notification_message_8),
+			requireContext().getString(R.string.notification_message_9),
+			requireContext().getString(R.string.notification_message_10)
+		)
+		return messages.random()
+	}
 
-    override fun showNotificationCancelled() {
-        // Handle notification cancelled event
-    }
+	override fun showNotificationSent() { }
+	override fun showNotificationScheduled() { }
+	override fun showNotificationCancelled() { }
 
-    private fun setupClickListeners() {
-        // Add buttons for testing notifications
-        viewBinding.btnTestNotification.setOnClickListener {
-            presenter.testNotification()
-            showImmediateNotification()
-        }
-        
-        viewBinding.btnScheduleNotification.setOnClickListener {
-            presenter.scheduleDailyNotification()
-            scheduleDailyNotification()
-        }
-        
-        viewBinding.btnCancelNotification.setOnClickListener {
-            presenter.cancelDailyNotification()
-            cancelDailyNotification()
-        }
-    }
+	private fun setupClickListeners() {
+		viewBinding.btnTestNotification.setOnClickListener {
+			presenter.testNotification()
+			showImmediateNotification()
+		}
+		viewBinding.btnScheduleNotification.setOnClickListener {
+			presenter.scheduleDailyNotification()
+			scheduleDailyNotification()
+		}
+		viewBinding.btnCancelNotification.setOnClickListener {
+			presenter.cancelDailyNotification()
+			cancelDailyNotification()
+		}
+	}
 
-    private fun checkNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            when {
-                ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) == PackageManager.PERMISSION_GRANTED -> {
-                    // Permission already granted, show notification immediately
-                    showImmediateNotification()
-                    scheduleDailyNotification()
-                }
-                else -> {
-                    // Request permission
-                    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                }
-            }
-        } else {
-            // For older versions, show notification immediately
-            showImmediateNotification()
-            scheduleDailyNotification()
-        }
-    }
+	private fun checkNotificationPermission() {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			when {
+				ContextCompat.checkSelfPermission(
+					requireContext(),
+					Manifest.permission.POST_NOTIFICATIONS
+				) == PackageManager.PERMISSION_GRANTED -> {
+					showImmediateNotificationOnce()
+					scheduleDailyNotification()
+				}
+				else -> {
+					requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+				}
+			}
+		} else {
+			showImmediateNotificationOnce()
+			scheduleDailyNotification()
+		}
+	}
 
-    private fun showImmediateNotification() {
-        notificationManager.showImmediateNotification()
-        Toast.makeText(context, "Test notification sent!", Toast.LENGTH_SHORT).show()
-    }
+	private fun showImmediateNotification() {
+		appNotificationManager.showImmediateNotification()
+		Toast.makeText(context, getString(R.string.notif_test_sent), Toast.LENGTH_SHORT).show()
+	}
 
-    private fun scheduleDailyNotification() {
-        notificationService.scheduleDailyNotification(requireContext())
-        Toast.makeText(context, "Daily notification scheduled for 12:00 PM!", Toast.LENGTH_LONG).show()
-    }
+	private fun showImmediateNotificationOnce() {
+		if (!hasShownInitialTest) {
+			hasShownInitialTest = true
+			showImmediateNotification()
+		}
+	}
 
-    private fun cancelDailyNotification() {
-        notificationService.cancelDailyNotification(requireContext())
-        Toast.makeText(context, "Daily notification cancelled!", Toast.LENGTH_SHORT).show()
-    }
-    
-    private fun showTestNotificationOnLoad() {
-        // Delay 1 giây để màn hình load xong rồi hiển thị thông báo
-        viewBinding.root.postDelayed({
-            showImmediateNotification()
-            // Cập nhật nội dung hiển thị với thông báo mới
-            val newMessage = getRandomNotificationMessage()
-            viewBinding.textNotifications.text = newMessage
-        }, 1000)
-    }
+	private fun scheduleDailyNotification() {
+		notificationService.scheduleDailyNotification(requireContext())
+		Toast.makeText(context, getString(R.string.notif_daily_scheduled), Toast.LENGTH_LONG).show()
+	}
+
+	private fun cancelDailyNotification() {
+		notificationService.cancelDailyNotification(requireContext())
+		Toast.makeText(context, getString(R.string.notif_daily_cancelled), Toast.LENGTH_SHORT).show()
+	}
+
+	private fun showTestNotificationOnLoad() {
+		viewBinding.root.postDelayed({
+			showImmediateNotificationOnce()
+			val newMessage = getRandomNotificationMessage()
+			viewBinding.textNotifications.text = newMessage
+		}, TEST_NOTIFICATION_DELAY_MS)
+	}
+
+	companion object {
+		private const val TEST_NOTIFICATION_DELAY_MS = 1000L
+	}
 }
 

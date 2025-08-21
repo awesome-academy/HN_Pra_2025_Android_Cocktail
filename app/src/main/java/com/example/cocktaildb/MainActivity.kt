@@ -14,7 +14,7 @@ import android.view.View
 import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import com.example.cocktaildb.service.NotificationService
-import com.example.cocktaildb.utils.NotificationManager
+import com.example.cocktaildb.utils.AppNotificationManager
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -139,14 +139,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     private fun initializeNotificationService() {
         val notificationService = NotificationService()
         notificationService.scheduleDailyNotification(this)
-        
-        // Hiển thị thông báo test ngay khi vào app
         showTestNotification()
     }
     
     private fun showTestNotification() {
-        val notificationManager = NotificationManager(this)
-        // Delay 2 giây để app load xong rồi hiển thị thông báo
+        val notificationManager = AppNotificationManager(this)
         viewBinding.root.postDelayed({
             notificationManager.showImmediateNotification()
         }, 2000)

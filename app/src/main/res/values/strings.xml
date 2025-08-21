@@ -98,44 +98,30 @@
     <string name="sample_drink_category">Drink</string>
     <string name="hot_badge">HOT</string>
     <string name="rating_badge">⭐4.7</string>
-
-    <!-- Notifications Screen Strings -->
-    <string name="notifications_title">🍹 Cocktail Inspiration 🍹</string>
-    <string name="notifications_description">🍹 Khám phá thế giới cocktail đầy màu sắc!\n🥂 Tạo công thức của riêng bạn!\n🍸 Lưu và chia sẻ những cocktail yêu thích!</string>
-    <string name="btn_test_notification">🔔 Test Notification Now</string>
-    <string name="btn_schedule_notification">⏰ Schedule Daily Notification (12:00 PM)</string>
-    <string name="btn_cancel_notification">❌ Cancel Daily Notification</string>
-    <string name="notifications_info">ℹ️ Thông báo sẽ được gửi vào 12:00 PM hàng ngày với nội dung random về cocktail\n\n💡 Nhấn nút bên dưới để test ngay!</string>
-
-    <!-- Notification Messages -->
-    <string name="notification_message_1">🍹 Thời gian thưởng thức cocktail rồi! Khám phá công thức mới nào?</string>
-    <string name="notification_message_2">🥂 Bạn có muốn thử một cocktail mới không? Hãy vào app ngay!</string>
-    <string name="notification_message_3">🍸 Khám phá thế giới cocktail đầy màu sắc! Có gì mới hôm nay?</string>
-    <string name="notification_message_4">🍷 Tạo công thức cocktail của riêng bạn! Hãy bắt đầu sáng tạo!</string>
-    <string name="notification_message_5">🍹 Hôm nay bạn muốn thử cocktail gì? Chúng tôi có rất nhiều gợi ý!</string>
-    <string name="notification_message_6">🥂 Lưu công thức cocktail yêu thích và chia sẻ với bạn bè!</string>
-    <string name="notification_message_7">🍸 Tìm kiếm cocktail hoàn hảo cho tâm trạng của bạn!</string>
-    <string name="notification_message_8">🍷 Khám phá lịch sử và văn hóa của các loại cocktail!</string>
-    <string name="notification_message_9">🍹 Hãy để chúng tôi giúp bạn tìm cocktail phù hợp nhất!</string>
-    <string name="notification_message_10">🥂 Cập nhật công thức cocktail mới nhất! Không thể bỏ lỡ!</string>
-
-    <!-- Missing strings for other screens -->
-    <string name="msg_please_fill_both_fields">Please fill both fields</string>
+    <string name="error_opening_recipe_details">Error opening recipe details</string>
+    <string name="error_unable_to_open_recipe_details">Unable to open recipe details</string>
+    <string name="warning_image_uploaded_save_failed">Warning: Image uploaded but failed to save record</string>
+    <string name="error_loading_images">Failed to load images for recipe</string>
+    <string name="error_loading_ingredients">Failed to load ingredients for recipe</string>
+    <string name="msg_no_recipes_found">No recipes found</string>
+    <string name="msg_recipe_loading">Loading recipes...</string>
+    <string name="msg_no_cocktails_found">No cocktails found</string>
+    <string name="msg_no_cocktails_after_filtering">No cocktails available after filtering</string>
+    <string name="msg_loaded_cocktails">Loaded %1$d cocktails</string>
+    <string name="msg_no_drink_data_available">No drink data available</string>
+    <string name="msg_refreshed_today_drink">Refreshed today\'s drink!</string>
+    <string name="msg_please_fill_both_fields">Please fill in both fields</string>
+    <string name="msg_added_to_favorites">%1$s added to favorites</string>
+    <string name="msg_removed_from_favorites">%1$s removed from favorites</string>
     <string name="error_recipe_name_empty">Recipe name cannot be empty</string>
     <string name="error_instructions_empty">Instructions cannot be empty</string>
     <string name="error_add_at_least_one_ingredient">Please add at least one ingredient</string>
     <string name="error_user_not_authenticated">User not authenticated</string>
-    <string name="error_failed_to_save_recipe">Failed to save recipe</string>
-    <string name="warning_ingredients_not_saved">Warning: ingredients not saved</string>
-    <string name="error_saving_ingredients">Error saving ingredients</string>
-    <string name="warning_image_uploaded_save_failed">Image uploaded but save failed</string>
-    <string name="warning_recipe_saved_image_upload_failed">Recipe saved but image upload failed</string>
-    <string name="warning_recipe_saved_image_save_failed">Recipe saved but image save failed</string>
-    <string name="msg_no_cocktails_found">No cocktails found</string>
-    <string name="msg_no_cocktails_after_filtering">No cocktails found after filtering</string>
-    <string name="msg_loaded_cocktails">Cocktails loaded successfully</string>
-    <string name="error_opening_recipe_details">Error opening recipe details</string>
-    <string name="error_unable_to_open_recipe_details">Unable to open recipe details</string>
+    <string name="error_failed_to_save_recipe">Failed to save recipe: %1$s</string>
+    <string name="warning_ingredients_not_saved">Warning: The following ingredients could not be saved: %1$s</string>
+    <string name="error_saving_ingredients">Error saving ingredients: %1$s</string>
+    <string name="warning_recipe_saved_image_upload_failed">Warning: Recipe saved but image could not be uploaded: %1$s</string>
+    <string name="warning_recipe_saved_image_save_failed">Warning: Recipe saved but image could not be saved: %1$s</string>
     <string name="no_instructions_available">No instructions available</string>
     <string name="default_cocktail_name">Cocktail</string>
     <string name="default_category_cocktail">Cocktail</string>
@@ -144,16 +130,33 @@
     <string name="desc_glass_suffix"> served in a %1$s</string>
     <string name="desc_tail"> with carefully selected ingredients.</string>
     <string name="error_loading_related_cocktails">Error loading related cocktails: %1$s</string>
-    <!-- Today Drink Screen -->
-    <string name="error_loading_images">Failed to load images for recipe</string>
-    <string name="error_loading_ingredients">Failed to load ingredients for recipe</string>
-    <string name="msg_no_recipes_found">No recipes found</string>
-    <string name="msg_recipe_loading">Loading recipes...</string>
-    <string name="msg_no_drink_data_available">No drink data available</string>
-    <string name="msg_refreshed_today_drink">Refreshed today\'s drink!</string>
-    <string name="msg_added_to_favorites">%1$s added to favorites</string>
-    <string name="msg_removed_from_favorites">%1$s removed from favorites</string>
+
+    <string name="notif_channel_name">Cocktail Notifications</string>
+    <string name="notif_channel_description">Notifications for cocktail app</string>
+    <string name="notif_default_title">Cocktail App</string>
+    <string name="notif_daily_message">🍹 It’s time to enjoy a cocktail! Discover a new recipe.</string>
+    <string name="notif_test_sent">Test notification sent!</string>
+    <string name="notif_daily_scheduled">Daily notification scheduled for 12:00 PM!</string>
+    <string name="notif_daily_cancelled">Daily notification cancelled!</string>
+    <string name="notif_permission_denied">Notification permission denied</string>
+    <string name="notification_message_1">Discover a refreshing Mojito today!</string>
+    <string name="notification_message_2">How about a classic Margarita?</string>
+    <string name="notification_message_3">It’s cocktail o’clock! Try something new.</string>
+    <string name="notification_message_4">Shake it up with a Whiskey Sour.</string>
+    <string name="notification_message_5">Fancy a Piña Colada?</string>
+    <string name="notification_message_6">Explore new flavors in your bar.</string>
+    <string name="notification_message_7">A Negroni might be perfect now.</string>
+    <string name="notification_message_8">Mix and enjoy: discover a new recipe!</string>
+    <string name="notification_message_9">Try a vibrant Aperol Spritz today.</string>
+    <string name="notification_message_10">Feeling creative? Build your own cocktail.</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="notifications_description">Manage and test your cocktail notifications below.</string>
+    <string name="btn_test_notification">Send test notification</string>
+    <string name="btn_schedule_notification">Schedule daily notification</string>
+    <string name="btn_cancel_notification">Cancel daily notification</string>
+    <string name="notifications_info">You can change notification settings anytime in system settings.</string>
     <string name="instruction_numbered">%1$d. %2$s</string>
     <string name="ingredients_count">Ingredients (%1$d)</string>
 </resources>
+
 
