@@ -127,6 +127,11 @@ class ProfilePresenter(
         view?.navigateToHistory()
     }
 
+    override fun onCheckmarkClicked() {
+        // Navigate to Checkmark screen
+        view?.navigateToCheckmarks()
+    }
+
     override fun onLogoutClicked() {
         // Call the AuthRepository's signOut method to log the user out
         authRepository.signOut()

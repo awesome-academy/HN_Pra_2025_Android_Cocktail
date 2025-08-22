@@ -31,9 +31,9 @@
 
     <fragment
         android:id="@+id/navigation_favorites"
-        android:name="com.example.cocktaildb.screen.dashboard.DashboardFragment"
+        android:name="com.example.cocktaildb.screen.favorites.FavoritesFragment"
         android:label="@string/title_favorites"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_favorites" />
 
     <fragment
         android:id="@+id/navigation_profile"
@@ -93,10 +93,16 @@
         tools:layout="@layout/fragment_history" />
 
     <fragment
+        android:id="@+id/navigation_checkmark"
+        android:name="com.example.cocktaildb.screen.checkmark.CheckmarkFragment"
+        android:label="Checkmarks"
+        tools:layout="@layout/fragment_checkmark" />
+
+    <fragment
         android:id="@+id/navigation_all_shared_cocktails"
         android:name="com.example.cocktaildb.screen.shared.AllSharedCocktailsFragment"
         android:label="Share Cocktail"
-        tools:layout="@layout/fragment_all_cocktails" />
+        tools:layout="@layout/fragment_all_shared_cocktails" />
 </navigation>
 
 

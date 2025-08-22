@@ -12,12 +12,12 @@
         android:id="@+id/tvTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginEnd="@dimen/dp_16"
         android:text="My Favorites"
         android:textColor="@color/black"
-        android:textSize="24sp"
+        android:textSize="@dimen/sp_24"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,12 +27,12 @@
         android:id="@+id/tvSubtitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_16"
         android:text="Cocktails you've marked as favorites"
         android:textColor="@color/gray"
-        android:textSize="16sp"
+        android:textSize="@dimen/sp_16"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
@@ -41,12 +41,12 @@
         android:id="@+id/favoritesRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="@dimen/dp_16"
         android:clipToPadding="false"
-        android:paddingStart="8dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="8dp"
-        android:paddingBottom="64dp"
+        android:paddingStart="@dimen/dp_8"
+        android:paddingTop="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_8"
+        android:paddingBottom="@dimen/dp_64"
         app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
         app:spanCount="2"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -78,30 +78,30 @@
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle">
 
         <ImageView
-            android:layout_width="120dp"
-            android:layout_height="120dp"
+            android:layout_width="@dimen/dp_120"
+            android:layout_height="@dimen/dp_120"
             android:src="@drawable/ic_heart"
             app:tint="@color/gray" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dp_16"
             android:text="No favorites yet"
             android:textColor="@color/black"
-            android:textSize="18sp"
+            android:textSize="@dimen/sp_18"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:gravity="center"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
+            android:paddingStart="@dimen/dp_32"
+            android:paddingEnd="@dimen/dp_32"
             android:text="Your favorite cocktails will appear here"
             android:textColor="@color/gray"
-            android:textSize="16sp" />
+            android:textSize="@dimen/sp_16" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

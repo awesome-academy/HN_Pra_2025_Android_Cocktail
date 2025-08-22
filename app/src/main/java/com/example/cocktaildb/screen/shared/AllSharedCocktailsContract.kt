@@ -15,4 +15,5 @@ interface AllSharedCocktailsContract {
         fun loadAllSharedRecipes()
         fun refreshAllSharedRecipes()
     }
-} 
+}
+

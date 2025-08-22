@@ -49,7 +49,7 @@ class FavoritesAdapter(
             }
 
             // Change text from rating to "Remove" for clarity
-            binding.tvRating.text = "Remove"
+            binding.tvRating.text = binding.root.context.getString(R.string.remove_button)
 
             // Set click listener to navigate to details
             binding.root.setOnClickListener {

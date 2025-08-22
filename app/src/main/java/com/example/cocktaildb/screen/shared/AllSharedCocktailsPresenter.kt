@@ -103,4 +103,5 @@ class AllSharedCocktailsPresenter(
     fun clearCache() {
         cachedCocktails = null
     }
-} 
+}
+

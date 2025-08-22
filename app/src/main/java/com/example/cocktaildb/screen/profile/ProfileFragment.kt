@@ -186,6 +186,24 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         }
     }
 
+    override fun navigateToCheckmarks() {
+        try {
+            // Navigate to the Checkmark screen using the Navigation Component
+            val navController = androidx.navigation.Navigation.findNavController(
+                requireActivity(),
+                R.id.nav_host_fragment_activity_main
+            )
+            navController.navigate(R.id.navigation_checkmark)
+        } catch (e: Exception) {
+            // Fallback in case navigation fails
+            Toast.makeText(
+                context,
+                getString(R.string.msg_checkmarks_coming_soon),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
     override fun navigateToLogin() {
         val intent = Intent(requireContext(), SignInActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -203,6 +221,10 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
     // Implement HeaderClickListener interface methods
     override fun onMyRecipesClicked() {
         presenter.onMyRecipesClicked()
+    }
+
+    override fun onCheckmarkClicked() {
+        presenter.onCheckmarkClicked()
     }
 
     override fun onHistoryClicked() {
@@ -230,3 +252,5 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }
 }
+
+

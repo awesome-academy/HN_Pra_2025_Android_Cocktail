@@ -71,6 +71,8 @@
     <string name="user_name">John Doe</string>
     <string name="user_bio">Cocktail enthusiast and mixologist</string>
     <string name="my_recipe_button">My Recipe</string>
+    <string name="checkmark_button">Checkmark</string>
+    <string name="remove_button">Remove</string>
     <string name="history_button">History</string>
     <string name="desc_profile_image">Profile Picture</string>
     <string name="desc_cocktail_image">Cocktail Image</string>
@@ -140,6 +142,7 @@
     <!-- Profile Screen Messages -->
     <string name="msg_history_coming_soon">History feature coming soon!</string>
     <string name="msg_my_recipes_coming_soon">My Recipes feature coming soon!</string>
+    <string name="msg_checkmarks_coming_soon">Checkmarks feature coming soon!</string>
 
     <!-- Dashboard/Today Drink Messages -->
     <string name="msg_no_today_drink_available">No today\'s drink available</string>
