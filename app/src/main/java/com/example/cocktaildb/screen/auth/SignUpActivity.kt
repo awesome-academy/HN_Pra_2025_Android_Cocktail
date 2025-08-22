@@ -9,6 +9,7 @@ import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.databinding.ActivitySignUpBinding
 import com.example.cocktaildb.utils.base.BaseActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.example.cocktaildb.data.manager.DataManager
 
 class SignUpActivity : BaseActivity<ActivitySignUpBinding>(), AuthContract.View {
 
@@ -63,6 +64,10 @@ class SignUpActivity : BaseActivity<ActivitySignUpBinding>(), AuthContract.View 
         } else {
             showMessage(getString(R.string.Welcome))
         }
+
+        // Auto load data after successful signup/login
+        DataManager.autoLoadDataAfterLogin(this, this)
+
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }

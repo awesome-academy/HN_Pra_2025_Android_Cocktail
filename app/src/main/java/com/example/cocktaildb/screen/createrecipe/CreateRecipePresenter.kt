@@ -100,7 +100,7 @@ class CreateRecipePresenter(
 
                 // Save recipe to Firebase
                 val result = firebaseRepository.createRecipe(recipe)
-                
+
                 if (result.isSuccess) {
                     val recipeId = result.getOrThrow()
                     Log.d("CreateRecipePresenter", "Recipe saved with ID: $recipeId")
@@ -191,7 +191,7 @@ class CreateRecipePresenter(
             if (uploadResult.isSuccess) {
                 val downloadUrl = uploadResult.getOrThrow()
                 Log.d("CreateRecipePresenter", "Image uploaded successfully to ImgBB: $downloadUrl")
-                
+
                 val recipeImage = RecipeImage(
                     id = "",
                     recipeId = recipeId,
@@ -200,7 +200,7 @@ class CreateRecipePresenter(
                     caption = "",
                     uploadedAt = System.currentTimeMillis()
                 )
-                
+
                 Log.d("CreateRecipePresenter", "Saving image record to Firestore")
                 val result = firebaseRepository.addRecipeImage(recipeImage)
                 if (result.isSuccess) {

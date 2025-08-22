@@ -2,26 +2,40 @@ package com.example.cocktaildb.screen.home
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import android.graphics.Rect
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentHomeBinding
 import com.example.cocktaildb.screen.search.SearchActivity
-import com.example.cocktaildb.screen.todaydrink.TodayDrinkActivity
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
-import androidx.navigation.fragment.findNavController
 import kotlin.math.min
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
+
+    companion object {
+        private const val EXTRA_COCKTAIL_ID = "cocktail_id"
+        private const val EXTRA_COCKTAIL_NAME = "cocktail_name"
+        private const val EXTRA_COCKTAIL_CATEGORY = "cocktail_category"
+        private const val EXTRA_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        private const val EXTRA_COCKTAIL_GLASS = "cocktail_glass"
+        private const val EXTRA_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        private const val EXTRA_COCKTAIL_IMAGE = "cocktail_image"
+        private const val EXTRA_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        private const val EXTRA_COCKTAIL_MEASURES = "cocktail_measures"
+    }
 
     private lateinit var presenter: HomePresenter
     private lateinit var cocktailAdapter: CocktailAdapter
@@ -31,9 +45,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
     }
 
     override fun initView() {
-        // Initialize presenter with remote data source
-        val repository = CocktailRepository(CocktailRemoteDataSource())
-        presenter = HomePresenter(repository)
+        // Initialize presenter with dependency injection
+        val cocktailRepository = CocktailRepository(CocktailRemoteDataSource())
+        val authRepository = AuthRepository(requireContext())
+        val historyFirebaseService = HistoryFirebaseService()
+
+        presenter = HomePresenter(cocktailRepository, authRepository, historyFirebaseService)
         presenter.setView(this)
 
         // Initialize RecyclerView
@@ -45,8 +62,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             startActivity(intent)
         }
         viewBinding.tvViewAll.setOnClickListener {
-            val intent = Intent(requireContext(), TodayDrinkActivity::class.java)
-            startActivity(intent)
+            findNavController().navigate(R.id.navigation_messages)
         }
     }
 
@@ -54,32 +70,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         cocktailAdapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
-                // Add to history first
-                try {
-                    com.example.cocktaildb.screen.history.HistoryPresenter.addToHistory(requireContext(), cocktail)
-                } catch (e: Exception) {
-                    // Handle error silently
-                }
-                
-                // Navigate to cocktail detail fragment using Navigation Component
-                val bundle = Bundle().apply {
-                    putString("cocktail_id", cocktail.idDrink)
-                    putString("cocktail_name", cocktail.strDrink)
-                    putString("cocktail_category", cocktail.strCategory ?: "")
-                    putString("cocktail_alcoholic", cocktail.strAlcoholic ?: "")
-                    putString("cocktail_glass", cocktail.strGlass ?: "")
-                    putString("cocktail_instructions", cocktail.strInstructions ?: "")
-                    putString("cocktail_image", cocktail.strDrinkThumb ?: "")
-                    putStringArray("cocktail_ingredients", cocktail.ingredients.toTypedArray())
-                    putStringArray("cocktail_measures", cocktail.measures.toTypedArray())
-                }
-                findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+                Log.e("HomeFragment", "onCocktailClick: ${cocktail.strDrink} (${cocktail.idDrink})")
+                presenter.onCocktailClicked(cocktail)
             }
         )
 
         // Set up RecyclerView with GridLayoutManager showing 2 items per row
         val layoutManager = GridLayoutManager(context, 2)
-        
+
         // Apply proper item spacing decoration
         val spacingInPixels = resources.getDimensionPixelSize(R.dimen.dp_8)
         viewBinding.recyclerViewCocktails.addItemDecoration(object : RecyclerView.ItemDecoration() {
@@ -124,6 +122,26 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         presenter.loadCocktails()
     }
 
+    override fun navigateToCocktailDetail(cocktail: Cocktail) {
+        // Navigate to cocktail detail fragment using Navigation Component
+        val bundle = Bundle().apply {
+            putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+            putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+            putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+            putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+            putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+            putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+            putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+            putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+            putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+        }
+        findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+    }
+
+    override fun showMessage(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
     override fun onDestroyView() {
         presenter.onStop()
         super.onDestroyView()
@@ -131,7 +149,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
     override fun showCocktails(cocktails: List<Cocktail>) {
         if (cocktails.isEmpty()) {
-            Toast.makeText(context, getString(R.string.msg_no_cocktails_found), Toast.LENGTH_SHORT).show()
+            showMessage(getString(R.string.msg_no_cocktails_found))
             return
         }
 
@@ -146,7 +164,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         }
 
         if (filteredCocktails.isEmpty()) {
-            Toast.makeText(context, getString(R.string.msg_no_cocktails_after_filtering), Toast.LENGTH_SHORT).show()
+            showMessage(getString(R.string.msg_no_cocktails_after_filtering))
             return
         }
 
@@ -154,7 +172,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         cocktailAdapter.submit(filteredCocktails)
 
         // Show success message
-        Toast.makeText(context, getString(R.string.msg_loaded_cocktails, filteredCocktails.size), Toast.LENGTH_SHORT).show()
+        showMessage(getString(R.string.msg_loaded_cocktails, filteredCocktails.size))
     }
 }
 

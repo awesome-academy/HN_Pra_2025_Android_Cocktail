@@ -29,7 +29,9 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
 
     override fun initData() {
         presenter.setView(this)
-        presenter.loadFavorites()
+        if (!hasDataLoaded()) {
+            presenter.loadFavorites()
+        }
     }
 
     override fun onDestroyView() {
@@ -39,8 +41,13 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
 
     override fun onResume() {
         super.onResume()
-        // Reload favorites when returning from other screens
-        presenter.loadFavorites()
+        if (!hasDataLoaded()) {
+            presenter.loadFavorites()
+        }
+    }
+
+    private fun hasDataLoaded(): Boolean {
+        return ::favoritesAdapter.isInitialized && favoritesAdapter.itemCount > 0
     }
 
     private fun setupRecyclerView() {
@@ -112,10 +119,18 @@ class FavoritesFragment : BaseFragment<FragmentFavoritesBinding>(), FavoritesCon
     }
 
     override fun showFavoriteAdded(cocktail: Cocktail) {
-        Toast.makeText(context, "${cocktail.strDrink} added to favorites", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, getString(R.string.msg_added_to_favorites_detail, cocktail.strDrink), Toast.LENGTH_SHORT).show()
     }
 
     override fun showFavoriteRemoved(cocktail: Cocktail) {
-        Toast.makeText(context, "${cocktail.strDrink} removed from favorites", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, getString(R.string.msg_removed_from_favorites_detail, cocktail.strDrink), Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showSyncStatus(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    fun showToast(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 }

@@ -11,6 +11,7 @@ interface SearchContract {
         fun showMessage(message: String)
         fun updatePagination(currentPage: Int, totalPages: Int, hasNext: Boolean, hasPrevious: Boolean)
         fun showPagination(show: Boolean)
+        fun navigateToCocktailDetail(cocktail: Cocktail)
     }
 
     interface Presenter {
@@ -24,6 +25,7 @@ interface SearchContract {
         fun nextPage()
         fun previousPage()
         fun goToPage(page: Int)
+        fun onCocktailClicked(cocktail: Cocktail)
     }
 }
 
