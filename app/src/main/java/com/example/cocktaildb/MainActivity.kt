@@ -15,6 +15,7 @@ import android.widget.ImageView
 import androidx.core.content.ContextCompat
 import com.example.cocktaildb.service.NotificationService
 import com.example.cocktaildb.utils.AppNotificationManager
+import com.example.cocktaildb.data.manager.DataManager
 
 class MainActivity : BaseActivity<ActivityMainBinding>() {
 
@@ -134,6 +135,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     override fun initData() {
         // Initialize notification service
         initializeNotificationService()
+        autoLoadData()
+    }
+
+    private fun autoLoadData() {
+        DataManager.autoLoadDataAfterLogin(this, this)
     }
 
     private fun initializeNotificationService() {

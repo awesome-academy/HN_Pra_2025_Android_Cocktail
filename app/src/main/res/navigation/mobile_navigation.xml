@@ -14,7 +14,7 @@
     <fragment
         android:id="@+id/navigation_messages"
         android:name="com.example.cocktaildb.screen.dashboard.DashboardFragment"
-        android:label="@string/title_messages"
+        android:label="@string/title_today_drink"
         tools:layout="@layout/fragment_dashboard" />
 
     <fragment

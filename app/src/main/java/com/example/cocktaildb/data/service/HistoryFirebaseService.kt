@@ -1,6 +1,9 @@
 package com.example.cocktaildb.data.service
 
+import android.util.Log
 import com.example.cocktaildb.data.model.History
+import com.example.cocktaildb.data.model.Cocktail
+import com.example.cocktaildb.data.model.CocktailDetail
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import kotlinx.coroutines.tasks.await
@@ -10,6 +13,34 @@ class HistoryFirebaseService {
     private val firestore = FirebaseFirestore.getInstance()
     private val historyCollection = firestore.collection("history")
 
+    companion object {
+        private const val TAG = "HistoryFirebaseService"
+    }
+    suspend fun addHistoryWithDetails(uid: String, cocktail: Cocktail): Result<String> {
+        return try {
+            Log.d(TAG, "addHistoryWithDetails called: uid=$uid, cocktail=${cocktail.strDrink}")
+            val historyId = UUID.randomUUID().toString()
+            val cocktailDetail = CocktailDetail.fromCocktail(cocktail)
+            val history = History(
+                id = historyId,
+                uid = uid,
+                cocktailId = cocktail.idDrink,
+                cocktailDetail = cocktailDetail
+            )
+            
+            Log.d(TAG, "Created detailed history object with embedded cocktail detail: ${cocktail.strDrink}")
+            Log.d(TAG, "Attempting to save detailed history to Firestore...")
+            
+            historyCollection.document(historyId).set(history).await()
+            
+            Log.d(TAG, "Successfully saved detailed history to Firestore with ID: $historyId")
+            Result.success(historyId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error saving detailed history to Firestore", e)
+            Result.failure(e)
+        }
+    }
+
     suspend fun addHistory(uid: String, cocktailId: String): Result<String> {
         return try {
             val historyId = UUID.randomUUID().toString()
@@ -18,9 +49,18 @@ class HistoryFirebaseService {
                 uid = uid,
                 cocktailId = cocktailId
             )
+            
+            Log.d(TAG, "Created history object: $history")
+            Log.d(TAG, "Collection path: ${historyCollection.path}")
+            Log.d(TAG, "Document path: ${historyCollection.document(historyId).path}")
+            Log.d(TAG, "Attempting to save to Firestore...")
+            
             historyCollection.document(historyId).set(history).await()
+            
+            Log.d(TAG, "Successfully saved history to Firestore with ID: $historyId")
             Result.success(historyId)
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to add history: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -29,9 +69,9 @@ class HistoryFirebaseService {
         return try {
             val querySnapshot = historyCollection
                 .whereEqualTo("uid", uid)
-                .orderBy("viewedAt", Query.Direction.DESCENDING)
                 .get().await()
             val history = querySnapshot.toObjects(History::class.java)
+                .sortedByDescending { it.viewedAt }
             Result.success(history)
         } catch (e: Exception) {
             Result.failure(e)
@@ -42,10 +82,10 @@ class HistoryFirebaseService {
         return try {
             val querySnapshot = historyCollection
                 .whereEqualTo("uid", uid)
-                .orderBy("viewedAt", Query.Direction.DESCENDING)
-                .limit(limit.toLong())
                 .get().await()
             val history = querySnapshot.toObjects(History::class.java)
+                .sortedByDescending { it.viewedAt }
+                .take(limit)
             Result.success(history)
         } catch (e: Exception) {
             Result.failure(e)
@@ -56,10 +96,10 @@ class HistoryFirebaseService {
         return try {
             val querySnapshot = historyCollection
                 .whereEqualTo("uid", uid)
-                .orderBy("viewedAt", Query.Direction.DESCENDING)
-                .limit(limit.toLong())
                 .get().await()
             val history = querySnapshot.toObjects(History::class.java)
+                .sortedByDescending { it.viewedAt }
+                .take(limit)
             Result.success(history)
         } catch (e: Exception) {
             Result.failure(e)
@@ -70,9 +110,9 @@ class HistoryFirebaseService {
         return try {
             val querySnapshot = historyCollection
                 .whereEqualTo("cocktailId", cocktailId)
-                .orderBy("viewedAt", Query.Direction.DESCENDING)
                 .get().await()
             val history = querySnapshot.toObjects(History::class.java)
+                .sortedByDescending { it.viewedAt }
             Result.success(history)
         } catch (e: Exception) {
             Result.failure(e)
@@ -148,7 +188,6 @@ class HistoryFirebaseService {
         return try {
             val querySnapshot = historyCollection
                 .whereEqualTo("uid", uid)
-                .orderBy("viewedAt", Query.Direction.DESCENDING)
                 .get().await()
 
             val uniqueCocktailIds = mutableSetOf<String>()
@@ -159,7 +198,17 @@ class HistoryFirebaseService {
                 }
             }
 
-            Result.success(uniqueCocktailIds.toList())
+            val historyList = querySnapshot.toObjects(History::class.java)
+                .sortedByDescending { it.viewedAt }
+            
+            val sortedUniqueIds = mutableListOf<String>()
+            for (history in historyList) {
+                if (!sortedUniqueIds.contains(history.cocktailId)) {
+                    sortedUniqueIds.add(history.cocktailId)
+                }
+            }
+
+            Result.success(sortedUniqueIds)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -169,7 +218,6 @@ class HistoryFirebaseService {
         return try {
             val cocktailViewsCollection = firestore.collection("cocktailViews")
             val querySnapshot = cocktailViewsCollection
-                .orderBy("viewCount", Query.Direction.DESCENDING)
                 .limit(limit.toLong())
                 .get().await()
             val cocktailViewCounts = mutableMapOf<String, Int>()
@@ -180,7 +228,8 @@ class HistoryFirebaseService {
                     cocktailViewCounts[cocktailId] = viewCount
                 }
             }
-            Result.success(cocktailViewCounts)
+            val sortedEntries = cocktailViewCounts.entries.sortedByDescending { it.value }
+            Result.success(sortedEntries.associate { it.key to it.value })
         } catch (e: Exception) {
             Result.failure(e)
         }
