@@ -4,8 +4,92 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bg_curved"
     tools:context=".ui.dashboard.DashboardFragment">
 
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/today_drink_title"
+        android:textSize="@dimen/text_size_22"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:layout_marginTop="@dimen/dp_48"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/drinkCard"
+        android:layout_width="@dimen/dp_200"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_32"
+        app:cardCornerRadius="@dimen/dp_16"
+        app:cardElevation="@dimen/dp_8"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/ivDrinkImage"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_150"
+                android:scaleType="centerCrop"
+                android:src="@drawable/avocado_milkshake" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardHotBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|end"
+                android:layout_margin="@dimen/dp_8"
+                app:cardCornerRadius="@dimen/dp_48"
+                app:cardBackgroundColor="@color/vivid_red"
+                app:cardElevation="@dimen/dp_4">
+
+                <TextView
+                    android:id="@+id/tvHotBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="@dimen/dp_8"
+                    android:paddingRight="@dimen/dp_8"
+                    android:paddingTop="@dimen/dp_4"
+                    android:paddingBottom="@dimen/dp_4"
+                    android:text="@string/rating_badge"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/text_size_12"
+                    android:textStyle="bold" />
+            </androidx.cardview.widget.CardView>
+        </FrameLayout>
+    </androidx.cardview.widget.CardView>
+
+    <TextView
+        android:id="@+id/tvDrinkName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sample_drink_name"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        app:layout_constraintTop_toBottomOf="@id/drinkCard"
+        app:layout_constraintStart_toStartOf="@id/drinkCard"
+        android:layout_marginTop="@dimen/dp_8"/>
+
+    <TextView
+        android:id="@+id/tvDrinkCategory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sample_drink_category"
+        android:textColor="@color/gray_text"
+        app:layout_constraintTop_toBottomOf="@id/tvDrinkName"
+        app:layout_constraintStart_toStartOf="@id/drinkCard"
+        android:layout_marginTop="@dimen/dp_4"/>
+
+    <!-- Keep original dashboard text for fallback -->
     <TextView
         android:id="@+id/text_dashboard"
         android:layout_width="match_parent"
@@ -15,9 +99,9 @@
         android:layout_marginEnd="@dimen/dp_8"
         android:textAlignment="center"
         android:textSize="20sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tvDrinkCategory" />
 </androidx.constraintlayout.widget.ConstraintLayout>
-

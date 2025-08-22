@@ -15,8 +15,8 @@ interface CreateRecipeContract {
 
     interface Presenter : BasePresenter<View> {
         fun saveRecipe(name: String, instructions: String, imageUrl: String,
-                      ingredients: List<String>, measures: List<String>,
-                      category: String, glass: String, alcoholic: Boolean)
+                       ingredients: List<String>, measures: List<String>,
+                       category: String, glass: String, alcoholic: Boolean)
         fun addIngredient()
         fun removeIngredient(position: Int)
     }

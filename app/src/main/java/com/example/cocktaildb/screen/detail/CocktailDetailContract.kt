@@ -7,14 +7,19 @@ interface CocktailDetailContract {
     interface View {
         fun showRelatedCocktails(cocktails: List<Cocktail>)
         fun showError(message: String)
+        fun showErrorResource(resourceId: Int)
         fun updateBookmarkButtonState(isBookmarked: Boolean)
+        fun updateFavoriteButtonState(isFavorite: Boolean)
+        fun showMessage(message: String)
     }
 
     interface Presenter : BasePresenter<View> {
         fun loadRelatedCocktails(cocktailName: String, category: String)
-        override fun setView(view: View?)
         fun checkBookmarkStatus(cocktailId: String)
         fun toggleBookmark(cocktail: Cocktail)
+        fun checkFavoriteStatus(cocktailId: String)
+        fun toggleFavorite(cocktail: Cocktail)
+        override fun setView(view: View?)
         override fun onStart()
         override fun onStop()
     }

@@ -8,7 +8,6 @@ import android.util.Base64
 import android.util.Log
 import com.example.cocktaildb.BuildConfig
 import com.example.cocktaildb.data.model.ImgBBResponse
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
@@ -26,7 +25,6 @@ class ImageUploadService {
         private const val MAX_IMAGE_SIZE = 1024 * 1024 * 2
     }
 
-    private val gson = Gson()
     suspend fun uploadRecipeImage(context: Context, imageUri: Uri, recipeId: String): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
@@ -82,7 +80,7 @@ class ImageUploadService {
                     val responseBody = connection.inputStream.bufferedReader().use { it.readText() }
                     Log.d(TAG, "ImgBB response received: $responseBody")
 
-                    val imgbbResponse = gson.fromJson(responseBody, ImgBBResponse::class.java)
+                    val imgbbResponse = ImgBBResponse.fromJson(responseBody)
                     
                     if (!imgbbResponse.success) {
                         Log.e(TAG, "ImgBB upload failed: ${imgbbResponse.error?.message}")

@@ -35,6 +35,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
         const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
         const val KEY_FROM_TODAY_DRINK = "from_today_drink"
+        const val KEY_FROM_MY_RECIPE = "from_my_recipe"
     }
 
     private val binding get() = viewBinding
@@ -93,7 +94,8 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
 
     private fun setupPresenter() {
         val repository = CocktailRepository(CocktailRemoteDataSource())
-        presenter = CocktailDetailPresenter(repository)
+        val authRepository = com.example.cocktaildb.data.repository.AuthRepository()
+        presenter = CocktailDetailPresenter(repository, authRepository)
         presenter.setView(this)
     }
 
@@ -147,11 +149,17 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
             measures = measures.toList()
         )
         this.cocktail = cocktail
-        try {
-            HistoryPresenter.addToHistory(requireContext(), cocktail)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error adding to history", e)
+
+        // Only add to history if not coming from MyRecipe
+        val isFromMyRecipe = args?.getBoolean(KEY_FROM_MY_RECIPE, false) ?: false
+        if (!isFromMyRecipe) {
+            try {
+                HistoryPresenter.addToHistory(requireContext(), cocktail)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding to history", e)
+            }
         }
+
         viewBinding.tvCocktailName.text = cocktailName
         val descriptionBuilder = StringBuilder()
         descriptionBuilder.append(getString(R.string.desc_cocktail_base, cocktailCategory))
@@ -224,16 +232,29 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                             val ingredientMeasures = ingredients.map { "${it.quantity} ${it.unit}".trim() }.toTypedArray()
                             setupIngredients(ingredientNames, ingredientMeasures)
                             // Update history with enriched ingredients for offline access
-                            try {
+                            // Only update history if not coming from MyRecipe
+                            val isFromMyRecipe = arguments?.getBoolean(KEY_FROM_MY_RECIPE, false) ?: false
+                            if (!isFromMyRecipe) {
+                                try {
+                                    val updated = this@CocktailDetailFragment.cocktail?.copy(
+                                        ingredients = ingredientNames.toList(),
+                                        measures = ingredientMeasures.toList()
+                                    )
+                                    if (updated != null) {
+                                        this@CocktailDetailFragment.cocktail = updated
+                                        HistoryPresenter.addToHistory(requireContext(), updated)
+                                    }
+                                } catch (_: Exception) { }
+                            } else {
+                                // Still update cocktail object, just don't save to history
                                 val updated = this@CocktailDetailFragment.cocktail?.copy(
                                     ingredients = ingredientNames.toList(),
                                     measures = ingredientMeasures.toList()
                                 )
                                 if (updated != null) {
                                     this@CocktailDetailFragment.cocktail = updated
-                                    HistoryPresenter.addToHistory(requireContext(), updated)
                                 }
-                            } catch (_: Exception) { }
+                            }
                         } else {
                             setupIngredients(emptyArray(), emptyArray())
                         }
@@ -275,14 +296,14 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                         viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
                         Toast.makeText(
                             requireContext(),
-                            "Added ${currentCocktail.strDrink} to favorites",
+                            getString(R.string.msg_added_cocktail_to_favorites, currentCocktail.strDrink),
                             Toast.LENGTH_SHORT
                         ).show()
                     } else {
                         viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
                         Toast.makeText(
                             requireContext(),
-                            "Removed ${currentCocktail.strDrink} from favorites",
+                            getString(R.string.msg_removed_cocktail_from_favorites, currentCocktail.strDrink),
                             Toast.LENGTH_SHORT
                         ).show()
                     }
@@ -300,7 +321,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 cocktail?.let { currentCocktail ->
                     Toast.makeText(
                         requireContext(),
-                        "Added ${currentCocktail.strDrink} to bookmarks",
+                        getString(R.string.msg_added_cocktail_to_bookmarks, currentCocktail.strDrink),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
@@ -313,13 +334,25 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 cocktail?.let { currentCocktail ->
                     Toast.makeText(
                         requireContext(),
-                        "Removed ${currentCocktail.strDrink} from bookmarks",
+                        getString(R.string.msg_removed_cocktail_from_bookmarks, currentCocktail.strDrink),
                         Toast.LENGTH_SHORT
                     ).show()
                 }
                 isUserBookmarkAction = false
             }
         }
+    }
+
+    override fun updateFavoriteButtonState(isFavorite: Boolean) {
+        // Implementation will be handled by updateFavoriteButtonState(cocktail) method
+    }
+
+    override fun showMessage(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showErrorResource(resourceId: Int) {
+        showError(getString(resourceId))
     }
 
     private fun updateBookmarkUI(isBookmarked: Boolean) {

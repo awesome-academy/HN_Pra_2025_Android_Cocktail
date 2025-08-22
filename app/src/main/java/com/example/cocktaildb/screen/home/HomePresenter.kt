@@ -1,8 +1,11 @@
 package com.example.cocktaildb.screen.home
 
+import android.util.Log
+import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
+import com.example.cocktaildb.data.repository.AuthRepository
+import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.utils.base.BaseFragment
-import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,7 +14,9 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.cancel
 
 class HomePresenter(
-    private val repository: CocktailRepository
+    private val cocktailRepository: CocktailRepository,
+    private val authRepository: AuthRepository,
+    private val historyFirebaseService: HistoryFirebaseService
 ) : HomeContract.Presenter {
 
     private var view: HomeContract.View? = null
@@ -32,11 +37,11 @@ class HomePresenter(
 
     override fun loadCocktails() {
         (view as? BaseFragment<*>)?.showLoading()
-        
+
         presenterScope.launch {
             try {
                 val cocktails = withContext(Dispatchers.IO) {
-                    repository.fetchCocktailsFromApi()
+                    cocktailRepository.fetchCocktailsFromApi()
                 }
                 view?.showCocktails(cocktails)
             } catch (e: Exception) {
@@ -45,5 +50,9 @@ class HomePresenter(
                 (view as? BaseFragment<*>)?.hideLoading()
             }
         }
+    }
+
+    override fun onCocktailClicked(cocktail: Cocktail) {
+        view?.navigateToCocktailDetail(cocktail)
     }
 }

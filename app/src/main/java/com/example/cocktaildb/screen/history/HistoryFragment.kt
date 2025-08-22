@@ -19,6 +19,7 @@ import com.example.cocktaildb.data.repository.source.local.CocktailLocalDataSour
 import com.example.cocktaildb.databinding.FragmentHistoryBinding
 import com.example.cocktaildb.utils.base.BaseFragment
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
+import com.example.cocktaildb.screen.history.HistoryPresenter
 
 class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.View {
 
@@ -31,7 +32,7 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        
+
         // Apply window insets to handle navigation bar correctly
         ViewCompat.setOnApplyWindowInsetsListener(requireView()) { _, insets ->
             val navigationBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
@@ -56,7 +57,7 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
         requireView().findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar).setNavigationOnClickListener {
             findNavController().navigateUp()
         }
-        
+
         // Set up menu
         requireView().findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar).setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
@@ -79,7 +80,7 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
 
         // Set up RecyclerView with GridLayoutManager showing 2 items per row
         val layoutManager = GridLayoutManager(context, 2)
-        
+
         // Apply proper item spacing decoration
         val spacingInPixels = resources.getDimensionPixelSize(R.dimen.dp_8)
         requireView().findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.historyRecyclerView).addItemDecoration(object : RecyclerView.ItemDecoration() {
@@ -127,13 +128,27 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
     override fun initData() {
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
-        presenter = HistoryPresenter(requireContext(), repository)
+        val contextWrapper = com.example.cocktaildb.utils.CocktailContextWrapper(requireContext(), this)
+        presenter = HistoryPresenter(repository, contextWrapper)
         presenter.setView(this)
+        // Data will be loaded automatically via DataManager after login
+        // Only load manually if data is not available
+        if (!hasDataLoaded()) {
+            presenter.loadHistoryCocktails()
+        }
     }
 
     override fun onResume() {
         super.onResume()
+        if (!hasDataLoaded()) {
+            presenter.loadHistoryCocktails()
+        }
         presenter.onStart()
+    }
+
+    private fun hasDataLoaded(): Boolean {
+        // Check if adapter has data
+        return ::historyAdapter.isInitialized && historyAdapter.itemCount > 0
     }
 
     override fun onPause() {
@@ -161,6 +176,10 @@ class HistoryFragment : BaseFragment<FragmentHistoryBinding>(), HistoryContract.
     }
 
     override fun displayError(message: String) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun showSyncStatus(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 

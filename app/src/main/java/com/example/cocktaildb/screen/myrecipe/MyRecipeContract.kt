@@ -22,6 +22,7 @@ interface MyRecipeContract {
     interface Presenter : BasePresenter<View> {
 
         fun loadUserRecipes()
+        fun refreshUserRecipes()
     }
 }
 

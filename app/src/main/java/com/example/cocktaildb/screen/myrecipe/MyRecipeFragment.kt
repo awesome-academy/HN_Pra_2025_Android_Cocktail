@@ -27,10 +27,11 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     private lateinit var presenter: MyRecipePresenter
     private lateinit var recipeAdapter: RecipeAdapter
     private lateinit var recipeFirebaseService: RecipeFirebaseService
+    private var isPresenterInitialized = false
 
     companion object {
         private const val TAG = "MyRecipeFragment"
-        
+
         // Bundle keys for navigation
         private const val KEY_COCKTAIL_ID = "cocktail_id"
         private const val KEY_COCKTAIL_NAME = "cocktail_name"
@@ -41,11 +42,12 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
         private const val KEY_COCKTAIL_IMAGE = "cocktail_image"
         private const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
         private const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
-        
+        private const val KEY_FROM_MY_RECIPE = "from_my_recipe"
+
         // Default values
         private const val DEFAULT_ALCOHOLIC_VALUE = "Unknown"
         private const val DEFAULT_GLASS_TYPE = "Cocktail Glass"
-        
+
         fun newInstance() = MyRecipeFragment()
     }
 
@@ -102,15 +104,30 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
     }
 
     override fun initData() {
-        recipeFirebaseService = RecipeFirebaseService()
-        val authRepository = AuthRepository()
-        presenter = MyRecipePresenter(recipeFirebaseService, authRepository)
-        presenter.setView(this)
+        if (!isPresenterInitialized) {
+            recipeFirebaseService = RecipeFirebaseService()
+            val authRepository = AuthRepository()
+            presenter = MyRecipePresenter(recipeFirebaseService, authRepository)
+            presenter.setView(this)
+            isPresenterInitialized = true
+        } else {
+            presenter.setView(this)
+        }
+        if (!hasDataLoaded()) {
+            presenter.loadUserRecipes()
+        }
     }
 
     override fun onResume() {
         super.onResume()
         presenter.onStart()
+        if (!hasDataLoaded()) {
+            presenter.loadUserRecipes()
+        }
+    }
+
+    private fun hasDataLoaded(): Boolean {
+        return ::recipeAdapter.isInitialized && recipeAdapter.itemCount > 0
     }
 
     override fun onPause() {
@@ -118,12 +135,24 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
         super.onPause()
     }
 
+    override fun onDestroyView() {
+        presenter.setView(null)
+        super.onDestroyView()
+    }
+
+    override fun onDestroy() {
+        if (isRemoving || requireActivity().isFinishing) {
+            isPresenterInitialized = false
+        }
+        super.onDestroy()
+    }
+
     override fun showUserRecipes(recipes: List<Recipe>) {
         Log.d(TAG, "Received ${recipes.size} recipes")
         recipes.forEach { recipe ->
             Log.d(TAG, "Recipe - ${recipe.name} (ID: ${recipe.id})")
         }
-        
+
         recipeAdapter.setRecipes(recipes)
         loadRecipeImages(recipes)
     }
@@ -137,7 +166,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                     val result = withContext(Dispatchers.IO) {
                         recipeFirebaseService.getRecipeImages(recipe.id)
                     }
-                    
+
                     result.fold(
                         onSuccess = { images ->
                             Log.d(TAG, "Found ${images.size} images for recipe ${recipe.id}")
@@ -179,6 +208,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                 putString(KEY_COCKTAIL_ALCOHOLIC, recipe.alcoholic.ifEmpty { DEFAULT_ALCOHOLIC_VALUE })
                 putString(KEY_COCKTAIL_GLASS, DEFAULT_GLASS_TYPE)
                 putString(KEY_COCKTAIL_INSTRUCTIONS, recipe.instructions)
+                putBoolean(KEY_FROM_MY_RECIPE, true) // Mark as coming from MyRecipe
 
                 val imageUrl = recipeAdapter.getRecipeImageUrl(recipe.id) ?: ""
                 putString(KEY_COCKTAIL_IMAGE, imageUrl)
@@ -188,7 +218,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
             }
 
             navigateToDetailFragment(bundle)
-            
+
         } catch (e: Exception) {
             Log.e(TAG, "Error navigating to detail: ${e.message}")
             Toast.makeText(context, getString(R.string.error_opening_recipe_details), Toast.LENGTH_SHORT).show()
@@ -203,7 +233,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
             try {
                 val detailFragment = com.example.cocktaildb.screen.detail.CocktailDetailFragment()
                 detailFragment.arguments = bundle
-                
+
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.nav_host_fragment_activity_main, detailFragment)
                     .addToBackStack(null)
@@ -221,7 +251,7 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
                 val result = withContext(Dispatchers.IO) {
                     recipeFirebaseService.getRecipeIngredients(recipeId)
                 }
-                
+
                 result.fold(
                     onSuccess = { recipeIngredients ->
                         val ingredients = recipeIngredients.map { it.ingredientName }
@@ -239,6 +269,12 @@ class MyRecipeFragment : BaseFragment<FragmentMyRecipeBinding>(), MyRecipeContra
             }
         }
     }
-    
+
+    fun refreshRecipes() {
+        if (::presenter.isInitialized) {
+            presenter.refreshUserRecipes()
+        }
+    }
+
 }
 

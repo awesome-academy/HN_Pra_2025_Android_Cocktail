@@ -10,6 +10,7 @@ interface HistoryContract {
         fun displayLoading(show: Boolean)
         fun displayError(message: String)
         fun navigateToCocktailDetail(cocktail: Cocktail)
+        fun showSyncStatus(message: String)
     }
 
     interface Presenter {
@@ -20,5 +21,4 @@ interface HistoryContract {
         fun onCocktailClicked(cocktail: Cocktail)
         fun clearHistory()
     }
-
 } 

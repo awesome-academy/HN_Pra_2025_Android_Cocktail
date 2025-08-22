@@ -12,23 +12,35 @@ class NotificationsPresenter : NotificationsContract.Presenter {
     }
 
     override fun onStart() {
-        // TODO: Initialize if needed
+        // Initialize if needed
     }
 
     override fun onStop() {
-        // TODO: Cleanup if needed
+        // Cleanup if needed
     }
 
     override fun loadNotifications() {
         (view as? BaseFragment<*>)?.showLoading()
         try {
-            // TODO: Load notifications
+            // Load notifications
             view?.showNotifications()
         } catch (e: Exception) {
             (view as? BaseFragment<*>)?.showError(e.message ?: "Unknown error")
         } finally {
             (view as? BaseFragment<*>)?.hideLoading()
         }
+    }
+
+    override fun testNotification() {
+        view?.showNotificationSent()
+    }
+
+    override fun scheduleDailyNotification() {
+        view?.showNotificationScheduled()
+    }
+
+    override fun cancelDailyNotification() {
+        view?.showNotificationCancelled()
     }
 }
 

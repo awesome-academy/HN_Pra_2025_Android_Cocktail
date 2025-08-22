@@ -11,6 +11,7 @@ import android.view.animation.AnimationUtils
 import com.example.cocktaildb.data.repository.AuthRepository
 
 import com.google.firebase.auth.FirebaseAuth
+import com.example.cocktaildb.data.manager.DataManager
 class StartActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityStartBinding
@@ -23,6 +24,8 @@ class StartActivity : AppCompatActivity() {
         // If already authenticated (Firebase persists session), skip auth screens
         val authRepository = AuthRepository(this)
         if (authRepository.isUserLoggedIn()) {
+            DataManager.autoLoadDataAfterLogin(this, this)
+            
             startActivity(Intent(this, MainActivity::class.java))
             val name = FirebaseAuth.getInstance().currentUser?.displayName
             if (!name.isNullOrBlank()) {
