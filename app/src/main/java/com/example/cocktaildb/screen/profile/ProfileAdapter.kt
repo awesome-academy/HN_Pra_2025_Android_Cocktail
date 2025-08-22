@@ -79,6 +79,10 @@ class ProfileAdapter(
                 clickListener.onMyRecipesClicked()
             }
 
+            binding.checkmarkButton.setOnClickListener {
+                clickListener.onCheckmarkClicked()
+            }
+
             binding.historyButton.setOnClickListener {
                 clickListener.onHistoryClicked()
             }
@@ -147,6 +151,7 @@ class ProfileAdapter(
 
     interface HeaderClickListener {
         fun onMyRecipesClicked()
+        fun onCheckmarkClicked()
         fun onHistoryClicked()
         fun onLogoutClicked()
     }

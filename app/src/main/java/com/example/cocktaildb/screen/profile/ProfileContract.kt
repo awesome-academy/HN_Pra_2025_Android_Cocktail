@@ -19,6 +19,8 @@ interface ProfileContract {
 
         fun navigateToHistory()
 
+        fun navigateToCheckmarks()
+
         fun navigateToLogin()
 
 
@@ -40,9 +42,14 @@ interface ProfileContract {
         fun onMyRecipesClicked()
 
 
+        fun onCheckmarkClicked()
+
+
         fun onHistoryClicked()
 
 
         fun onLogoutClicked()
     }
 }
+
+

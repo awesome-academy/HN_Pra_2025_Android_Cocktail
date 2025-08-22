@@ -6,12 +6,14 @@ import com.example.cocktaildb.utils.base.BasePresenter
 interface HomeContract {
     interface View {
         fun showCocktails(cocktails: List<Cocktail>)
+        fun showSharedCocktails(cocktails: List<Cocktail>)
         fun navigateToCocktailDetail(cocktail: Cocktail)
         fun showMessage(message: String)
     }
 
     interface Presenter : BasePresenter<View> {
         fun loadCocktails()
+        fun loadSharedCocktails()
         fun onCocktailClicked(cocktail: Cocktail)
     }
 }

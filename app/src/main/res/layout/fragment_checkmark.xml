@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".screen.checkmark.CheckmarkFragment">
+
+    <!-- Title Bar -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:text="My Checkmarks"
+        android:textColor="@color/black"
+        android:textSize="@dimen/sp_24"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_16"
+        android:text="Cocktails you've marked with checkmarks"
+        android:textColor="@color/gray"
+        android:textSize="@dimen/sp_16"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/checkmarkRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/dp_16"
+        android:clipToPadding="false"
+        android:paddingStart="@dimen/dp_8"
+        android:paddingTop="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_8"
+        android:paddingBottom="@dimen/dp_64"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle"
+        tools:listitem="@layout/item_cocktail" />
+
+    <ProgressBar
+        android:id="@+id/loadingProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/emptyStateView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle">
+
+        <ImageView
+            android:layout_width="@dimen/dp_120"
+            android:layout_height="@dimen/dp_120"
+            android:src="@drawable/ic_bookmark"
+            app:tint="@color/gray" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_16"
+            android:text="No checkmarks yet"
+            android:textColor="@color/black"
+            android:textSize="@dimen/sp_18"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dp_8"
+            android:gravity="center"
+            android:paddingStart="@dimen/dp_32"
+            android:paddingEnd="@dimen/dp_32"
+            android:text="Your checkmarked cocktails will appear here"
+            android:textColor="@color/gray"
+            android:textSize="@dimen/sp_16" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout> 

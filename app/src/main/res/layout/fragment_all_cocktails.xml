@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/dp_16"
+        android:background="@color/white"
+        android:elevation="@dimen/dp_4">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/all_cocktails"
+            android:textSize="@dimen/sp_24"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="@dimen/dp_16" />
+
+        <!-- Search and Filter Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <!-- Search Box -->
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="@string/search_cocktails"
+                android:background="@drawable/bg_search_box_dark"
+                android:padding="@dimen/dp_12"
+                android:layout_marginEnd="@dimen/dp_8"
+                android:textSize="@dimen/sp_14"
+                android:drawableStart="@drawable/ic_search"
+                android:drawablePadding="@dimen/dp_8"
+                android:inputType="text"
+                android:imeOptions="actionSearch" />
+
+            <!-- Filter Button -->
+            <Button
+                android:id="@+id/btnFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/filter"
+                android:background="@drawable/filter_button_bg"
+                android:textColor="@color/white"
+                android:padding="@dimen/dp_12"
+                android:textSize="@dimen/sp_14" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Cocktails Container -->
+    <LinearLayout
+        android:id="@+id/searchResultsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <!-- RecyclerView for Cocktails -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:padding="@dimen/dp_8"
+            android:clipToPadding="false" />
+
+        <!-- Pagination -->
+        <LinearLayout
+            android:id="@+id/layoutPagination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/dp_16"
+            android:background="@color/white"
+            android:visibility="gone">
+
+            <!-- Page Numbers -->
+            <LinearLayout
+                android:id="@+id/layoutPageNumbers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="@dimen/dp_16" />
+
+            <!-- Navigation Buttons -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <Button
+                    android:id="@+id/btnPrevious"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/previous"
+                    android:background="@drawable/rounded_button_background"
+                    android:textColor="@color/white"
+                    android:layout_marginEnd="@dimen/dp_16"
+                    android:enabled="false" />
+
+                <Button
+                    android:id="@+id/btnNext"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/next"
+                    android:background="@drawable/rounded_button_background"
+                    android:textColor="@color/white"
+                    android:layout_marginStart="@dimen/dp_16"
+                    android:enabled="false" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Detail Container (Hidden by default) -->
+    <FrameLayout
+        android:id="@+id/detailContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone" />
+
+</LinearLayout> 

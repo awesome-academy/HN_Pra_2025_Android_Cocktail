@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="180dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp">
+    android:layout_height="@dimen/dp_180"
+    app:cardCornerRadius="@dimen/dp_16"
+    app:cardElevation="@dimen/dp_4">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -28,21 +28,21 @@
             android:id="@+id/ll_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:layout_marginEnd="12dp"
+            android:layout_marginTop="@dimen/dp_12"
+            android:layout_marginEnd="@dimen/dp_12"
             android:background="@drawable/rating_background"
             android:gravity="center"
             android:orientation="horizontal"
-            android:paddingStart="8dp"
-            android:paddingTop="4dp"
-            android:paddingEnd="8dp"
-            android:paddingBottom="4dp"
+            android:paddingStart="@dimen/dp_8"
+            android:paddingTop="@dimen/dp_4"
+            android:paddingEnd="@dimen/dp_8"
+            android:paddingBottom="@dimen/dp_4"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="@dimen/dp_16"
+                android:layout_height="@dimen/dp_16"
                 android:src="@drawable/ic_heart"
                 app:tint="@color/pink_primary" />
 
@@ -50,10 +50,10 @@
                 android:id="@+id/tv_rating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
+                android:layout_marginStart="@dimen/dp_4"
                 android:text="4.8"
                 android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textSize="@dimen/sp_12"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -73,12 +73,12 @@
             android:id="@+id/tv_cocktail_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginStart="@dimen/dp_16"
+            android:layout_marginEnd="@dimen/dp_16"
+            android:layout_marginBottom="@dimen/dp_8"
             android:text="Cocktail Name"
             android:textColor="@color/white"
-            android:textSize="16sp"
+            android:textSize="@dimen/sp_16"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/tv_cocktail_category"
             app:layout_constraintEnd_toEndOf="parent"
@@ -89,12 +89,12 @@
             android:id="@+id/tv_cocktail_category"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginStart="@dimen/dp_16"
+            android:layout_marginEnd="@dimen/dp_16"
+            android:layout_marginBottom="@dimen/dp_16"
             android:text="Cocktail"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="@dimen/sp_14"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

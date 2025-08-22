@@ -9,7 +9,11 @@ import com.example.cocktaildb.data.manager.FavoritesManager
 class CocktailRepository(private val dataSource: CocktailDataSource = CocktailRemoteDataSource()) {
 
     fun getCocktails(): List<Cocktail> {
-        return dataSource.getCocktails()
+        return dataSource.getAllCocktails()
+    }
+
+    fun getAllCocktails(): List<Cocktail> {
+        return dataSource.getAllCocktails()
     }
 
     fun getCocktailById(id: String): Cocktail? {
@@ -34,6 +38,14 @@ class CocktailRepository(private val dataSource: CocktailDataSource = CocktailRe
 
     fun getCategories(): List<String> {
         return dataSource.getCategories()
+    }
+
+    fun loadMoreCocktails(): List<Cocktail> {
+        return dataSource.loadMoreCocktails()
+    }
+    
+    fun getAlcoholicTypes(): List<String> {
+        return dataSource.getAlcoholicTypes()
     }
 
     fun preloadOfflineFavorites(context: Context) {
@@ -68,4 +80,6 @@ class CocktailRepository(private val dataSource: CocktailDataSource = CocktailRe
         val sharedPreferences = context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
         sharedPreferences.edit().remove("cocktail_history").apply()
     }
+    
+
 }

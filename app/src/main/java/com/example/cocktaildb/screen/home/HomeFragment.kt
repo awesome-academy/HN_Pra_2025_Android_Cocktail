@@ -39,6 +39,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
     private lateinit var presenter: HomePresenter
     private lateinit var cocktailAdapter: CocktailAdapter
+    private lateinit var shareAdapter: CocktailAdapter
 
     override fun inflateViewBinding(inflater: LayoutInflater): FragmentHomeBinding {
         return FragmentHomeBinding.inflate(inflater)
@@ -62,7 +63,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             startActivity(intent)
         }
         viewBinding.tvViewAll.setOnClickListener {
-            findNavController().navigate(R.id.navigation_messages)
+            findNavController().navigate(R.id.navigation_all_cocktails)
+        }
+
+        // Share: View All click
+        viewBinding.tvViewAllShare.setOnClickListener {
+            findNavController().navigate(R.id.navigation_all_shared_cocktails)
         }
     }
 
@@ -115,11 +121,53 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             adapter = cocktailAdapter
             clipToPadding = false  // Allow scrolling into the padding area
         }
+
+        // Share RecyclerView
+        shareAdapter = CocktailAdapter(
+            items = emptyList(),
+            onCocktailClick = { cocktail ->
+                presenter.onCocktailClicked(cocktail)
+            }
+        )
+
+        // Apply same spacing decoration for shared list
+        val shareSpacing = resources.getDimensionPixelSize(R.dimen.dp_8)
+        viewBinding.recyclerViewShare.addItemDecoration(object : RecyclerView.ItemDecoration() {
+            override fun getItemOffsets(
+                outRect: Rect,
+                view: View,
+                parent: RecyclerView,
+                state: RecyclerView.State
+            ) {
+                val position = parent.getChildAdapterPosition(view)
+                outRect.left = shareSpacing
+                outRect.right = shareSpacing
+                outRect.bottom = shareSpacing
+
+                val isLeftColumn = position % 2 == 0
+                if (isLeftColumn) {
+                    outRect.left = shareSpacing * 2
+                } else {
+                    outRect.right = shareSpacing * 2
+                }
+
+                if (position == 0 || position == 1) {
+                    outRect.top = shareSpacing
+                }
+            }
+        })
+
+        viewBinding.recyclerViewShare.apply {
+            this.layoutManager = GridLayoutManager(context, 2)
+            adapter = shareAdapter
+            clipToPadding = false
+        }
     }
 
     override fun initData() {
         presenter.onStart()
         presenter.loadCocktails()
+        presenter.loadSharedCocktails()
     }
 
     override fun navigateToCocktailDetail(cocktail: Cocktail) {
@@ -173,6 +221,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
         // Show success message
         showMessage(getString(R.string.msg_loaded_cocktails, filteredCocktails.size))
+    }
+
+    override fun showSharedCocktails(cocktails: List<Cocktail>) {
+        val limited = if (cocktails.size > 8) cocktails.take(8) else cocktails
+        shareAdapter.submit(limited)
     }
 }
 

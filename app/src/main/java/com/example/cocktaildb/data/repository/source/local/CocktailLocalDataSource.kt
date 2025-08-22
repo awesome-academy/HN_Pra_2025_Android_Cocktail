@@ -7,7 +7,7 @@ class CocktailLocalDataSource : CocktailDataSource {
 
     override fun getCocktails(): List<Cocktail> {
         // TODO: Implement local data source with Room database
-        return emptyList()
+        return getAllCocktails()
     }
 
     override fun getCocktailById(id: String): Cocktail? {
@@ -37,6 +37,21 @@ class CocktailLocalDataSource : CocktailDataSource {
 
     override fun getCategories(): List<String> {
         // TODO: Implement local categories
+        return emptyList()
+    }
+
+    override fun loadMoreCocktails(): List<Cocktail> {
+        // TODO: Implement local load more cocktails
+        return emptyList()
+    }
+    
+    override fun getAlcoholicTypes(): List<String> {
+        // TODO: Implement local alcoholic types
+        return emptyList()
+    }
+
+    override fun getAllCocktails(): List<Cocktail> {
+        // TODO: Implement local all cocktails
         return emptyList()
     }
 }

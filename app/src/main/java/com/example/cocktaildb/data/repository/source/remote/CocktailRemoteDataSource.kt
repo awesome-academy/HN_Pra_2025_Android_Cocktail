@@ -21,7 +21,11 @@ class CocktailRemoteDataSource : CocktailDataSource {
     }
 
     override fun getCocktails(): List<Cocktail> {
-        return CocktailService.searchByName("")
+        return CocktailService.getAllCocktails()
+    }
+
+    override fun getAllCocktails(): List<Cocktail> {
+        return CocktailService.getAllCocktails()
     }
 
     override fun getCocktailById(id: String): Cocktail? {
@@ -43,6 +47,14 @@ class CocktailRemoteDataSource : CocktailDataSource {
 
     override fun getCategories(): List<String> {
         return CocktailService.getCategories()
+    }
+
+    override fun loadMoreCocktails(): List<Cocktail> {
+        return CocktailService.loadMoreCocktails()
+    }
+    
+    override fun getAlcoholicTypes(): List<String> {
+        return CocktailService.getAlcoholicTypes()
     }
 
     override suspend fun fetchCocktailsFromApi(): List<Cocktail> = withContext(Dispatchers.IO) {
