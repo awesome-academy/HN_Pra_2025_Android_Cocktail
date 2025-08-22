@@ -90,3 +90,4 @@ lint/tmp/
 google-services.json
 app/google-services.json
 app/release-key.jks
+release-key.jks

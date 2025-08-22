@@ -36,6 +36,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
         const val KEY_FROM_TODAY_DRINK = "from_today_drink"
         const val KEY_FROM_MY_RECIPE = "from_my_recipe"
+        const val KEY_FROM_SHARED_COCKTAILS = "from_shared_cocktails"
     }
 
     private val binding get() = viewBinding
@@ -149,10 +150,13 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
             measures = measures.toList()
         )
         this.cocktail = cocktail
-
-        // Only add to history if not coming from MyRecipe
         val isFromMyRecipe = args?.getBoolean(KEY_FROM_MY_RECIPE, false) ?: false
-        if (!isFromMyRecipe) {
+        val isFromSharedCocktails = args?.getBoolean(KEY_FROM_SHARED_COCKTAILS, false) ?: false
+        args?.keySet()?.forEach { key ->
+            Log.e(TAG, "Bundle[$key] = ${args.get(key)}")
+        }
+        
+        if (!isFromMyRecipe && !isFromSharedCocktails) {
             try {
                 HistoryPresenter.addToHistory(requireContext(), cocktail)
             } catch (e: Exception) {
@@ -232,9 +236,10 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                             val ingredientMeasures = ingredients.map { "${it.quantity} ${it.unit}".trim() }.toTypedArray()
                             setupIngredients(ingredientNames, ingredientMeasures)
                             // Update history with enriched ingredients for offline access
-                            // Only update history if not coming from MyRecipe
                             val isFromMyRecipe = arguments?.getBoolean(KEY_FROM_MY_RECIPE, false) ?: false
-                            if (!isFromMyRecipe) {
+                            val isFromSharedCocktails = arguments?.getBoolean(KEY_FROM_SHARED_COCKTAILS, false) ?: false
+                            val isFromSharedCocktailsHome = arguments?.getBoolean("from_shared_cocktails", false) ?: false
+                            if (!isFromMyRecipe && !isFromSharedCocktails && !isFromSharedCocktailsHome) {
                                 try {
                                     val updated = this@CocktailDetailFragment.cocktail?.copy(
                                         ingredients = ingredientNames.toList(),
