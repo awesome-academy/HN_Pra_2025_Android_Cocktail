@@ -43,6 +43,16 @@
     <dimen name="text_size_28">28sp</dimen>
     <!-- Added -->
     <dimen name="text_size_20">20sp</dimen>
+    
+    <!-- Short form text sizes -->
+    <dimen name="sp_12">12sp</dimen>
+    <dimen name="sp_14">14sp</dimen>
+    <dimen name="sp_16">16sp</dimen>
+    <dimen name="sp_18">18sp</dimen>
+    <dimen name="sp_20">20sp</dimen>
+    <dimen name="sp_22">22sp</dimen>
+    <dimen name="sp_24">24sp</dimen>
+    <dimen name="sp_28">28sp</dimen>
 
     <!-- Bottom navigation height to ensure content isn't hidden -->
     <dimen name="bottom_nav_height">56dp</dimen>

@@ -2,221 +2,224 @@ package com.example.cocktaildb.data.repository
 
 import android.content.Context
 import android.net.Uri
-import com.example.cocktaildb.data.model.User
-import com.example.cocktaildb.data.model.Favorite
-import com.example.cocktaildb.data.model.Checkmark
-import com.example.cocktaildb.data.model.CocktailTable
-import com.example.cocktaildb.data.model.Recipe
-import com.example.cocktaildb.data.model.RecipeImage
-import com.example.cocktaildb.data.model.RecipeIngredient
-import com.example.cocktaildb.data.model.SimilarRecipe
-import com.example.cocktaildb.data.model.History
-import com.example.cocktaildb.data.service.UserFirebaseService
-import com.example.cocktaildb.data.service.FavoriteFirebaseService
-import com.example.cocktaildb.data.service.CheckmarkFirebaseService
-import com.example.cocktaildb.data.service.CocktailFirebaseService
-import com.example.cocktaildb.data.service.RecipeFirebaseService
-import com.example.cocktaildb.data.service.HistoryFirebaseService
-import com.example.cocktaildb.data.service.ImageUploadService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import android.util.Log
+import com.example.cocktaildb.data.model.*
+import com.example.cocktaildb.data.service.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import java.util.*
 
-class FirebaseRepository {
-    private val userService = UserFirebaseService()
-    private val favoriteService = FavoriteFirebaseService()
-    private val checkmarkService = CheckmarkFirebaseService()
-    private val cocktailService = CocktailFirebaseService()
-    private val recipeService = RecipeFirebaseService()
-    private val historyService = HistoryFirebaseService()
+class FirebaseRepository(
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+) {
+    private val userFirebaseService = UserFirebaseService()
+    private val cocktailFirebaseService = CocktailFirebaseService()
+    private val recipeFirebaseService = RecipeFirebaseService()
+    private val favoriteFirebaseService = FavoriteFirebaseService()
+    private val historyFirebaseService = HistoryFirebaseService()
+    private val checkmarkFirebaseService = CheckmarkFirebaseService()
     private val imageUploadService = ImageUploadService()
 
-    suspend fun createUser(user: User): Result<String> = withContext(Dispatchers.IO) {
-        userService.createUser(user)
+    // User management
+    suspend fun createUser(user: User): Result<String> {
+        return userFirebaseService.createUser(user)
     }
 
-    suspend fun getUser(userId: String): Result<User?> = withContext(Dispatchers.IO) {
-        userService.getUser(userId)
+    suspend fun getUser(uid: String): Result<User?> {
+        return userFirebaseService.getUser(uid)
     }
 
-    suspend fun updateUser(user: User): Result<Boolean> = withContext(Dispatchers.IO) {
-        userService.updateUser(user)
+    suspend fun updateUser(user: User): Result<Boolean> {
+        return userFirebaseService.updateUser(user)
     }
 
-    suspend fun deleteUser(userId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        userService.deleteUser(userId)
+    suspend fun deleteUser(uid: String): Result<Boolean> {
+        return userFirebaseService.deleteUser(uid)
     }
 
-    suspend fun addFavorite(userId: String, cocktailId: String): Result<String> = withContext(Dispatchers.IO) {
-        favoriteService.addFavorite(userId, cocktailId)
+    // Cocktail management
+    suspend fun createCocktail(cocktail: CocktailTable): Result<String> {
+        return cocktailFirebaseService.createCocktail(cocktail)
     }
 
-    suspend fun removeFavorite(userId: String, cocktailId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        favoriteService.removeFavorite(userId, cocktailId)
+    suspend fun getCocktail(cocktailId: String): Result<CocktailTable?> {
+        return cocktailFirebaseService.getCocktail(cocktailId)
     }
 
-    suspend fun getUserFavorites(userId: String): Result<List<Favorite>> = withContext(Dispatchers.IO) {
-        favoriteService.getUserFavorites(userId)
+    suspend fun getAllCocktails(): Result<List<CocktailTable>> {
+        return cocktailFirebaseService.getAllCocktails()
     }
 
-    suspend fun isFavorite(userId: String, cocktailId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        favoriteService.isFavorite(userId, cocktailId)
+    suspend fun searchCocktails(query: String): Result<List<CocktailTable>> {
+        return cocktailFirebaseService.searchCocktails(query)
     }
 
-    suspend fun toggleCheckmark(userId: String, cocktailId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        checkmarkService.toggleCheckmark(userId, cocktailId)
+    suspend fun getPopularCocktails(limit: Int = 20): Result<List<CocktailTable>> {
+        return cocktailFirebaseService.getPopularCocktails(limit)
     }
 
-    suspend fun isCheckmarked(userId: String, cocktailId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        checkmarkService.isCheckmarked(userId, cocktailId)
+    suspend fun getUserCreatedCocktails(uid: String): Result<List<CocktailTable>> {
+        return cocktailFirebaseService.getUserCreatedCocktails(uid)
     }
 
-    suspend fun getUserCheckmarks(userId: String): Result<List<Checkmark>> = withContext(Dispatchers.IO) {
-        checkmarkService.getUserCheckmarks(userId)
+    suspend fun updateCocktail(cocktail: CocktailTable): Result<Boolean> {
+        return cocktailFirebaseService.updateCocktail(cocktail)
     }
 
-    suspend fun createCocktail(cocktail: CocktailTable): Result<String> = withContext(Dispatchers.IO) {
-        cocktailService.createCocktail(cocktail)
+    suspend fun deleteCocktail(cocktailId: String): Result<Boolean> {
+        return cocktailFirebaseService.deleteCocktail(cocktailId)
     }
 
-    suspend fun getCocktail(cocktailId: String): Result<CocktailTable?> = withContext(Dispatchers.IO) {
-        cocktailService.getCocktail(cocktailId)
+    // Recipe management
+    suspend fun createRecipe(recipe: Recipe): Result<String> {
+        return recipeFirebaseService.createRecipe(recipe)
     }
 
-    suspend fun getAllCocktails(): Result<List<CocktailTable>> = withContext(Dispatchers.IO) {
-        cocktailService.getAllCocktails()
+    suspend fun getRecipe(recipeId: String): Result<Recipe?> {
+        return recipeFirebaseService.getRecipe(recipeId)
     }
 
-    suspend fun searchCocktails(query: String): Result<List<CocktailTable>> = withContext(Dispatchers.IO) {
-        cocktailService.searchCocktails(query)
+    suspend fun getAllRecipes(): Result<List<Recipe>> {
+        return recipeFirebaseService.getAllRecipes()
     }
 
-    suspend fun getPopularCocktails(limit: Int = 20): Result<List<CocktailTable>> = withContext(Dispatchers.IO) {
-        cocktailService.getPopularCocktails(limit)
+    suspend fun getUserRecipes(uid: String): Result<List<Recipe>> {
+        return recipeFirebaseService.getUserRecipes(uid)
     }
 
-    suspend fun updateCocktail(cocktail: CocktailTable): Result<Boolean> = withContext(Dispatchers.IO) {
-        cocktailService.updateCocktail(cocktail)
+    suspend fun getPublicRecipes(): Result<List<Recipe>> {
+        return recipeFirebaseService.getPublicRecipes()
     }
 
-    suspend fun deleteCocktail(cocktailId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        cocktailService.deleteCocktail(cocktailId)
+    suspend fun getPopularRecipes(limit: Int = 20): Result<List<Recipe>> {
+        return recipeFirebaseService.getPopularRecipes(limit)
     }
 
-    suspend fun createRecipe(recipe: Recipe): Result<String> = withContext(Dispatchers.IO) {
-        recipeService.createRecipe(recipe)
+    suspend fun searchRecipes(searchQuery: String): Result<List<Recipe>> {
+        return recipeFirebaseService.searchRecipes(searchQuery)
     }
 
-    suspend fun getRecipe(recipeId: String): Result<Recipe?> = withContext(Dispatchers.IO) {
-        recipeService.getRecipe(recipeId)
+    suspend fun updateRecipe(recipe: Recipe): Result<Boolean> {
+        return recipeFirebaseService.updateRecipe(recipe)
     }
 
-    suspend fun getUserRecipes(userId: String): Result<List<Recipe>> = withContext(Dispatchers.IO) {
-        recipeService.getUserRecipes(userId)
+    suspend fun incrementViewCount(recipeId: String): Result<Boolean> {
+        return recipeFirebaseService.incrementViewCount(recipeId)
     }
 
-    suspend fun getPublicRecipes(): Result<List<Recipe>> = withContext(Dispatchers.IO) {
-        recipeService.getPublicRecipes()
+    suspend fun deleteRecipe(recipeId: String): Result<Boolean> {
+        return recipeFirebaseService.deleteRecipe(recipeId)
     }
 
-    suspend fun getPopularRecipes(limit: Int = 20): Result<List<Recipe>> = withContext(Dispatchers.IO) {
-        recipeService.getPopularRecipes(limit)
+    suspend fun addRecipeImage(recipeImage: RecipeImage): Result<String> {
+        return recipeFirebaseService.addRecipeImage(recipeImage)
     }
 
-    suspend fun searchRecipes(query: String): Result<List<Recipe>> = withContext(Dispatchers.IO) {
-        recipeService.searchRecipes(query)
+    suspend fun getRecipeImages(recipeId: String): Result<List<RecipeImage>> {
+        return recipeFirebaseService.getRecipeImages(recipeId)
     }
 
-    suspend fun updateRecipe(recipe: Recipe): Result<Boolean> = withContext(Dispatchers.IO) {
-        recipeService.updateRecipe(recipe)
+    suspend fun addRecipeIngredient(ingredient: RecipeIngredient): Result<String> {
+        return recipeFirebaseService.addRecipeIngredient(ingredient)
     }
 
-    suspend fun deleteRecipe(recipeId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        recipeService.deleteRecipe(recipeId)
+    suspend fun getRecipeIngredients(recipeId: String): Result<List<RecipeIngredient>> {
+        return recipeFirebaseService.getRecipeIngredients(recipeId)
     }
 
-    suspend fun incrementRecipeViewCount(recipeId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        recipeService.incrementViewCount(recipeId)
+    suspend fun getSimilarRecipes(recipeId: String): Result<List<SimilarRecipe>> {
+        return recipeFirebaseService.getSimilarRecipes(recipeId)
     }
 
-    suspend fun addRecipeImage(recipeImage: RecipeImage): Result<String> = withContext(Dispatchers.IO) {
-        recipeService.addRecipeImage(recipeImage)
+    // NEW: Shared recipes from Firestore collections
+    suspend fun getSharedRecipes(limit: Int = 20): Result<List<Cocktail>> {
+        return recipeFirebaseService.getSharedRecipes(limit)
     }
 
-    suspend fun getRecipeImages(recipeId: String): Result<List<RecipeImage>> = withContext(Dispatchers.IO) {
-        recipeService.getRecipeImages(recipeId)
+    suspend fun getAllSharedRecipes(): Result<List<Cocktail>> {
+        return recipeFirebaseService.getAllSharedRecipes()
     }
 
-    suspend fun addRecipeIngredient(ingredient: RecipeIngredient): Result<String> = withContext(Dispatchers.IO) {
-        recipeService.addRecipeIngredient(ingredient)
+    // Favorite management
+    suspend fun addToFavorites(uid: String, cocktailId: String): Result<String> {
+        return favoriteFirebaseService.addFavorite(uid, cocktailId)
     }
 
-    suspend fun getRecipeIngredients(recipeId: String): Result<List<RecipeIngredient>> = withContext(Dispatchers.IO) {
-        recipeService.getRecipeIngredients(recipeId)
+    suspend fun removeFromFavorites(uid: String, cocktailId: String): Result<Boolean> {
+        return favoriteFirebaseService.removeFavorite(uid, cocktailId)
     }
 
-    suspend fun getSimilarRecipes(recipeId: String): Result<List<SimilarRecipe>> = withContext(Dispatchers.IO) {
-        recipeService.getSimilarRecipes(recipeId)
+    suspend fun getUserFavorites(uid: String): Result<List<Favorite>> {
+        return favoriteFirebaseService.getUserFavorites(uid)
     }
 
-    suspend fun addHistory(userId: String, cocktailId: String): Result<String> = withContext(Dispatchers.IO) {
-        historyService.addHistory(userId, cocktailId)
+    suspend fun isFavorite(uid: String, cocktailId: String): Result<Boolean> {
+        return favoriteFirebaseService.isFavorite(uid, cocktailId)
     }
 
-    suspend fun getUserHistory(userId: String): Result<List<History>> = withContext(Dispatchers.IO) {
-        historyService.getUserHistory(userId)
+    // History management
+    suspend fun addToHistory(uid: String, cocktailId: String): Result<String> {
+        return historyFirebaseService.addHistory(uid, cocktailId)
     }
 
-    suspend fun getRecentHistory(userId: String, limit: Int = 10): Result<List<History>> = withContext(Dispatchers.IO) {
-        historyService.getRecentHistory(userId, limit)
+    suspend fun getUserHistory(uid: String): Result<List<History>> {
+        return historyFirebaseService.getUserHistory(uid)
     }
 
-    suspend fun clearUserHistory(userId: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        historyService.clearUserHistory(userId)
+    suspend fun clearUserHistory(uid: String): Result<Boolean> {
+        return historyFirebaseService.clearUserHistory(uid)
     }
 
-    suspend fun uploadRecipeImage(context: Context, imageUri: Uri, recipeId: String): Result<String> = withContext(Dispatchers.IO) {
-        imageUploadService.uploadRecipeImage(context, imageUri, recipeId)
+    // Checkmark management
+    suspend fun addCheckmark(uid: String, cocktailId: String): Result<String> {
+        return checkmarkFirebaseService.addCheckmark(uid, cocktailId)
     }
 
-    suspend fun deleteRecipeImage(imageUrl: String): Result<Boolean> = withContext(Dispatchers.IO) {
-        imageUploadService.deleteRecipeImage(imageUrl)
+    suspend fun removeCheckmark(uid: String, cocktailId: String): Result<Boolean> {
+        return checkmarkFirebaseService.removeCheckmark(uid, cocktailId)
+    }
+
+    suspend fun getUserCheckmarks(uid: String): Result<List<Checkmark>> {
+        return checkmarkFirebaseService.getUserCheckmarks(uid)
+    }
+
+    suspend fun isChecked(uid: String, cocktailId: String): Result<Boolean> {
+        return checkmarkFirebaseService.isCheckmarked(uid, cocktailId)
+    }
+
+    // Image upload
+    suspend fun uploadRecipeImage(context: Context, imageUri: Uri, recipeId: String): Result<String> {
+        return imageUploadService.uploadRecipeImage(context, imageUri, recipeId)
+    }
+
+    suspend fun deleteRecipeImage(imageUrl: String): Result<Boolean> {
+        return imageUploadService.deleteRecipeImage(imageUrl)
     }
 
     fun isImgBBUrl(url: String): Boolean {
         return imageUploadService.isImgBBUrl(url)
     }
 
-    suspend fun getUserStats(userId: String): Result<UserStats> = withContext(Dispatchers.IO) {
-        try {
-            val favoritesResult = favoriteService.getUserFavorites(userId)
-            val checkmarksResult = checkmarkService.getUserCheckmarks(userId)
-            val recipesResult = recipeService.getUserRecipes(userId)
-            val historyResult = historyService.getUserHistory(userId)
-
-            if (favoritesResult.isSuccess && checkmarksResult.isSuccess && 
-                recipesResult.isSuccess && historyResult.isSuccess) {
-                
-                val stats = UserStats(
-                    userId = userId,
-                    favoriteCount = favoritesResult.getOrNull()?.size ?: 0,
-                    checkmarkCount = checkmarksResult.getOrNull()?.size ?: 0,
-                    recipeCount = recipesResult.getOrNull()?.size ?: 0,
-                    historyCount = historyResult.getOrNull()?.size ?: 0
-                )
-                Result.success(stats)
-            } else {
-                Result.failure(Exception("Failed to get user stats"))
-            }
+    // Analytics
+    suspend fun getUserRecipeStats(uid: String): Result<Map<String, Any>> {
+        return try {
+            val userRecipes = getUserRecipes(uid).getOrNull() ?: emptyList()
+            val totalRecipes = userRecipes.size
+            val totalViews = userRecipes.sumOf { it.viewCount ?: 0 }
+            val totalLikes = userRecipes.sumOf { it.likeCount ?: 0 }
+            
+            val stats = mapOf(
+                "totalRecipes" to totalRecipes,
+                "totalViews" to totalViews,
+                "totalLikes" to totalLikes
+            )
+            
+            Result.success(stats)
         } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error getting user recipe stats", e)
             Result.failure(e)
         }
     }
 }
-
-data class UserStats(
-    val userId: String,
-    val favoriteCount: Int,
-    val checkmarkCount: Int,
-    val recipeCount: Int,
-    val historyCount: Int
-)

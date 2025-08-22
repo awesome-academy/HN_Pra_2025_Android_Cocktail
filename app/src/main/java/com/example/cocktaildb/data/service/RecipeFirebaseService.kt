@@ -1,5 +1,7 @@
 package com.example.cocktaildb.data.service
 
+import android.util.Log
+import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.model.Recipe
 import com.example.cocktaildb.data.model.RecipeImage
 import com.example.cocktaildb.data.model.RecipeIngredient
@@ -15,6 +17,7 @@ class RecipeFirebaseService {
     private val recipeImagesCollection = firestore.collection("recipe_images")
     private val recipeIngredientsCollection = firestore.collection("recipe_ingredients")
     private val similarRecipesCollection = firestore.collection("similar_recipes")
+    
     suspend fun createRecipe(recipe: Recipe): Result<String> {
         return try {
             val recipeId = if (recipe.id.isEmpty()) {
@@ -74,7 +77,7 @@ class RecipeFirebaseService {
     suspend fun getPublicRecipes(): Result<List<Recipe>> {
         return try {
             val querySnapshot = recipesCollection
-                .whereEqualTo("isPublic", true)
+                .whereEqualTo("public", true)
                 .get().await()
             val recipes = querySnapshot.toObjects(Recipe::class.java)
             val sortedRecipes = recipes.sortedByDescending { it.createdAt }
@@ -87,7 +90,7 @@ class RecipeFirebaseService {
     suspend fun getPopularRecipes(limit: Int = 20): Result<List<Recipe>> {
         return try {
             val querySnapshot = recipesCollection
-                .whereEqualTo("isPublic", true)
+                .whereEqualTo("public", true)
                 .get().await()
             val recipes = querySnapshot.toObjects(Recipe::class.java)
             val sortedRecipes = recipes.sortedByDescending { it.createdAt }.take(limit)
@@ -100,13 +103,13 @@ class RecipeFirebaseService {
     suspend fun searchRecipes(searchQuery: String): Result<List<Recipe>> {
         return try {
             val nameResults = recipesCollection
-                .whereEqualTo("isPublic", true)
+                .whereEqualTo("public", true)
                 .whereGreaterThanOrEqualTo("name", searchQuery)
                 .whereLessThanOrEqualTo("name", searchQuery + "\uf8ff")
                 .get().await()
 
             val categoryResults = recipesCollection
-                .whereEqualTo("isPublic", true)
+                .whereEqualTo("public", true)
                 .whereEqualTo("category", searchQuery)
                 .get().await()
 
@@ -190,6 +193,7 @@ class RecipeFirebaseService {
             Result.failure(e)
         }
     }
+    
     suspend fun addRecipeIngredient(ingredient: RecipeIngredient): Result<String> {
         return try {
             val ingredientId = if (ingredient.id.isEmpty()) {
@@ -248,9 +252,9 @@ class RecipeFirebaseService {
             val querySnapshot = similarRecipesCollection
                 .whereEqualTo("recipeId", recipeId)
                 .get().await()
-            val similarRecipes = querySnapshot.toObjects(SimilarRecipe::class.java)
-            val sortedRecipes = similarRecipes.sortedByDescending { it.similarityScore }
-            Result.success(sortedRecipes)
+            val similar = querySnapshot.toObjects(SimilarRecipe::class.java)
+            val sortedSimilar = similar.sortedByDescending { it.similarityScore }
+            Result.success(sortedSimilar)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -273,12 +277,9 @@ class RecipeFirebaseService {
             querySnapshot.documents.forEach { document ->
                 val imageUrl = document.getString("imageUrl") ?: ""
                 
-                // Check for temporary/invalid URIs
                 if (imageUrl.contains("com.miui.gallery.open") || 
                     imageUrl.contains("gallery.open") ||
                     (imageUrl.startsWith("content://") && !imageUrl.startsWith("file://"))) {
-                    
-                    // Delete this invalid image record
                     document.reference.delete()
                     cleanedCount++
                 }
@@ -289,4 +290,141 @@ class RecipeFirebaseService {
             Result.failure(e)
         }
     }
+
+    // NEW METHODS FOR SHARED RECIPES (using Firestore collections: recipes, recipe_ingredients, recipe_images)
+    suspend fun getSharedRecipes(limit: Int = 20): Result<List<Cocktail>> {
+        return try {
+            Log.d("RecipeFirebaseService", "getSharedRecipes: fetching $limit recipes from Firestore")
+            
+            // Avoid composite index by removing orderBy; sort in memory
+            val recipesSnapshot = recipesCollection
+                .whereEqualTo("public", true)
+                .get()
+                .await()
+
+            val recipeDatas = recipesSnapshot.toObjects(RecipeData::class.java)
+                .sortedByDescending { it.createdAt }
+                .take(limit)
+
+            val recipes = mutableListOf<Cocktail>()
+            
+            for (recipe in recipeDatas) {
+                try {
+                    val ingredients = getRecipeIngredientsFromFirestore(recipe.id)
+                    val imageUrl = getRecipePrimaryImageFromFirestore(recipe.id)
+                    val cocktail = Cocktail(
+                        idDrink = recipe.id,
+                        strDrink = recipe.name,
+                        strCategory = recipe.category,
+                        strAlcoholic = recipe.alcoholic,
+                        strInstructions = recipe.instructions,
+                        strDrinkThumb = imageUrl,
+                        ingredients = ingredients,
+                        measures = List(ingredients.size) { "" }
+                    )
+                    recipes.add(cocktail)
+                    Log.d("RecipeFirebaseService", "getSharedRecipes: mapped recipe '${recipe.name}' with ${ingredients.size} ingredients")
+                } catch (e: Exception) {
+                    Log.e("RecipeFirebaseService", "getSharedRecipes: error mapping recipe ${recipe.id}", e)
+                }
+            }
+            
+            Log.d("RecipeFirebaseService", "getSharedRecipes: successfully fetched ${recipes.size} recipes")
+            Result.success(recipes)
+            
+        } catch (e: Exception) {
+            Log.e("RecipeFirebaseService", "getSharedRecipes: error fetching recipes", e)
+            Result.failure(e)
+        }
+    }
+
+    private suspend fun getRecipeIngredientsFromFirestore(recipeId: String): List<String> {
+        return try {
+            val ingredientsSnapshot = recipeIngredientsCollection
+                .whereEqualTo("recipeId", recipeId)
+                .get()
+                .await()
+            
+            ingredientsSnapshot.documents.mapNotNull { doc ->
+                doc.getString("ingredientName")
+            }
+        } catch (e: Exception) {
+            Log.e("RecipeFirebaseService", "getRecipeIngredientsFromFirestore: error fetching ingredients for recipe $recipeId", e)
+            emptyList()
+        }
+    }
+
+    private suspend fun getRecipePrimaryImageFromFirestore(recipeId: String): String? {
+        return try {
+            val imageSnapshot = recipeImagesCollection
+                .whereEqualTo("recipeId", recipeId)
+                .whereEqualTo("primary", true)
+                .limit(1)
+                .get()
+                .await()
+            
+            imageSnapshot.documents.firstOrNull()?.getString("imageUrl")
+        } catch (e: Exception) {
+            Log.e("RecipeFirebaseService", "getRecipePrimaryImageFromFirestore: error fetching image for recipe $recipeId", e)
+            null
+        }
+    }
+
+    suspend fun getAllSharedRecipes(): Result<List<Cocktail>> {
+        return try {
+            Log.d("RecipeFirebaseService", "getAllSharedRecipes: fetching all public recipes")
+            
+            // Avoid composite index by removing orderBy; sort in memory
+            val recipesSnapshot = recipesCollection
+                .whereEqualTo("public", true)
+                .get()
+                .await()
+
+            val recipeDatas = recipesSnapshot.toObjects(RecipeData::class.java)
+                .sortedByDescending { it.createdAt }
+
+            val recipes = mutableListOf<Cocktail>()
+            
+            for (recipe in recipeDatas) {
+                try {
+                    val ingredients = getRecipeIngredientsFromFirestore(recipe.id)
+                    val imageUrl = getRecipePrimaryImageFromFirestore(recipe.id)
+                    val cocktail = Cocktail(
+                        idDrink = recipe.id,
+                        strDrink = recipe.name,
+                        strCategory = recipe.category,
+                        strAlcoholic = recipe.alcoholic,
+                        strInstructions = recipe.instructions,
+                        strDrinkThumb = imageUrl,
+                        ingredients = ingredients,
+                        measures = List(ingredients.size) { "" }
+                    )
+                    recipes.add(cocktail)
+                } catch (e: Exception) {
+                    Log.e("RecipeFirebaseService", "getAllSharedRecipes: error mapping recipe ${recipe.id}", e)
+                }
+            }
+            
+            Log.d("RecipeFirebaseService", "getAllSharedRecipes: successfully fetched ${recipes.size} recipes")
+            Result.success(recipes)
+            
+        } catch (e: Exception) {
+            Log.e("RecipeFirebaseService", "getAllSharedRecipes: error fetching recipes", e)
+            Result.failure(e)
+        }
+    }
 }
+
+// Data class for Firestore recipe document
+data class RecipeData(
+    val id: String = "",
+    val name: String = "",
+    val category: String = "",
+    val alcoholic: String = "",
+    val instructions: String = "",
+    val createdAt: Long = 0,
+    val public: Boolean = false,
+    val uid: String = ""
+)
+
+

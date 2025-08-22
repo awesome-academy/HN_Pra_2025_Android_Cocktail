@@ -60,6 +60,11 @@
     <string name="Accept_condition">Accept terms &amp; Condition</string>
     <string name="Cre_account">Create an account</string>
     <string name="title_my_recipe">My Recipes</string>
+    <string name="all_cocktails">All Cocktails</string>
+    <string name="search_cocktails">Search cocktails</string>
+    <string name="filter">Filter</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
 
     <!-- Profile strings -->
     <string name="profile_title">User Profile</string>

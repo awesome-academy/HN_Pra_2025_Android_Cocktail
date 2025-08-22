@@ -18,8 +18,79 @@ object CocktailService {
     fun searchByName(query: String): List<Cocktail> {
         val q = URLEncoder.encode(query, "UTF-8")
         val url = BASE + "search.php?s=$q"
+        android.util.Log.d(TAG, "searchByName: calling URL: $url")
         val json = get(url)
-        return parseDetailedDrinks(json)
+        android.util.Log.d(TAG, "searchByName: got JSON response length: ${json.length}")
+        val cocktails = parseDetailedDrinks(json)
+        android.util.Log.d(TAG, "searchByName: parsed ${cocktails.size} cocktails")
+        return cocktails
+    }
+
+    fun getAllCocktails(): List<Cocktail> {
+        // Load all cocktails from all letters for complete collection
+        // This will be cached locally for future use
+        val letters = listOf("a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
+        
+        android.util.Log.d(TAG, "getAllCocktails: loading all cocktails from all letters for complete collection")
+        
+        val allCocktails = mutableListOf<Cocktail>()
+        
+        // Search for cocktails starting with each letter
+        for (letter in letters) {
+            try {
+                val url = BASE + "search.php?f=$letter"
+                android.util.Log.d(TAG, "getAllCocktails: calling URL: $url")
+                val json = get(url)
+                val cocktails = parseDetailedDrinks(json)
+                
+                if (cocktails.isNotEmpty()) {
+                    // Add all cocktails from each letter for complete collection
+                    allCocktails.addAll(cocktails)
+                    android.util.Log.d(TAG, "getAllCocktails: found ${cocktails.size} cocktails starting with '$letter', total so far: ${allCocktails.size}")
+                } else {
+                    android.util.Log.w(TAG, "getAllCocktails: no cocktails found starting with '$letter'")
+                }
+                
+                // Small delay to avoid overwhelming the API
+                Thread.sleep(30)
+                
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "getAllCocktails: error searching for letter '$letter'", e)
+            }
+        }
+        
+        android.util.Log.d(TAG, "getAllCocktails: total cocktails collected: ${allCocktails.size}")
+        return allCocktails
+    }
+    
+    fun loadMoreCocktails(): List<Cocktail> {
+        // Load additional cocktails for pagination
+        val letters = listOf("g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z")
+        
+        android.util.Log.d(TAG, "loadMoreCocktails: loading additional cocktails from remaining letters")
+        
+        val moreCocktails = mutableListOf<Cocktail>()
+        
+        for (letter in letters) {
+            try {
+                val url = BASE + "search.php?f=$letter"
+                val json = get(url)
+                val cocktails = parseDetailedDrinks(json)
+                
+                if (cocktails.isNotEmpty()) {
+                    val cocktailsToAdd = if (cocktails.size > 3) cocktails.take(3) else cocktails
+                    moreCocktails.addAll(cocktailsToAdd)
+                }
+                
+                Thread.sleep(20)
+                
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "loadMoreCocktails: error searching for letter '$letter'", e)
+            }
+        }
+        
+        android.util.Log.d(TAG, "loadMoreCocktails: additional cocktails loaded: ${moreCocktails.size}")
+        return moreCocktails
     }
 
     fun searchByIngredient(ingredient: String): List<Cocktail> {
@@ -79,6 +150,24 @@ object CocktailService {
         return out
     }
 
+    fun getAlcoholicTypes(): List<String> {
+        val url = BASE + "list.php?a=list"
+        val json = get(url)
+        val out = mutableListOf<String>()
+        try {
+            val obj = JSONObject(json)
+            val arr: JSONArray? = obj.optJSONArray("drinks")
+            arr?.let {
+                for (i in 0 until it.length()) {
+                    val item = it.getJSONObject(i)
+                    val alcoholic = item.optString("strAlcoholic")
+                    if (alcoholic.isNotEmpty()) out += alcoholic
+                }
+            }
+        } catch (_: Exception) {}
+        return out
+    }
+
     fun getIngredients(): List<String> {
         val url = BASE + "list.php?i=list"
         val json = get(url)
@@ -127,13 +216,20 @@ object CocktailService {
         try {
             val obj = JSONObject(json)
             val arr: JSONArray? = obj.optJSONArray("drinks")
-            arr?.let {
-                for (i in 0 until it.length()) {
-                    val o = it.getJSONObject(i)
+            if (arr != null) {
+                android.util.Log.d(TAG, "parseDetailedDrinks: found drinks array with ${arr.length()} items")
+                for (i in 0 until arr.length()) {
+                    val o = arr.getJSONObject(i)
                     out += parseCocktailFromJson(o)
                 }
+            } else {
+                android.util.Log.w(TAG, "parseDetailedDrinks: no drinks array found in JSON")
+                android.util.Log.d(TAG, "parseDetailedDrinks: JSON content: ${json.take(200)}...")
             }
-        } catch (_: Exception) {}
+        } catch (e: Exception) {
+            android.util.Log.e(TAG, "parseDetailedDrinks: error parsing JSON", e)
+            android.util.Log.d(TAG, "parseDetailedDrinks: JSON content: ${json.take(200)}...")
+        }
         return out
     }
 

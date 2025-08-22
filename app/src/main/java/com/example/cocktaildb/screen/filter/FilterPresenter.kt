@@ -16,7 +16,7 @@ class FilterPresenter(
 
     private var selectedCategory: String? = null
     private var selectedAlcoholic: String? = null
-    private val alcoholicTypes = listOf("Alcoholic", "Non alcoholic", "Optional alcohol")
+    private var alcoholicTypes = emptyList<String>()
 
     override fun setView(view: FilterContract.View?) {
         this.view = view
@@ -35,6 +35,7 @@ class FilterPresenter(
         executor.execute {
             try {
                 val categories = cocktailRepository.getCategories()
+                val alcoholicTypes = cocktailRepository.getAlcoholicTypes()
 
                 view?.let { v ->
                     Handler(Looper.getMainLooper()).post {
