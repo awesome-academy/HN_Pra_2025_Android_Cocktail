@@ -16,6 +16,7 @@ import com.example.cocktaildb.data.service.RecipeFirebaseService
 import com.example.cocktaildb.databinding.FragmentAllCocktailsBinding
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
+import com.example.cocktaildb.screen.detail.CocktailDetailFragment
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,15 +27,16 @@ class AllSharedCocktailsFragment : BaseFragment<FragmentAllCocktailsBinding>(), 
 
     companion object {
         private const val TAG = "AllSharedCocktailsFragment"
-        private const val EXTRA_COCKTAIL_ID = "cocktail_id"
-        private const val EXTRA_COCKTAIL_NAME = "cocktail_name"
-        private const val EXTRA_COCKTAIL_CATEGORY = "cocktail_category"
-        private const val EXTRA_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
-        private const val EXTRA_COCKTAIL_GLASS = "cocktail_glass"
-        private const val EXTRA_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
-        private const val EXTRA_COCKTAIL_IMAGE = "cocktail_image"
-        private const val EXTRA_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
-        private const val EXTRA_COCKTAIL_MEASURES = "cocktail_measures"
+        private const val KEY_COCKTAIL_ID = "cocktail_id"
+        private const val KEY_COCKTAIL_NAME = "cocktail_name"
+        private const val KEY_COCKTAIL_CATEGORY = "cocktail_category"
+        private const val KEY_COCKTAIL_ALCOHOLIC = "cocktail_alcoholic"
+        private const val KEY_COCKTAIL_GLASS = "cocktail_glass"
+        private const val KEY_COCKTAIL_INSTRUCTIONS = "cocktail_instructions"
+        private const val KEY_COCKTAIL_IMAGE = "cocktail_image"
+        private const val KEY_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
+        private const val KEY_COCKTAIL_MEASURES = "cocktail_measures"
+        private const val KEY_FROM_SHARED_COCKTAILS = "from_shared_cocktails"
     }
 
     private lateinit var presenter: AllSharedCocktailsPresenter
@@ -94,6 +96,7 @@ class AllSharedCocktailsFragment : BaseFragment<FragmentAllCocktailsBinding>(), 
             clipToPadding = false  // Allow scrolling into the padding area
             setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.bottom_nav_height))
         }
+    viewBinding.btnFilter.visibility = View.GONE
     }
 
     override fun initData() {
@@ -165,15 +168,16 @@ class AllSharedCocktailsFragment : BaseFragment<FragmentAllCocktailsBinding>(), 
 
     private fun navigateToCocktailDetail(cocktail: Cocktail) {
         val bundle = Bundle().apply {
-            putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
-            putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
-            putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
-            putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
-            putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
-            putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
-            putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
-            putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
-            putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+            putString(KEY_COCKTAIL_ID, cocktail.idDrink)
+            putString(KEY_COCKTAIL_NAME, cocktail.strDrink)
+            putString(KEY_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+            putString(KEY_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+            putString(KEY_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+            putString(KEY_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+            putString(KEY_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+            putStringArray(KEY_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+            putStringArray(KEY_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+            putBoolean(KEY_FROM_SHARED_COCKTAILS, true)
         }
         findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }

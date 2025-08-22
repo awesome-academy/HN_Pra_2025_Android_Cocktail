@@ -35,6 +35,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         private const val EXTRA_COCKTAIL_IMAGE = "cocktail_image"
         private const val EXTRA_COCKTAIL_INGREDIENTS = "cocktail_ingredients"
         private const val EXTRA_COCKTAIL_MEASURES = "cocktail_measures"
+        private const val EXTRA_FROM_SHARED_COCKTAILS = "from_shared_cocktails"
     }
 
     private lateinit var presenter: HomePresenter
@@ -126,7 +127,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         shareAdapter = CocktailAdapter(
             items = emptyList(),
             onCocktailClick = { cocktail ->
-                presenter.onCocktailClicked(cocktail)
+                navigateToSharedCocktailDetail(cocktail)
             }
         )
 
@@ -182,6 +183,22 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
             putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
             putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
             putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+        }
+        findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+    }
+
+    private fun navigateToSharedCocktailDetail(cocktail: Cocktail) {
+        val bundle = Bundle().apply {
+            putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+            putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+            putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+            putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+            putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+            putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+            putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+            putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+            putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+            putBoolean(EXTRA_FROM_SHARED_COCKTAILS, true) // Add flag for shared cocktails
         }
         findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }
