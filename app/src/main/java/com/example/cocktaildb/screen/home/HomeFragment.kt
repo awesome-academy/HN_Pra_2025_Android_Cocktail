@@ -21,11 +21,16 @@ import com.example.cocktaildb.databinding.FragmentHomeBinding
 import com.example.cocktaildb.screen.search.SearchActivity
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
 import com.example.cocktaildb.utils.base.BaseFragment
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlin.math.min
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
 
     companion object {
+        private const val TAG = "HomeFragment"
         private const val EXTRA_COCKTAIL_ID = "cocktail_id"
         private const val EXTRA_COCKTAIL_NAME = "cocktail_name"
         private const val EXTRA_COCKTAIL_CATEGORY = "cocktail_category"
@@ -188,19 +193,63 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
     }
 
     private fun navigateToSharedCocktailDetail(cocktail: Cocktail) {
-        val bundle = Bundle().apply {
-            putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
-            putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
-            putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
-            putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
-            putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
-            putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
-            putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
-            putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
-            putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
-            putBoolean(EXTRA_FROM_SHARED_COCKTAILS, true) // Add flag for shared cocktails
+        // Get recipe details from Firebase to check ownership
+        val authRepository = AuthRepository()
+        val currentUser = authRepository.getCurrentUser()
+        
+        Log.d(TAG, "Navigating to shared cocktail detail: ${cocktail.strDrink} (ID: ${cocktail.idDrink})")
+        Log.d(TAG, "Current user ID: ${currentUser?.uid}")
+        
+        // Launch coroutine to get recipe details and check ownership
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val recipeFirebaseService = com.example.cocktaildb.data.service.RecipeFirebaseService()
+                val recipeResult = withContext(Dispatchers.IO) {
+                    recipeFirebaseService.getRecipe(cocktail.idDrink)
+                }
+                
+                val isMyRecipe = recipeResult.getOrNull()?.uid == currentUser?.uid
+                Log.d(TAG, "Recipe owner: ${recipeResult.getOrNull()?.uid}")
+                Log.d(TAG, "Is my recipe: $isMyRecipe")
+                
+                val bundle = Bundle().apply {
+                    putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+                    putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+                    putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+                    putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+                    putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+                    putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+                    putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+                    putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+                    putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+                    
+                    // Only set flag if it's actually MY recipe, otherwise allow saving to history
+                    if (isMyRecipe) {
+                        putBoolean(EXTRA_FROM_SHARED_COCKTAILS, true)
+                        Log.d(TAG, "Set flag to NOT save to history (my recipe)")
+                    } else {
+                        Log.d(TAG, "Will save to history (other user's recipe)")
+                    }
+                }
+                findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking recipe ownership", e)
+                // Default to treating as other's recipe (save to history)
+                val bundle = Bundle().apply {
+                    putString(EXTRA_COCKTAIL_ID, cocktail.idDrink)
+                    putString(EXTRA_COCKTAIL_NAME, cocktail.strDrink)
+                    putString(EXTRA_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+                    putString(EXTRA_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+                    putString(EXTRA_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+                    putString(EXTRA_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+                    putString(EXTRA_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+                    putStringArray(EXTRA_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+                    putStringArray(EXTRA_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+                }
+                findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+            }
         }
-        findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }
 
     override fun showMessage(message: String) {

@@ -138,6 +138,16 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         val ingredients = args?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray()
         val measures = args?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
 
+        Log.d(TAG, "Loading cocktail data:")
+        Log.d(TAG, "ID: $cocktailId")
+        Log.d(TAG, "Name: $cocktailName")
+        Log.d(TAG, "Instructions length: ${instructions.length}")
+        Log.d(TAG, "Instructions preview: ${instructions.take(100)}")
+        Log.d(TAG, "Ingredients count: ${ingredients.size}")
+        Log.d(TAG, "Ingredients: ${ingredients.joinToString(", ")}")
+        Log.d(TAG, "Measures count: ${measures.size}")
+        Log.d(TAG, "Measures: ${measures.joinToString(", ")}")
+
         val cocktail = Cocktail(
             idDrink = cocktailId,
             strDrink = cocktailName,
@@ -153,15 +163,50 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         val isFromMyRecipe = args?.getBoolean(KEY_FROM_MY_RECIPE, false) ?: false
         val isFromSharedCocktails = args?.getBoolean(KEY_FROM_SHARED_COCKTAILS, false) ?: false
         args?.keySet()?.forEach { key ->
-            Log.e(TAG, "Bundle[$key] = ${args.get(key)}")
+            val value = args.get(key)
+            when (key) {
+                KEY_COCKTAIL_INSTRUCTIONS -> {
+                    Log.e(TAG, "Bundle[$key] = '$value' (length: ${value?.toString()?.length ?: 0})")
+                }
+                KEY_COCKTAIL_INGREDIENTS -> {
+                    val ingredientsArray = value as? Array<*>
+                    Log.e(TAG, "Bundle[$key] = ${ingredientsArray?.contentToString() ?: "null"}")
+                    ingredientsArray?.forEachIndexed { index, ingredient -> 
+                        Log.e(TAG, "  Ingredient[$index] = '$ingredient'")
+                    }
+                }
+                KEY_COCKTAIL_MEASURES -> {
+                    val measuresArray = value as? Array<*>
+                    Log.e(TAG, "Bundle[$key] = ${measuresArray?.contentToString() ?: "null"}")
+                    measuresArray?.forEachIndexed { index, measure -> 
+                        Log.e(TAG, "  Measure[$index] = '$measure'")
+                    }
+                }
+                else -> {
+                    Log.e(TAG, "Bundle[$key] = $value")
+                }
+            }
+        }
+        
+        // Additional check for missing instructions
+        if (args?.containsKey(KEY_COCKTAIL_INSTRUCTIONS) != true) {
+            Log.w(TAG, "WARNING: cocktail_instructions key is missing from bundle!")
+        } else {
+            val instructionsValue = args.getString(KEY_COCKTAIL_INSTRUCTIONS)
+            if (instructionsValue.isNullOrBlank()) {
+                Log.w(TAG, "WARNING: cocktail_instructions is null or empty!")
+            }
         }
         
         if (!isFromMyRecipe && !isFromSharedCocktails) {
+            Log.d(TAG, "Cocktail will be saved to history - not from my recipe and not from shared cocktails")
             try {
                 HistoryPresenter.addToHistory(requireContext(), cocktail)
             } catch (e: Exception) {
                 Log.e(TAG, "Error adding to history", e)
             }
+        } else {
+            Log.d(TAG, "Cocktail will NOT be saved to history - isFromMyRecipe: $isFromMyRecipe, isFromSharedCocktails: $isFromSharedCocktails")
         }
 
         viewBinding.tvCocktailName.text = cocktailName
@@ -173,23 +218,49 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         viewBinding.tvDescription.text = descriptionBuilder.toString()
         ImageLoader.loadImage(imageUrl, viewBinding.ivCocktail, R.drawable.imgstart)
         setupInstructions(instructions)
-        setupIngredients(ingredients, measures)
         presenter.loadRelatedCocktails(cocktailName, cocktailCategory)
-        if (cocktailId.isNotEmpty() && (ingredients.isEmpty() || ingredients.all { it.isEmpty() })) {
+        
+        // Check if ingredients are empty or need to be loaded from Firebase
+        if (cocktailId.isNotEmpty() && (ingredients.isEmpty() || ingredients.all { it.isEmpty() || it == "null" })) {
+            Log.d(TAG, "Loading ingredients from Firebase for cocktail: $cocktailId")
             loadRecipeIngredientsFromFirebase(cocktailId)
         } else {
+            Log.d(TAG, "Using provided ingredients, count: ${ingredients.size}")
             setupIngredients(ingredients, measures)
+        }
+        
+        // If instructions are missing or empty, try to load from external API
+        if (instructions.isBlank() || instructions.equals(getString(R.string.no_instructions_available), ignoreCase = true)) {
+            Log.d(TAG, "Instructions are missing, trying to load from external API for cocktail: $cocktailName")
+            loadCocktailFromExternalAPI(cocktailName)
         }
     }
 
     private fun setupInstructions(instructions: String) {
-        val instructionLines = instructions.split(". ")
         val instructionsContainer = viewBinding.llInstructions
         instructionsContainer.removeAllViews()
+        
+        // Check if instructions is empty, null, or contains only whitespace
+        if (instructions.isBlank() || instructions.equals("null", ignoreCase = true)) {
+            Log.d(TAG, "Instructions are empty or null")
+            val noInstructionsView = TextView(requireContext()).apply {
+                text = getString(R.string.no_instructions_available)
+                textSize = 16f
+                setTextColor(resources.getColor(R.color.dark_gray, null))
+                setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
+            }
+            instructionsContainer.addView(noInstructionsView)
+            return
+        }
+        
+        val instructionLines = instructions.split(". ", ". ", ".\n", "\n")
+        Log.d(TAG, "Setting up instructions, lines count: ${instructionLines.size}")
+        
         instructionLines.forEachIndexed { index, instruction ->
-            if (instruction.isNotBlank()) {
+            val cleanInstruction = instruction.trim()
+            if (cleanInstruction.isNotBlank() && !cleanInstruction.equals("null", ignoreCase = true)) {
                 val instructionView = TextView(requireContext()).apply {
-                    text = getString(R.string.instruction_numbered, index + 1, instruction)
+                    text = getString(R.string.instruction_numbered, index + 1, cleanInstruction)
                     textSize = 16f
                     setTextColor(resources.getColor(R.color.dark_gray, null))
                     setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
@@ -197,32 +268,74 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 instructionsContainer.addView(instructionView)
             }
         }
+        
+        // If no valid instructions were added, show default message
+        if (instructionsContainer.childCount == 0) {
+            val noInstructionsView = TextView(requireContext()).apply {
+                text = getString(R.string.no_instructions_available)
+                textSize = 16f
+                setTextColor(resources.getColor(R.color.dark_gray, null))
+                setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
+            }
+            instructionsContainer.addView(noInstructionsView)
+        }
     }
 
     private fun setupIngredients(ingredients: Array<String>, measures: Array<String>) {
         val ingredientsContainer = viewBinding.llIngredients
         ingredientsContainer.removeAllViews()
+        
+        // Filter valid ingredients (not empty, not null, not "null" string)
         val validIngredients = ingredients.filterIndexed { index, ingredient ->
-            ingredient.isNotBlank() && ingredient != "null"
+            !ingredient.isNullOrBlank() && !ingredient.equals("null", ignoreCase = true)
         }
+        
         val ingredientsCount = validIngredients.size
         viewBinding.tvIngredientsHeader.text = getString(R.string.ingredients_count, ingredientsCount)
+        
+        Log.d(TAG, "Setting up ingredients, valid count: $ingredientsCount")
+        
+        if (validIngredients.isEmpty()) {
+            val noIngredientsView = TextView(requireContext()).apply {
+                text = "No ingredients available"
+                textSize = 16f
+                setTextColor(resources.getColor(R.color.dark_gray, null))
+                setPadding(0, 0, 0, resources.getDimensionPixelSize(R.dimen.dp_8))
+            }
+            ingredientsContainer.addView(noIngredientsView)
+            return
+        }
+        
         validIngredients.forEachIndexed { index, ingredient ->
             val ingredientView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.item_ingredient, ingredientsContainer, false)
             val ingredientName = ingredientView.findViewById<TextView>(R.id.tvIngredientName)
             val ingredientMeasure = ingredientView.findViewById<TextView>(R.id.tvIngredientMeasure)
+            
             ingredientName.text = ingredient
+            
+            // Find the original index to get the corresponding measure
             val originalIndex = ingredients.indexOf(ingredient)
             val measure = if (originalIndex < measures.size && originalIndex >= 0) {
-                measures[originalIndex]?.takeIf { it.isNotBlank() && it != "null" } ?: ""
-            } else ""
+                val measureText = measures[originalIndex]
+                if (!measureText.isNullOrBlank() && !measureText.equals("null", ignoreCase = true)) {
+                    measureText.trim()
+                } else {
+                    ""
+                }
+            } else {
+                ""
+            }
+            
             ingredientMeasure.text = measure
             ingredientsContainer.addView(ingredientView)
+            
+            Log.d(TAG, "Added ingredient: $ingredient, measure: $measure")
         }
     }
 
     private fun loadRecipeIngredientsFromFirebase(recipeId: String) {
+        Log.d(TAG, "Loading ingredients from Firebase for recipe: $recipeId")
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val result = withContext(Dispatchers.IO) {
@@ -230,47 +343,146 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
                 }
                 result.fold(
                     onSuccess = { ingredients ->
-                        Log.d(TAG, "Loaded ${ingredients.size} ingredients for recipe $recipeId")
+                        Log.d(TAG, "Successfully loaded ${ingredients.size} ingredients for recipe $recipeId")
                         if (ingredients.isNotEmpty()) {
                             val ingredientNames = ingredients.map { it.ingredientName }.toTypedArray()
                             val ingredientMeasures = ingredients.map { "${it.quantity} ${it.unit}".trim() }.toTypedArray()
+                            
+                            Log.d(TAG, "Ingredients: ${ingredientNames.joinToString(", ")}")
+                            Log.d(TAG, "Measures: ${ingredientMeasures.joinToString(", ")}")
+                            
                             setupIngredients(ingredientNames, ingredientMeasures)
-                            // Update history with enriched ingredients for offline access
+                            
+                            // Update cocktail object with enriched ingredients
                             val isFromMyRecipe = arguments?.getBoolean(KEY_FROM_MY_RECIPE, false) ?: false
                             val isFromSharedCocktails = arguments?.getBoolean(KEY_FROM_SHARED_COCKTAILS, false) ?: false
                             val isFromSharedCocktailsHome = arguments?.getBoolean("from_shared_cocktails", false) ?: false
-                            if (!isFromMyRecipe && !isFromSharedCocktails && !isFromSharedCocktailsHome) {
-                                try {
-                                    val updated = this@CocktailDetailFragment.cocktail?.copy(
-                                        ingredients = ingredientNames.toList(),
-                                        measures = ingredientMeasures.toList()
-                                    )
-                                    if (updated != null) {
-                                        this@CocktailDetailFragment.cocktail = updated
+                            
+                            val updated = this@CocktailDetailFragment.cocktail?.copy(
+                                ingredients = ingredientNames.toList(),
+                                measures = ingredientMeasures.toList()
+                            )
+                            if (updated != null) {
+                                this@CocktailDetailFragment.cocktail = updated
+                                
+                                // Only add to history if not from recipe sources
+                                if (!isFromMyRecipe && !isFromSharedCocktails && !isFromSharedCocktailsHome) {
+                                    try {
                                         HistoryPresenter.addToHistory(requireContext(), updated)
+                                        Log.d(TAG, "Added enriched cocktail to history")
+                                    } catch (e: Exception) {
+                                        Log.e(TAG, "Error adding enriched cocktail to history", e)
                                     }
-                                } catch (_: Exception) { }
-                            } else {
-                                // Still update cocktail object, just don't save to history
-                                val updated = this@CocktailDetailFragment.cocktail?.copy(
-                                    ingredients = ingredientNames.toList(),
-                                    measures = ingredientMeasures.toList()
-                                )
-                                if (updated != null) {
-                                    this@CocktailDetailFragment.cocktail = updated
                                 }
                             }
                         } else {
-                            setupIngredients(emptyArray(), emptyArray())
+                            Log.d(TAG, "No ingredients found for recipe $recipeId in Firebase, trying external API...")
+                            // Try to load from external API if Firebase has no data
+                            tryLoadIngredientsFromExternalAPI()
                         }
                     },
-                    onFailure = { _ ->
-                        setupIngredients(emptyArray(), emptyArray())
+                    onFailure = { error ->
+                        Log.e(TAG, "Failed to load ingredients for recipe $recipeId from Firebase", error)
+                        // Try to load from external API if Firebase fails
+                        tryLoadIngredientsFromExternalAPI()
                     }
                 )
             } catch (e: Exception) {
-                Log.e(TAG, "Error loading ingredients for recipe $recipeId", e)
+                Log.e(TAG, "Exception while loading ingredients for recipe $recipeId", e)
+                tryLoadIngredientsFromExternalAPI()
+            }
+        }
+    }
+
+    private fun tryLoadIngredientsFromExternalAPI() {
+        val cocktailName = arguments?.getString(KEY_COCKTAIL_NAME) ?: ""
+        val cocktailId = arguments?.getString(KEY_COCKTAIL_ID) ?: ""
+        
+        Log.d(TAG, "Trying to load ingredients from external API for: $cocktailName (ID: $cocktailId)")
+        
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val repository = CocktailRepository(CocktailRemoteDataSource())
+                val result = withContext(Dispatchers.IO) {
+                    // Try by ID first, then by name
+                    repository.getCocktailById(cocktailId) ?: run {
+                        val searchResults = repository.searchCocktails(cocktailName)
+                        searchResults.firstOrNull { it.strDrink.equals(cocktailName, ignoreCase = true) }
+                            ?: searchResults.firstOrNull()
+                    }
+                }
+                
+                if (result != null && result.ingredients.isNotEmpty()) {
+                    Log.d(TAG, "Found ingredients from external API: ${result.ingredients}")
+                    setupIngredients(
+                        result.ingredients.toTypedArray(),
+                        result.measures.toTypedArray()
+                    )
+                    
+                    // Update cocktail object
+                    this@CocktailDetailFragment.cocktail = this@CocktailDetailFragment.cocktail?.copy(
+                        ingredients = result.ingredients,
+                        measures = result.measures
+                    )
+                } else {
+                    Log.d(TAG, "No ingredients found from external API either, showing empty state")
+                    setupIngredients(emptyArray(), emptyArray())
+                }
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading ingredients from external API", e)
                 setupIngredients(emptyArray(), emptyArray())
+            }
+        }
+    }
+
+    private fun loadCocktailFromExternalAPI(cocktailName: String) {
+        Log.d(TAG, "Loading cocktail details from external API for: $cocktailName")
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    // Try to get cocktail details from the repository
+                    val repository = CocktailRepository(CocktailRemoteDataSource())
+                    val searchResults = repository.searchCocktails(cocktailName)
+                    searchResults.firstOrNull { it.strDrink.equals(cocktailName, ignoreCase = true) }
+                        ?: searchResults.firstOrNull()
+                }
+                
+                if (result != null) {
+                    Log.d(TAG, "Found external cocktail data:")
+                    Log.d(TAG, "Instructions: ${result.strInstructions}")
+                    Log.d(TAG, "Ingredients: ${result.ingredients}")
+                    Log.d(TAG, "Measures: ${result.measures}")
+                    
+                    // Update UI with external data if available
+                    if (!result.strInstructions.isNullOrBlank()) {
+                        setupInstructions(result.strInstructions!!)
+                        
+                        // Update the cocktail object
+                        this@CocktailDetailFragment.cocktail = this@CocktailDetailFragment.cocktail?.copy(
+                            strInstructions = result.strInstructions
+                        )
+                    }
+                    
+                    // If external cocktail has ingredients, use them
+                    if (result.ingredients.isNotEmpty()) {
+                        setupIngredients(
+                            result.ingredients.toTypedArray(),
+                            result.measures.toTypedArray()
+                        )
+                        
+                        // Update the cocktail object
+                        this@CocktailDetailFragment.cocktail = this@CocktailDetailFragment.cocktail?.copy(
+                            ingredients = result.ingredients,
+                            measures = result.measures
+                        )
+                    }
+                } else {
+                    Log.d(TAG, "No external data found for cocktail: $cocktailName")
+                }
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading cocktail from external API", e)
             }
         }
     }

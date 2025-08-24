@@ -167,19 +167,62 @@ class AllSharedCocktailsFragment : BaseFragment<FragmentAllCocktailsBinding>(), 
     }
 
     private fun navigateToCocktailDetail(cocktail: Cocktail) {
-        val bundle = Bundle().apply {
-            putString(KEY_COCKTAIL_ID, cocktail.idDrink)
-            putString(KEY_COCKTAIL_NAME, cocktail.strDrink)
-            putString(KEY_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
-            putString(KEY_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
-            putString(KEY_COCKTAIL_GLASS, cocktail.strGlass ?: "")
-            putString(KEY_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
-            putString(KEY_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
-            putStringArray(KEY_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
-            putStringArray(KEY_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
-            putBoolean(KEY_FROM_SHARED_COCKTAILS, true)
+        // Get recipe details from Firebase to check ownership
+        val authRepository = com.example.cocktaildb.data.repository.AuthRepository()
+        val currentUser = authRepository.getCurrentUser()
+        
+        Log.d(TAG, "Navigating to cocktail detail: ${cocktail.strDrink} (ID: ${cocktail.idDrink})")
+        Log.d(TAG, "Current user ID: ${currentUser?.uid}")
+        
+        // Launch coroutine to get recipe details and check ownership
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Main).launch {
+            try {
+                val recipeResult = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    recipeFirebaseService.getRecipe(cocktail.idDrink)
+                }
+                
+                val isMyRecipe = recipeResult.getOrNull()?.uid == currentUser?.uid
+                Log.d(TAG, "Recipe owner: ${recipeResult.getOrNull()?.uid}")
+                Log.d(TAG, "Is my recipe: $isMyRecipe")
+                
+                val bundle = Bundle().apply {
+                    putString(KEY_COCKTAIL_ID, cocktail.idDrink)
+                    putString(KEY_COCKTAIL_NAME, cocktail.strDrink)
+                    putString(KEY_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+                    putString(KEY_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+                    putString(KEY_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+                    putString(KEY_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+                    putString(KEY_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+                    putStringArray(KEY_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+                    putStringArray(KEY_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+                    
+                    // Only set flag if it's actually MY recipe, otherwise allow saving to history
+                    if (isMyRecipe) {
+                        putBoolean(KEY_FROM_SHARED_COCKTAILS, true)
+                        Log.d(TAG, "Set flag to NOT save to history (my recipe)")
+                    } else {
+                        Log.d(TAG, "Will save to history (other user's recipe)")
+                    }
+                }
+                findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+                
+            } catch (e: Exception) {
+                Log.e(TAG, "Error checking recipe ownership", e)
+                // Default to treating as other's recipe (save to history)
+                val bundle = Bundle().apply {
+                    putString(KEY_COCKTAIL_ID, cocktail.idDrink)
+                    putString(KEY_COCKTAIL_NAME, cocktail.strDrink)
+                    putString(KEY_COCKTAIL_CATEGORY, cocktail.strCategory ?: "")
+                    putString(KEY_COCKTAIL_ALCOHOLIC, cocktail.strAlcoholic ?: "")
+                    putString(KEY_COCKTAIL_GLASS, cocktail.strGlass ?: "")
+                    putString(KEY_COCKTAIL_INSTRUCTIONS, cocktail.strInstructions ?: "")
+                    putString(KEY_COCKTAIL_IMAGE, cocktail.strDrinkThumb ?: "")
+                    putStringArray(KEY_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
+                    putStringArray(KEY_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
+                }
+                findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
+            }
         }
-        findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }
 } 
 
