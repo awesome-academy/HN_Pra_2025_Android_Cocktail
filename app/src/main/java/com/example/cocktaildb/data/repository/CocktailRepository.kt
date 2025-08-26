@@ -1,12 +1,15 @@
 package com.example.cocktaildb.data.repository
 
 import android.content.Context
+import android.util.Log
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.source.CocktailDataSource
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.data.manager.FavoritesManager
 import com.example.cocktaildb.data.service.FavoriteFirebaseService
 import com.example.cocktaildb.data.service.CheckmarkFirebaseService
+import kotlinx.coroutines.suspendCancellableCoroutine
+import java.io.File
 
 class CocktailRepository(
     private val dataSource: CocktailDataSource = CocktailRemoteDataSource(),
@@ -86,12 +89,15 @@ class CocktailRepository(
         val sharedPreferences = context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
         sharedPreferences.edit().remove("cocktail_history").apply()
     }
-    
-    suspend fun toggleFavorite(context: Context, cocktail: Cocktail, callback: () -> Unit) {
-        FavoritesManager.toggleFavoriteOfflineAware(context, cocktail) {
-            callback()
+
+    suspend fun toggleFavorite(context: Context, cocktail: Cocktail): Boolean {
+        return suspendCancellableCoroutine { cont ->
+            FavoritesManager.toggleFavoriteOfflineAware(context, cocktail) { newState ->
+                if (cont.isActive) cont.resume(newState, onCancellation = null)
+            }
         }
     }
+
 
     fun clearAllFavorites(context: Context) {
         val prefs = context.getSharedPreferences("favorites_prefs", Context.MODE_PRIVATE)
@@ -237,5 +243,51 @@ class CocktailRepository(
         val prefs = context.getSharedPreferences("checkmarks_prefs", Context.MODE_PRIVATE)
         prefs.edit().clear().apply()
     }
+
+    fun addToFavorites(context: Context, cocktail: Cocktail, callback: (Boolean) -> Unit) {
+        // Always add to local first
+        FavoritesManager.addFavoriteOffline(context, cocktail)
+        // Then try to add to Firestore if possible
+        FavoritesManager.addFavoriteToFirestore(cocktail) { success ->
+            // Optionally, you can handle sync status here
+            callback(true)
+        }
+    }
+
+    fun removeFromFavorites(context: Context, cocktail: Cocktail, callback: (Boolean) -> Unit) {
+        val removedLocal = FavoritesManager.removeFavoriteOffline(context, cocktail)
+        Log.d("FavoritesManager", "removeFromFavorites -> Local removed: $removedLocal for ${cocktail.strDrink} (id=${cocktail.idDrink})")
+
+        // Then try to remove from Firestore if possible
+        FavoritesManager.removeFavoriteFromFirestore(cocktail) { success ->
+            Log.d("FavoritesManager", "Firestore remove result for ${cocktail.strDrink} (id=${cocktail.idDrink}): $success")
+            // Optionally, you can handle sync status here
+            callback(true)
+        }
+    }
+
+//    fun clearAllLocalData(context: Context) {
+//        // Clear favorites
+//        context.getSharedPreferences("favorites_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+//        // Clear history
+//        context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE).edit().clear().apply()
+//        // Clear checkmarks
+//        context.getSharedPreferences("checkmarks_prefs", Context.MODE_PRIVATE).edit().clear().apply()
+//        // Add more if you have other keys
+//    }
+
+    fun clearAllLocalData(context: Context) {
+        val sharedPrefsDir = File(context.applicationInfo.dataDir, "shared_prefs")
+        if (sharedPrefsDir.exists() && sharedPrefsDir.isDirectory) {
+            sharedPrefsDir.list()?.forEach { prefFile ->
+                val prefName = prefFile.removeSuffix(".xml")
+                context.getSharedPreferences(prefName, Context.MODE_PRIVATE)
+                    .edit()
+                    .clear()
+                    .apply()
+            }
+        }
+    }
+
 
 }
