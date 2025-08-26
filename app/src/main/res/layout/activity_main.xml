@@ -102,7 +102,7 @@
             android:layout_marginEnd="@dimen/dp_16"
             android:background="@drawable/nav_item_background"
             android:padding="@dimen/dp_12"
-            android:src="@drawable/ic_heart"
+            android:src="@drawable/ic_heart_filled"
             android:contentDescription="@string/title_favorites"
             android:clickable="true"
             android:focusable="true"

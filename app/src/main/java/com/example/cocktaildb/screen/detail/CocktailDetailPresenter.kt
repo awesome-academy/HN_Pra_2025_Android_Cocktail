@@ -146,14 +146,18 @@ class CocktailDetailPresenter(
     }
 
     override fun toggleFavorite(cocktail: Cocktail) {
-        FavoritesManager.toggleFavorite(cocktail) { isFavorite ->
-            view?.updateFavoriteButtonState(isFavorite)
-            val message = if (isFavorite) {
-                "Added ${cocktail.strDrink} to favorites"
-            } else {
-                "Removed ${cocktail.strDrink} from favorites"
+        presenterJob?.cancel()
+        presenterJob = CoroutineScope(Dispatchers.Main).launch {
+            try {
+                val isFavorite = withContext(Dispatchers.IO) {
+                    FavoritesManager.toggleFavorite(cocktail)
+                }
+                view?.updateFavoriteButtonState(isFavorite)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error toggling favorite", e)
+                view?.showErrorResource(R.string.error_updating_favorite_status)
             }
-            view?.showMessage(message)
         }
     }
+
 }

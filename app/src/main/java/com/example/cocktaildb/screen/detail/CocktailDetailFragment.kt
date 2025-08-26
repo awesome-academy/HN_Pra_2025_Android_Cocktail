@@ -67,8 +67,8 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
     override fun onResume() {
         super.onResume()
         cocktail?.let {
-            updateFavoriteButtonState(it)
             presenter.checkBookmarkStatus(it.idDrink)
+            presenter.checkFavoriteStatus(it.idDrink) // <-- thêm dòng này
         }
     }
 
@@ -83,7 +83,9 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
             FavoritesManager.loadFavoritesFromFirestore { success ->
                 if (success) {
                     Log.d(TAG, "Favorites loaded successfully")
-                    activity?.runOnUiThread { cocktail?.let { updateFavoriteButtonState(it) } }
+                    activity?.runOnUiThread {
+                        cocktail?.let { presenter.checkFavoriteStatus(it.idDrink) } // <-- dùng presenter
+                    }
                 } else {
                     Log.e(TAG, "Failed to load favorites")
                 }
@@ -92,6 +94,7 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
             Log.d(TAG, "Favorites already initialized")
         }
     }
+
 
     private fun setupPresenter() {
         val repository = CocktailRepository(CocktailRemoteDataSource())
@@ -492,42 +495,14 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
             isUserBookmarkAction = true
             cocktail?.let { presenter.toggleBookmark(it) }
         }
-        val currentCocktail = createCocktailFromArgs(
-            arguments?.getString(KEY_COCKTAIL_NAME) ?: "",
-            arguments?.getString(KEY_COCKTAIL_CATEGORY) ?: "",
-            arguments?.getString(KEY_COCKTAIL_ALCOHOLIC) ?: "",
-            arguments?.getString(KEY_COCKTAIL_GLASS) ?: "",
-            arguments?.getString(KEY_COCKTAIL_INSTRUCTIONS) ?: "",
-            arguments?.getString(KEY_COCKTAIL_IMAGE),
-            arguments?.getStringArray(KEY_COCKTAIL_INGREDIENTS) ?: emptyArray(),
-            arguments?.getStringArray(KEY_COCKTAIL_MEASURES) ?: emptyArray()
-        )
-        this.cocktail = currentCocktail
-        updateFavoriteButtonState(currentCocktail)
-        viewBinding.btnFavorite.setOnClickListener {
+
+        binding.btnFavorite.setOnClickListener {
+            isUserFavoriteAction = true              // <-- để hiện toast khi do user nhấn
             viewBinding.btnFavorite.isEnabled = false
-            FavoritesManager.toggleFavoriteOfflineAware(requireContext(), currentCocktail) { isFavorite ->
-                activity?.runOnUiThread {
-                    viewBinding.btnFavorite.isEnabled = true
-                    if (isFavorite) {
-                        viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.msg_added_cocktail_to_favorites, currentCocktail.strDrink),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    } else {
-                        viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
-                        Toast.makeText(
-                            requireContext(),
-                            getString(R.string.msg_removed_cocktail_from_favorites, currentCocktail.strDrink),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-            }
+            cocktail?.let { presenter.toggleFavorite(it) } // <-- giao cho presenter
         }
     }
+
 
     override fun updateBookmarkButtonState(isBookmarked: Boolean) {
         viewBinding.btnBookmark.isEnabled = true
@@ -560,10 +535,6 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         }
     }
 
-    override fun updateFavoriteButtonState(isFavorite: Boolean) {
-        // Implementation will be handled by updateFavoriteButtonState(cocktail) method
-    }
-
     override fun showMessage(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
@@ -572,44 +543,40 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
         showError(getString(resourceId))
     }
 
-    private fun updateBookmarkUI(isBookmarked: Boolean) {
-        if (isBookmarked) {
-            viewBinding.btnBookmark.setImageResource(R.drawable.ic_bookmark_filled)
-            viewBinding.btnBookmark.setColorFilter(resources.getColor(R.color.pink_primary, null))
-            if (isUserBookmarkAction) {
-                cocktail?.let { currentCocktail ->
-                    Toast.makeText(
-                        requireContext(),
-                        "Added ${currentCocktail.strDrink} to bookmarks",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                isUserBookmarkAction = false
+
+    private var isUserFavoriteAction = false
+
+    override fun updateFavoriteButtonState(isFavorite: Boolean) {
+        val current = cocktail ?: return
+        viewBinding.btnFavorite.isEnabled = true
+
+        if (isFavorite) {
+            viewBinding.btnFavorite.setImageResource(R.drawable.ic_heart_filled)
+            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
+
+            if (isUserFavoriteAction) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.msg_added_cocktail_to_favorites, current.strDrink),
+                    Toast.LENGTH_SHORT
+                ).show()
+                isUserFavoriteAction = false
             }
         } else {
-            viewBinding.btnBookmark.setImageResource(R.drawable.ic_bookmark)
-            viewBinding.btnBookmark.setColorFilter(resources.getColor(R.color.red, null))
-            if (isUserBookmarkAction) {
-                cocktail?.let { currentCocktail ->
-                    Toast.makeText(
-                        requireContext(),
-                        "Removed ${currentCocktail.strDrink} from bookmarks",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-                isUserBookmarkAction = false
+            viewBinding.btnFavorite.setImageResource(R.drawable.ic_heart)
+            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
+
+            if (isUserFavoriteAction) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.msg_removed_cocktail_from_favorites, current.strDrink),
+                    Toast.LENGTH_SHORT
+                ).show()
+                isUserFavoriteAction = false
             }
         }
     }
 
-    private fun updateFavoriteButtonState(cocktail: Cocktail) {
-        val isFavorite = FavoritesManager.isFavorite(cocktail.idDrink)
-        if (isFavorite) {
-            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.pink_primary, null))
-        } else {
-            viewBinding.btnFavorite.setColorFilter(resources.getColor(R.color.red, null))
-        }
-    }
 
     private fun navigateToCocktailDetail(cocktail: Cocktail) {
         val args = Bundle().apply {

@@ -224,4 +224,5 @@
     <string name="msg_email_exists_with_password">This email is already registered with an email/password account. Please sign in with your email and password instead.</string>
     <string name="msg_google_account_no_email">Google account does not have an email address.</string>
     <string name="msg_unable_to_check_email">Unable to check existing sign-in methods. Please try again.</string>
+    <string name="error_updating_favorite_status">Error updating favorite status</string>
 </resources>
