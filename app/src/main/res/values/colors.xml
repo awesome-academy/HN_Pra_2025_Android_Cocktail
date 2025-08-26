@@ -23,6 +23,7 @@
     <color name="pink">#F77C83</color>
     <color name="gray_400">#BDBDBD</color>
     <color name="gray_300">#E0E0E0</color>
+    <color name="gray_600">#757575</color>
 
     <!-- Profile colors -->
     <color name="textColorPrimary">#212121</color>

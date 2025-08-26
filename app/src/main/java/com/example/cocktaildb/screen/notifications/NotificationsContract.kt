@@ -8,6 +8,9 @@ interface NotificationsContract {
         fun showNotificationSent()
         fun showNotificationScheduled()
         fun showNotificationCancelled()
+        fun showLoading()
+        fun hideLoading()
+        fun showError(message: String)
     }
 
     interface Presenter : BasePresenter<View> {

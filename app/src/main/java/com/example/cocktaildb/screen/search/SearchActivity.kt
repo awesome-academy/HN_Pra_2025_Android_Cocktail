@@ -8,23 +8,28 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.service.HistoryFirebaseService
+import com.example.cocktaildb.data.service.SearchHistoryService
 import com.example.cocktaildb.databinding.ActivitySearchBinding
 import com.example.cocktaildb.screen.detail.CocktailDetailFragment
 import com.example.cocktaildb.screen.filter.FilterDialog
 import com.example.cocktaildb.utils.adapter.CocktailAdapter
+import com.example.cocktaildb.utils.adapter.SearchSuggestionAdapter
 import com.example.cocktaildb.utils.base.BaseActivity
 import com.example.cocktaildb.utils.pagination.PaginationUI
 import java.util.concurrent.Executors
 import android.view.View
+import android.view.inputmethod.EditorInfo
 
 class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.View {
 
     private lateinit var presenter: SearchPresenter
     private lateinit var adapter: CocktailAdapter
+    private lateinit var suggestionAdapter: SearchSuggestionAdapter
     private lateinit var paginationUI: PaginationUI
     private val executor = Executors.newSingleThreadExecutor()
     private var currentFilterCategory: String? = null
@@ -38,6 +43,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         supportActionBar?.hide()
         paginationUI = PaginationUI(this)
         setupRecyclerView()
+        setupSuggestionRecyclerView()
         setupSearchListener()
         setupFilterListener()
         setupPaginationListeners()
@@ -89,7 +95,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
     }
 
     private fun hideSearchComponents() {
-        viewBinding.searchHeader.visibility = View.GONE
+        viewBinding.searchHeaderContainer.visibility = View.GONE
         viewBinding.searchResultsContainer.visibility = View.GONE
     }
 
@@ -100,8 +106,9 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         )
         val authRepository = AuthRepository(this)
         val historyFirebaseService = HistoryFirebaseService()
+        val searchHistoryService = SearchHistoryService(this)
 
-        presenter = SearchPresenter(cocktailRepository, authRepository, historyFirebaseService)
+        presenter = SearchPresenter(cocktailRepository, authRepository, historyFirebaseService, searchHistoryService)
         presenter.setView(this)
     }
 
@@ -117,6 +124,19 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         viewBinding.recyclerView.adapter = adapter
     }
 
+    private fun setupSuggestionRecyclerView() {
+        suggestionAdapter = SearchSuggestionAdapter(
+            onSuggestionClick = { suggestion ->
+                presenter.onSuggestionClicked(suggestion)
+            },
+            onSuggestionRemove = { suggestion ->
+                presenter.onSuggestionRemoved(suggestion)
+            }
+        )
+        viewBinding.recyclerSearchSuggestions.layoutManager = LinearLayoutManager(this)
+        viewBinding.recyclerSearchSuggestions.adapter = suggestionAdapter
+    }
+
     override fun navigateToCocktailDetail(cocktail: Cocktail) {
         showCocktailDetail(cocktail)
     }
@@ -129,7 +149,7 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         viewBinding.detailContainer.visibility = View.VISIBLE
 
         if (intent.getBooleanExtra("from_today_drink", false)) {
-            viewBinding.searchHeader.visibility = View.GONE
+            viewBinding.searchHeaderContainer.visibility = View.GONE
         }
 
         // Create and show detail fragment
@@ -147,7 +167,6 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
             }
         }
 
-
         val transaction = supportFragmentManager.beginTransaction()
             .replace(R.id.detailContainer, fragment)
         if (!intent.getBooleanExtra("from_today_drink", false)) {
@@ -163,19 +182,38 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
         viewBinding.detailContainer.visibility = View.GONE
 
         if (!intent.getBooleanExtra("from_today_drink", false)) {
-            viewBinding.searchHeader.visibility = View.VISIBLE
+            viewBinding.searchHeaderContainer.visibility = View.VISIBLE
         }
     }
 
     private fun setupSearchListener() {
+        // Text change listener for suggestions
         viewBinding.etSearch.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 val query = s?.toString() ?: ""
-                presenter.searchCocktails(query)
+                presenter.onSearchTextChanged(query)
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+
+        viewBinding.etSearch.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                presenter.onSearchFocused()
+            } else {
+                hideSearchSuggestions()
+            }
+        }
+        viewBinding.etSearch.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                val query = viewBinding.etSearch.text?.toString() ?: ""
+                presenter.onSearchSubmitted(query)
+                viewBinding.etSearch.clearFocus()
+                true
+            } else {
+                false
+            }
+        }
     }
 
     private fun setupFilterListener() {
@@ -226,17 +264,57 @@ class SearchActivity : BaseActivity<ActivitySearchBinding>(), SearchContract.Vie
             }
         }
     }
+    override fun showSearchSuggestions(suggestions: List<String>) {
+        if (suggestions.isNotEmpty()) {
+            suggestionAdapter.updateSuggestions(suggestions)
+            viewBinding.recyclerSearchSuggestions.visibility = View.VISIBLE
+        } else {
+            hideSearchSuggestions()
+        }
+    }
+
+    override fun hideSearchSuggestions() {
+        viewBinding.recyclerSearchSuggestions.visibility = View.GONE
+        suggestionAdapter.updateSuggestions(emptyList())
+    }
+
+    override fun updateSearchText(text: String) {
+        viewBinding.etSearch.setText(text)
+        viewBinding.etSearch.setSelection(text.length)
+    }
 
     override fun showLoading() {
-        // TODO: Show loading dialog or progress bar
+        viewBinding.layoutLoading.visibility = View.VISIBLE
+        viewBinding.recyclerView.visibility = View.GONE
+        viewBinding.layoutEmpty.visibility = View.GONE
+        viewBinding.layoutPagination.visibility = View.GONE
     }
 
     override fun hideLoading() {
-        // TODO: Hide loading dialog or progress bar
+        viewBinding.layoutLoading.visibility = View.GONE
     }
 
     override fun showCocktails(cocktails: List<Cocktail>) {
-        adapter.submit(cocktails)
+        hideLoading()
+        hideEmptyState()
+        
+        if (cocktails.isEmpty()) {
+            showEmptyState("Không tìm thấy kết quả theo yêu cầu của bạn")
+        } else {
+            viewBinding.recyclerView.visibility = View.VISIBLE
+            adapter.submit(cocktails)
+        }
+    }
+
+    override fun showEmptyState(message: String) {
+        viewBinding.layoutEmpty.visibility = View.VISIBLE
+        viewBinding.recyclerView.visibility = View.GONE
+        viewBinding.layoutPagination.visibility = View.GONE
+        viewBinding.tvEmptyMessage.text = message
+    }
+
+    override fun hideEmptyState() {
+        viewBinding.layoutEmpty.visibility = View.GONE
     }
 
     override fun showError(message: String) {

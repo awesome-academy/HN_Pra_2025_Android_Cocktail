@@ -6,51 +6,76 @@
     android:background="@drawable/imgstart"
     android:padding="@dimen/dp_16">
 
-    <LinearLayout
-        android:id="@+id/searchHeader"
+    <!-- Search Header Container -->
+    <RelativeLayout
+        android:id="@+id/searchHeaderContainer"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/dp_48"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:layout_width="@dimen/dp_0"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            android:background="@drawable/bg_search_box_dark"
-            android:gravity="center_vertical"
-            android:paddingHorizontal="@dimen/dp_12">
+            android:id="@+id/searchHeader"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_48"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="@dimen/dp_0"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:background="@drawable/bg_search_box_dark"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="@dimen/dp_12">
+
+                <ImageView
+                    android:layout_width="@dimen/dp_20"
+                    android:layout_height="@dimen/dp_20"
+                    android:src="@drawable/ic_search"
+                    android:tint="@color/gray_300"
+                    android:layout_marginEnd="@dimen/dp_8" />
+
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
+                    android:hint="@string/Search"
+                    android:textColor="@color/white"
+                    android:textColorHint="@color/gray_400"
+                    android:inputType="text"
+                    android:imeOptions="actionSearch" />
+            </LinearLayout>
 
             <ImageView
-                android:layout_width="@dimen/dp_20"
-                android:layout_height="@dimen/dp_20"
-                android:src="@drawable/ic_search"
-                android:tint="@color/gray_300"
-                android:layout_marginEnd="@dimen/dp_8" />
-
-            <EditText
-                android:id="@+id/etSearch"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@null"
-                android:hint="@string/Search"
-                android:textColor="@color/white"
-                android:textColorHint="@color/gray_400"
-                android:inputType="text"
-                android:imeOptions="actionSearch" />
+                android:id="@+id/btnFilter"
+                android:layout_width="@dimen/dp_48"
+                android:layout_height="@dimen/dp_48"
+                android:layout_marginStart="@dimen/dp_8"
+                android:background="@drawable/bg_circle_primary"
+                android:src="@drawable/ic_filter_list"
+                android:scaleType="centerInside"
+                android:padding="@dimen/dp_12"
+                android:tint="@color/white" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/btnFilter"
-            android:layout_width="@dimen/dp_48"
-            android:layout_height="@dimen/dp_48"
-            android:layout_marginStart="@dimen/dp_8"
-            android:background="@drawable/bg_circle_primary"
-            android:src="@drawable/ic_filter_list"
-            android:scaleType="centerInside"
-            android:padding="@dimen/dp_12"
-            android:tint="@color/white" />
-    </LinearLayout>
+        <!-- Search Suggestions RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerSearchSuggestions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/searchHeader"
+            android:layout_marginTop="@dimen/dp_4"
+            android:layout_marginHorizontal="@dimen/dp_0"
+            android:background="@drawable/bg_suggestion_dropdown"
+            android:maxHeight="250dp"
+            android:elevation="@dimen/dp_8"
+            android:visibility="gone"
+            android:clipToPadding="false"
+            android:scrollbars="vertical"
+            android:fadeScrollbars="true"
+            android:paddingVertical="@dimen/dp_8" />
+
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/searchResultsContainer"
@@ -58,6 +83,75 @@
         android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:orientation="vertical">
+
+        <!-- Loading State -->
+        <LinearLayout
+            android:id="@+id/layoutLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="@dimen/dp_48"
+                android:layout_height="@dimen/dp_48"
+                android:indeterminateTint="@color/primary_pink"
+                android:layout_marginBottom="@dimen/dp_16" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đang tìm kiếm..."
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16"
+                android:alpha="0.8" />
+
+        </LinearLayout>
+
+        <!-- Empty State -->
+        <LinearLayout
+            android:id="@+id/layoutEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone"
+            android:padding="@dimen/dp_32">
+
+            <ImageView
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="@dimen/dp_80"
+                android:src="@drawable/ic_search"
+                android:tint="@color/gray_400"
+                android:alpha="0.5"
+                android:layout_marginBottom="@dimen/dp_24" />
+
+            <TextView
+                android:id="@+id/tvEmptyMessage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Không tìm thấy kết quả theo yêu cầu của bạn"
+                android:textColor="@color/white"
+                android:textSize="@dimen/sp_16"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:alpha="0.8"
+                android:lineSpacingExtra="@dimen/dp_4" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hãy thử tìm kiếm với từ khóa khác"
+                android:textColor="@color/gray_400"
+                android:textSize="@dimen/sp_14"
+                android:textAlignment="center"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/dp_8"
+                android:alpha="0.6" />
+
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
