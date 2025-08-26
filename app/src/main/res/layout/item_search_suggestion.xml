@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="?attr/selectableItemBackground"
+    android:paddingHorizontal="@dimen/dp_16"
+    android:paddingVertical="@dimen/dp_12"
+    android:gravity="center_vertical"
+    android:minHeight="@dimen/dp_48">
+
+    <ImageView
+        android:layout_width="@dimen/dp_20"
+        android:layout_height="@dimen/dp_20"
+        android:src="@drawable/ic_history"
+        android:tint="@color/gray_300"
+        android:layout_marginEnd="@dimen/dp_12"
+        android:alpha="0.7" />
+
+    <TextView
+        android:id="@+id/tvSuggestion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textColor="@color/white"
+        android:textSize="15sp"
+        android:fontFamily="sans-serif"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="Sample suggestion" />
+
+    <ImageView
+        android:id="@+id/btnRemove"
+        android:layout_width="@dimen/dp_32"
+        android:layout_height="@dimen/dp_32"
+        android:src="@drawable/ic_close"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="@dimen/dp_8"
+        android:tint="@color/gray_300"
+        android:layout_marginStart="@dimen/dp_8"
+        android:alpha="0.6" />
+
+</LinearLayout>

@@ -6,6 +6,7 @@ import com.example.cocktaildb.R
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.model.LoginMethod
 import com.example.cocktaildb.utils.GoogleAuth
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 
 class AuthPresenter(
     private val authRepository: AuthRepository
@@ -70,14 +71,7 @@ class AuthPresenter(
         googleAuthHelper?.let { helper ->
             view?.showLoading()
             val signInIntent = helper.getSignInIntent()
-            if (view is SignInActivity) {
-                (view as SignInActivity).launchGoogleSignIn(signInIntent)
-            } else if (view is SignUpActivity) {
-                (view as SignUpActivity).launchGoogleSignIn(signInIntent)
-            } else {
-                view?.showMessage(getString(R.string.msg_google_login_unavailable))
-                view?.hideLoading()
-            }
+            view?.launchGoogleSignIn(signInIntent)
         } ?: run {
             view?.showMessage(getString(R.string.msg_google_login_not_initialized))
         }
@@ -87,13 +81,51 @@ class AuthPresenter(
         googleAuthHelper?.handleSignInResult(
             data,
             onSuccess = { account ->
+                val email = account.email
+                if (email.isNullOrEmpty()) {
+                    view?.hideLoading()
+                    view?.onLoginFailure(getString(R.string.msg_google_account_no_email))
+                    return@handleSignInResult
+                }
+                checkEmailInFirestore(account)
+            },
+            onFailure = { error ->
+                view?.hideLoading()
+                view?.onLoginFailure(getString(R.string.msg_google_signin_failed, error))
+            }
+        )
+    }
+
+    private fun checkEmailInFirestore(account: GoogleSignInAccount) {
+        val email = account.email ?: ""
+        authRepository.checkLoginMethodFromFirestore(email) { loginMethod, error ->
+            if (error != null) {
+                view?.hideLoading()
+                view?.onLoginFailure(getString(R.string.msg_unable_to_check_email))
+                return@checkLoginMethodFromFirestore
+            }
+
+            if (loginMethod == LoginMethod.EMAIL_PASSWORD) {
+                view?.hideLoading()
+                view?.onLoginFailure(getString(R.string.msg_email_exists_with_password))
+                authRepository.signOutGoogleOnly()
+            } else {
+                proceedWithFirebaseAuth(account)
+            }
+        }
+    }
+
+    private fun proceedWithFirebaseAuth(account: GoogleSignInAccount) {
+        authRepository.authenticateFirebaseWithGoogle(
+            account,
+            onSuccess = { authenticatedAccount ->
                 val firebaseUser = authRepository.getCurrentUser()
                 if (firebaseUser != null) {
                     authRepository.saveUserToFirestore(
                         firebaseUser = firebaseUser,
-                        name = account.displayName ?: "",
+                        name = authenticatedAccount.displayName ?: "",
                         loginMethod = LoginMethod.GOOGLE,
-                        profileImage = account.photoUrl?.toString()
+                        profileImage = authenticatedAccount.photoUrl?.toString()
                     ) { success, error ->
                         view?.hideLoading()
                         if (success) {
@@ -111,7 +143,7 @@ class AuthPresenter(
             },
             onFailure = { error ->
                 view?.hideLoading()
-                view?.onLoginFailure(getString(R.string.msg_google_signin_failed, error))
+                view?.onLoginFailure(getString(R.string.msg_firebase_auth_failed))
             }
         )
     }

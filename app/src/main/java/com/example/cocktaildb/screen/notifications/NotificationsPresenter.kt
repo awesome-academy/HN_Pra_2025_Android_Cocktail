@@ -20,14 +20,14 @@ class NotificationsPresenter : NotificationsContract.Presenter {
     }
 
     override fun loadNotifications() {
-        (view as? BaseFragment<*>)?.showLoading()
+        view?.showLoading()
         try {
             // Load notifications
             view?.showNotifications()
         } catch (e: Exception) {
-            (view as? BaseFragment<*>)?.showError(e.message ?: "Unknown error")
+            view?.showError(e.message ?: "Unknown error")
         } finally {
-            (view as? BaseFragment<*>)?.hideLoading()
+            view?.hideLoading()
         }
     }
 

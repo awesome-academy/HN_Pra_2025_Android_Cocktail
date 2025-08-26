@@ -31,7 +31,13 @@ class GoogleAuth(private val context: Context) {
     fun getSignInIntent(): Intent {
         return googleSignInClient.signInIntent
     }
-
+    fun authenticateWithFirebase(
+        account: GoogleSignInAccount,
+        onSuccess: (GoogleSignInAccount) -> Unit,
+        onFailure: (String) -> Unit
+    ) {
+        firebaseAuthWithGoogle(account, onSuccess, onFailure)
+    }
     fun handleSignInResult(
         data: Intent?,
         onSuccess: (GoogleSignInAccount) -> Unit,
@@ -40,7 +46,7 @@ class GoogleAuth(private val context: Context) {
         val task = GoogleSignIn.getSignedInAccountFromIntent(data)
         try {
             val account = task.getResult(ApiException::class.java)
-            firebaseAuthWithGoogle(account, onSuccess, onFailure)
+            onSuccess(account)
         } catch (e: Exception) {
             onFailure(e.localizedMessage ?: context.getString(R.string.msg_google_signin_failed))
         }
@@ -62,6 +68,12 @@ class GoogleAuth(private val context: Context) {
     }
     fun revokeAccess() {
         auth.signOut()
+        googleSignInClient.signOut().addOnCompleteListener {
+            googleSignInClient.revokeAccess()
+        }
+    }
+    
+    fun signOutGoogleOnly() {
         googleSignInClient.signOut().addOnCompleteListener {
             googleSignInClient.revokeAccess()
         }
