@@ -8,6 +8,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 
 class ProfilePresenter(
+    private val context: android.content.Context,
     private val cocktailRepository: CocktailRepository,
     private val authRepository: AuthRepository
 ) : ProfileContract.Presenter {
@@ -133,10 +134,8 @@ class ProfilePresenter(
     }
 
     override fun onLogoutClicked() {
-        // Call the AuthRepository's signOut method to log the user out
         authRepository.signOut()
-
-        // Navigate to login screen
+        cocktailRepository.clearAllLocalData(context)
         view?.navigateToLogin()
     }
 

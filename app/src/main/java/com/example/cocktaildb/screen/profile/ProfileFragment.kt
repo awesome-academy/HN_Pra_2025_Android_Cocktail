@@ -128,7 +128,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         val dataSource = CocktailLocalDataSource()
         val repository = CocktailRepository(dataSource)
         val authRepository = AuthRepository(requireContext())
-        presenter = ProfilePresenter(repository, authRepository)
+        presenter = ProfilePresenter(requireContext(), repository, authRepository)
         presenter.setView(this)
     }
 
@@ -252,5 +252,3 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(), ProfileContract.
         findNavController().navigate(R.id.navigation_cocktail_detail, bundle)
     }
 }
-
-

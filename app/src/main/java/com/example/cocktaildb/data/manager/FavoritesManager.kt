@@ -179,8 +179,16 @@ object FavoritesManager {
     fun removeFavoriteOffline(context: Context, cocktail: Cocktail): Boolean {
         val items = getOfflineFavorites(context).toMutableList()
         val removed = items.removeAll { it.idDrink == cocktail.idDrink }
+
+        Log.d("FavoritesManager", "Trying to remove offline: ${cocktail.strDrink} (id=${cocktail.idDrink})")
+        Log.d("FavoritesManager", "Removed from local list? $removed (before size=${items.size + if (removed) 1 else 0}, after size=${items.size})")
+        Log.d("FavoritesManager", "Before saving, items = ${items.map { it.strDrink }}")
         saveOfflineFavorites(context, items)
-        favoriteCocktails.removeIf { it.idDrink == cocktail.idDrink }
+        val check = getOfflineFavorites(context)
+        Log.d("FavoritesManager", "After saving, offline favorites = ${check.map { it.strDrink }}")
+        val removedFromCache = favoriteCocktails.removeIf { it.idDrink == cocktail.idDrink }
+        Log.d("FavoritesManager", "Removed from in-memory cache? $removedFromCache")
+
         return removed
     }
 
