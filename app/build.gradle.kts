@@ -108,6 +108,15 @@ dependencies {
     implementation("com.google.firebase:firebase-storage:20.3.0")
     implementation("com.google.android.gms:play-services-auth:21.0.0")
     "ktlint"("com.pinterest:ktlint:0.45.2")
+
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.12.2")
+    testImplementation("org.mockito:mockito-core:5.12.0")
+
+    testImplementation("androidx.test:core:1.6.1")
+
+    testImplementation("com.google.android.gms:play-services-tasks:18.2.0")
+    testImplementation("org.mockito:mockito-inline:5.2.0")
 }
 
 // Ktlint tasks
