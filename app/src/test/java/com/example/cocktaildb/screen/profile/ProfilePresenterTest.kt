@@ -60,7 +60,7 @@ class ProfilePresenterTest {
     // 2) onMyRecipesClicked
     @Test
     fun onMyRecipesClicked_navigates() {
-       
+
         presenter.setView(view)
         presenter.onMyRecipesClicked()
 
