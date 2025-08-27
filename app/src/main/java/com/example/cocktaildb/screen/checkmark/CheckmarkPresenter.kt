@@ -1,8 +1,10 @@
 package com.example.cocktaildb.screen.checkmark
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.util.Log
-import com.example.cocktaildb.data.manager.CheckmarkManager
+
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -15,7 +17,10 @@ class CheckmarkPresenter(
 
     private var view: CheckmarkContract.View? = null
     private val auth = FirebaseAuth.getInstance()
-    private var presenterJob: Job? = null
+
+    private val presenterJob = SupervisorJob()
+    private val uiScope = CoroutineScope(Dispatchers.Main + presenterJob)
+
     private val TAG = "CheckmarkPresenter"
 
     private var cachedCheckmarks: List<Cocktail> = emptyList()
@@ -38,7 +43,7 @@ class CheckmarkPresenter(
     }
 
     override fun onStop() {
-        presenterJob?.cancel()
+        presenterJob.cancel()
     }
 
     override fun loadCheckmarks() {
@@ -59,51 +64,64 @@ class CheckmarkPresenter(
 
     private fun isNetworkAvailable(): Boolean {
         return try {
-            val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
-                    as? android.net.ConnectivityManager
-            val networkInfo = connectivityManager?.activeNetworkInfo
-            networkInfo?.isConnected == true
-        } catch (e: Exception) {
+            val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = cm.activeNetwork ?: return false
+            val caps = cm.getNetworkCapabilities(network) ?: return false
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) ||
+                    caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)
+        } catch (_: Exception) {
             false
         }
     }
 
-    private fun syncFirebaseWithLocal(uid: String) {
-        presenterJob?.cancel()
-        presenterJob = CoroutineScope(Dispatchers.Main).launch {
+    private fun syncFirebaseWithLocal(userId: String) {
+        uiScope.launch {
             try {
-                val checkmarksResult = withContext(Dispatchers.IO) {
-                    cocktailRepository.getUserCheckmarksFromFirebase(uid)
+                val firebaseResult = withContext(Dispatchers.IO) {
+                    cocktailRepository.getUserCheckmarksFromFirebase(userId)
                 }
 
-                if (checkmarksResult.isSuccess) {
-                    val firebaseCheckmarks = checkmarksResult.getOrNull() ?: emptyList()
-                    val firebaseCocktails = withContext(Dispatchers.IO) {
-                        firebaseCheckmarks.mapNotNull { checkmark ->
-                            cocktailRepository.getCocktailById(checkmark.cocktailId)
-                        }
+                val firebaseCheckmarks = firebaseResult.getOrElse {
+                    Log.e(TAG, "getUserCheckmarksFromFirebase failed: ${it.message}", it)
+                    emptyList()
+                }
+
+                val cocktailsFromFirebase: List<Cocktail> = withContext(Dispatchers.IO) {
+                    firebaseCheckmarks.mapNotNull { cmk ->
+                        runCatching { cocktailRepository.getCocktailById(cmk.cocktailId) }.getOrNull()
                     }
-                    val localCheckmarks = cocktailRepository.getCheckmarksFromLocal(context)
-                    val mergedCheckmarks = mutableListOf<Cocktail>()
-                    val firebaseIds = firebaseCocktails.map { it.idDrink }.toSet()
-                    mergedCheckmarks.addAll(firebaseCocktails)
+                }
 
-                    val localOnlyCheckmarks = localCheckmarks.filter { it.idDrink !in firebaseIds }
-                    mergedCheckmarks.addAll(localOnlyCheckmarks)
+                val localCheckmarks = withContext(Dispatchers.IO) {
+                    cocktailRepository.getCheckmarksFromLocal(context)
+                }
 
-                    val finalCheckmarks = deduplicateCheckmarks(mergedCheckmarks)
-                    cocktailRepository.saveCheckmarksToLocal(context, finalCheckmarks)
-                    cachedCheckmarks = finalCheckmarks
-                    view?.displayLoading(false)
-                    view?.displayCheckmarks(finalCheckmarks)
+                if (cocktailsFromFirebase.isEmpty() && localCheckmarks.isNotEmpty()) {
+                    Log.d(TAG, "Firebase empty & Local has ${localCheckmarks.size} → migrate up")
+                    withContext(Dispatchers.IO) {
+                        localCheckmarks.take(MAX_CHECKMARKS_ITEMS).forEach { c ->
+                            runCatching { cocktailRepository.addCheckmarkToFirebase(userId, c.idDrink) }
+                        }
+                        cocktailRepository.saveCheckmarksToLocal(context, localCheckmarks)
+                    }
+                    cachedCheckmarks = localCheckmarks
+                    view?.displayCheckmarks(localCheckmarks)
                 } else {
-                    Log.e(TAG, "Failed to load checkmarks from Firebase: ${checkmarksResult.exceptionOrNull()}")
-                    loadFromLocalOnly()
+                    val finalCheckmarks = deduplicateCheckmarks(cocktailsFromFirebase)
+                    withContext(Dispatchers.IO) {
+                        cocktailRepository.saveCheckmarksToLocal(context, finalCheckmarks)
+                    }
+                    cachedCheckmarks = finalCheckmarks
+                    if (finalCheckmarks.isEmpty()) view?.displayEmptyState()
+                    else view?.displayCheckmarks(finalCheckmarks)
+                    Log.d(TAG, "Synced Firebase ${cocktailsFromFirebase.size} → final ${finalCheckmarks.size}")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Error syncing checkmarks", e)
+                Log.e(TAG, "Error syncing checkmarks: ${e.message}", e)
                 loadFromLocalOnly()
             } finally {
+                view?.displayLoading(false)
                 isLoading = false
             }
         }
@@ -132,8 +150,7 @@ class CheckmarkPresenter(
             return
         }
 
-        presenterJob?.cancel()
-        presenterJob = CoroutineScope(Dispatchers.Main).launch {
+        uiScope.launch {
             try {
                 val result = withContext(Dispatchers.IO) {
                     cocktailRepository.addCheckmarkToFirebase(currentUser.uid, cocktail.idDrink)
@@ -168,20 +185,18 @@ class CheckmarkPresenter(
         if (isProcessingCheckmarks) return
         isProcessingCheckmarks = true
 
-        presenterJob?.cancel()
-        presenterJob = CoroutineScope(Dispatchers.Main).launch {
+        uiScope.launch {
             try {
                 val currentUser = auth.currentUser
                 if (currentUser == null) {
-                    val localCheckmarks = cocktailRepository.getCheckmarksFromLocal(context).toMutableList()
-                    localCheckmarks.removeAll { it.idDrink == cocktail.idDrink }
-                    cocktailRepository.saveCheckmarksToLocal(context, localCheckmarks)
-                    cachedCheckmarks = localCheckmarks
-                    if (localCheckmarks.isEmpty()) {
-                        view?.displayEmptyState()
-                    } else {
-                        view?.displayCheckmarks(localCheckmarks)
+                    val localCheckmarks = withContext(Dispatchers.IO) {
+                        cocktailRepository.getCheckmarksFromLocal(context).toMutableList().apply {
+                            removeAll { it.idDrink == cocktail.idDrink }
+                            cocktailRepository.saveCheckmarksToLocal(context, this)
+                        }
                     }
+                    cachedCheckmarks = localCheckmarks
+                    if (localCheckmarks.isEmpty()) view?.displayEmptyState() else view?.displayCheckmarks(localCheckmarks)
                     view?.showCheckmarkRemoved(cocktail)
                     return@launch
                 }
@@ -191,16 +206,14 @@ class CheckmarkPresenter(
                 }
 
                 if (result.isSuccess) {
-                    val localCheckmarks = cocktailRepository.getCheckmarksFromLocal(context).toMutableList()
-                    localCheckmarks.removeAll { it.idDrink == cocktail.idDrink }
-                    cocktailRepository.saveCheckmarksToLocal(context, localCheckmarks)
-
-                    cachedCheckmarks = localCheckmarks
-                    if (localCheckmarks.isEmpty()) {
-                        view?.displayEmptyState()
-                    } else {
-                        view?.displayCheckmarks(localCheckmarks)
+                    val localCheckmarks = withContext(Dispatchers.IO) {
+                        cocktailRepository.getCheckmarksFromLocal(context).toMutableList().apply {
+                            removeAll { it.idDrink == cocktail.idDrink }
+                            cocktailRepository.saveCheckmarksToLocal(context, this)
+                        }
                     }
+                    cachedCheckmarks = localCheckmarks
+                    if (localCheckmarks.isEmpty()) view?.displayEmptyState() else view?.displayCheckmarks(localCheckmarks)
                     view?.showCheckmarkRemoved(cocktail)
                 } else {
                     throw result.exceptionOrNull() ?: Exception("Failed to remove from checkmarks")
@@ -225,36 +238,40 @@ class CheckmarkPresenter(
     override fun syncCheckmarksIfNeeded() {
         val currentUser = auth.currentUser
         if (currentUser != null && isNetworkAvailable()) {
+            view?.showSyncStatus("Syncing checkmarks...")
             syncFirebaseWithLocal(currentUser.uid)
+        } else {
+            view?.showSyncStatus("Offline mode - showing local checkmarks")
         }
     }
 
     override fun clearAllCheckmarks() {
-        val currentUser = auth.currentUser
-        if (currentUser != null) {
-            presenterJob?.cancel()
-            presenterJob = CoroutineScope(Dispatchers.Main).launch {
-                try {
-                    val checkmarks = withContext(Dispatchers.IO) {
-                        cocktailRepository.getUserCheckmarksFromFirebase(currentUser.uid)
-                    }
+        uiScope.launch {
+            try {
+                val currentUser = auth.currentUser
+                withContext(Dispatchers.IO) { cocktailRepository.clearAllCheckmarksFromLocal(context) }
 
-                    if (checkmarks.isSuccess) {
-                        val userCheckmarks = checkmarks.getOrNull() ?: emptyList()
-                        userCheckmarks.forEach { checkmark ->
-                            withContext(Dispatchers.IO) {
-                                cocktailRepository.removeCheckmarkFromFirebase(currentUser.uid, checkmark.cocktailId)
-                            }
-                        }
+                if (currentUser != null && isNetworkAvailable()) {
+                    val result = withContext(Dispatchers.IO) {
+                        cocktailRepository.clearAllCheckmarksFromFirebase(currentUser.uid)
                     }
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error clearing checkmarks", e)
+                    if (result.isSuccess) {
+                        Log.d(TAG, "Cleared all checkmarks from Firebase and local")
+                        view?.showSyncStatus("All checkmarks cleared")
+                    } else {
+                        Log.w(TAG, "Failed to clear Firebase checkmarks, but local cleared")
+                        view?.showSyncStatus("Local checkmarks cleared")
+                    }
+                } else {
+                    Log.d(TAG, "Cleared local checkmarks only (no user/offline)")
+                    view?.showSyncStatus("Local checkmarks cleared")
                 }
+                cachedCheckmarks = emptyList()
+                view?.displayEmptyState()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error clearing checkmarks", e)
+                view?.displayError("Error clearing checkmarks: ${e.message}")
             }
         }
-
-        cachedCheckmarks = emptyList()
-        cocktailRepository.saveCheckmarksToLocal(context, emptyList())
-        view?.displayCheckmarks(emptyList())
     }
 }
