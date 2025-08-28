@@ -8,6 +8,7 @@ import com.example.cocktaildb.data.model.RecipeImage
 import com.example.cocktaildb.data.model.RecipeIngredient
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.FirebaseRepository
+import com.example.cocktaildb.data.service.CocktailService
 import com.example.cocktaildb.utils.ImageLoader
 import com.example.cocktaildb.utils.base.BasePresenter
 import kotlinx.coroutines.CoroutineScope
@@ -233,5 +234,23 @@ class CreateRecipePresenter(
 
     override fun removeIngredient(position: Int) {
         view?.removeIngredientField(position)
+    }
+
+    override fun loadIngredientSuggestions() {
+        presenterScope.launch(Dispatchers.IO) {
+            try {
+                val ingredients = CocktailService.getIngredients()
+                    .distinct()
+                    .sorted()
+                withContext(Dispatchers.Main) {
+                    view?.showIngredientSuggestions(ingredients)
+                }
+            } catch (e: Exception) {
+                Log.e("CreateRecipePresenter", "Failed to load ingredient suggestions", e)
+                withContext(Dispatchers.Main) {
+                    view?.showIngredientSuggestions(emptyList())
+                }
+            }
+        }
     }
 }

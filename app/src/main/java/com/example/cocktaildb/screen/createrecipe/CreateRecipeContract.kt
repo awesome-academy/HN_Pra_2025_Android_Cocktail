@@ -11,6 +11,7 @@ interface CreateRecipeContract {
         fun navigateToMyRecipes()
         fun addIngredientField()
         fun removeIngredientField(position: Int)
+        fun showIngredientSuggestions(names: List<String>)
     }
 
     interface Presenter : BasePresenter<View> {
@@ -19,5 +20,6 @@ interface CreateRecipeContract {
                        category: String, glass: String, alcoholic: Boolean)
         fun addIngredient()
         fun removeIngredient(position: Int)
+        fun loadIngredientSuggestions()
     }
 }

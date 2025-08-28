@@ -26,7 +26,7 @@ import org.robolectric.annotation.Config
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
-class FavoritesPresenterEasyTest {
+class FavoritesPresenterTest {
 
     private lateinit var context: Context
     private lateinit var presenter: FavoritesPresenter
