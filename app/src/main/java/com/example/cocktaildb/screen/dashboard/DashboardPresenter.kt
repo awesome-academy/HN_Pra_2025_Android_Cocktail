@@ -2,14 +2,12 @@ package com.example.cocktaildb.screen.dashboard
 
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.utils.TodayDrinkManager
-import com.example.cocktaildb.utils.base.BaseFragment
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.*
 
 class DashboardPresenter(
-    private val todayDrinkManager: TodayDrinkManager
+    private val todayDrinkManager: TodayDrinkManager,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : DashboardContract.Presenter {
 
     private var view: DashboardContract.View? = null
@@ -31,10 +29,10 @@ class DashboardPresenter(
     }
 
     override fun loadTodayDrink() {
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(ioDispatcher).launch {
             try {
                 val todayDrink = todayDrinkManager.getTodayDrink()
-                withContext(Dispatchers.Main) {
+                withContext(mainDispatcher) {
                     todayDrink?.let {
                         view?.showTodayDrink(it)
                     } ?: run {
@@ -43,7 +41,7 @@ class DashboardPresenter(
                     }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
+                withContext(mainDispatcher) {
                     view?.showMessage("Failed to load today drink")
                     view?.showDashboardData()
                 }

@@ -54,4 +54,4 @@ class PaginationDataTest {
         assertFalse(p.hasPreviousPage)
         assertFalse(p.goToPage(2))
     }
-} 
+}

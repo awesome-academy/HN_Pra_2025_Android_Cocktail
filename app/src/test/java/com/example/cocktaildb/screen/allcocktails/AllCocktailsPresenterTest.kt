@@ -136,4 +136,4 @@ class AllCocktailsPresenterTest {
         presenter.filterByAlcoholic("Non alcoholic")
         verify(view, Mockito.atLeastOnce()).showCocktails(listOf(items[1]))
     }
-} 
+}

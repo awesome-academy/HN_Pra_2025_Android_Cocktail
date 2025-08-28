@@ -3,21 +3,18 @@ package com.example.cocktaildb.screen.myrecipe
 import com.example.cocktaildb.data.model.Recipe
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.service.RecipeFirebaseService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
+import kotlinx.coroutines.*
 
 class MyRecipePresenter(
     private val recipeFirebaseService: RecipeFirebaseService,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : MyRecipeContract.Presenter {
 
     private var view: MyRecipeContract.View? = null
     private var job: Job? = null
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val coroutineScope = CoroutineScope(mainDispatcher)
     private var isDataLoaded = false
     private var cachedRecipes: List<Recipe> = emptyList()
 
@@ -52,7 +49,7 @@ class MyRecipePresenter(
 
         job = coroutineScope.launch {
             try {
-                val result = withContext(Dispatchers.IO) {
+                val result = withContext(ioDispatcher) {
                     recipeFirebaseService.getUserRecipes(currentUser.uid)
                 }
 

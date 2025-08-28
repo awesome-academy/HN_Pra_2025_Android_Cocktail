@@ -82,4 +82,4 @@ class CocktailRepositoryLocalTest {
         repo.clearHistory(context)
         assertTrue(repo.getHistoryCocktails(context).isEmpty())
     }
-} 
+}

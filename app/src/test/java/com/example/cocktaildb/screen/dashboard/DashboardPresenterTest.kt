@@ -6,6 +6,8 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -18,18 +20,22 @@ class DashboardPresenterTest {
 
     private lateinit var presenter: DashboardPresenter
     private lateinit var closeable: AutoCloseable
-    private lateinit var view: DashboardViewFake
 
     private val dispatcher = StandardTestDispatcher()
 
     @Mock lateinit var todayDrinkManager: TodayDrinkManager
+    @Mock lateinit var view: DashboardContract.View
 
     @Before
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
-        view = DashboardViewFake()
+        Dispatchers.setMain(dispatcher)
         
-        presenter = DashboardPresenter(todayDrinkManager)
+        presenter = DashboardPresenter(
+            todayDrinkManager = todayDrinkManager,
+            mainDispatcher = dispatcher,
+            ioDispatcher = dispatcher
+        )
         presenter.setView(view)
     }
 
@@ -112,32 +118,4 @@ class DashboardPresenterTest {
         presenter.navigateToCocktailDetail(cocktail)
         verify(view).navigateToCocktailDetail(cocktail)
     }
-
-    private class DashboardViewFake : DashboardContract.View {
-        var lastTodayDrink: Cocktail? = null
-        var lastNavigatedCocktail: Cocktail? = null
-        var lastMessage: String? = null
-        var lastError: String? = null
-        var dashboardShown = false
-
-        override fun showTodayDrink(cocktail: Cocktail) {
-            lastTodayDrink = cocktail
-        }
-
-        override fun navigateToCocktailDetail(cocktail: Cocktail) {
-            lastNavigatedCocktail = cocktail
-        }
-
-        override fun showMessage(message: String) {
-            lastMessage = message
-        }
-
-        override fun showError(message: String) {
-            lastError = message
-        }
-
-        override fun showDashboardData() {
-            dashboardShown = true
-        }
-    }
-} 
+}

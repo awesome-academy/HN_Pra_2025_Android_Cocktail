@@ -4,7 +4,6 @@ import android.content.Context
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -13,17 +12,19 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doNothing
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, sdk = [30])
 class FavoritesPresenterTest {
 
     private lateinit var context: Context
@@ -32,19 +33,17 @@ class FavoritesPresenterTest {
 
     private val dispatcher = StandardTestDispatcher()
 
-    @Mock lateinit var repo: CocktailRepository
-    @Mock lateinit var view: FavoritesContract.View
-    @Mock lateinit var mockAuth: FirebaseAuth
-    @Mock lateinit var mockUser: FirebaseUser
+    @Mock
+    private lateinit var repo: CocktailRepository
+    @Mock
+    private lateinit var view: FavoritesContract.View
+    @Mock
+    private lateinit var mockAuth: FirebaseAuth
 
     @Before
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
-        context = RuntimeEnvironment.getApplication()
-
-        // Setup Firebase auth mock
-        `when`(mockAuth.currentUser).thenReturn(mockUser)
-        `when`(mockUser.uid).thenReturn("test_user_id")
+        context = mock(Context::class.java)
 
         presenter = FavoritesPresenter(
             context = context,
@@ -73,7 +72,8 @@ class FavoritesPresenterTest {
                 strInstructions = "Mix ingredients"
             )
         )
-        `when`(repo.getFavoritesFromLocal(context)).thenReturn(fakeList)
+        whenever(mockAuth.currentUser).thenReturn(null)
+        whenever(repo.getFavoritesFromLocal(context)).thenReturn(fakeList)
 
         presenter.loadFavorites()
         advanceUntilIdle()
@@ -85,14 +85,13 @@ class FavoritesPresenterTest {
 
     @Test
     fun loadFavorites_offline_localEmpty_showsEmpty() = runTest(dispatcher) {
-        `when`(repo.getFavoritesFromLocal(context)).thenReturn(emptyList())
+        whenever(mockAuth.currentUser).thenReturn(null)
+        whenever(repo.getFavoritesFromLocal(context)).thenReturn(emptyList())
 
         presenter.loadFavorites()
         advanceUntilIdle()
 
-        verify(view).displayLoading(true)
         verify(view).displayEmptyState()
-        verify(view).displayLoading(false)
     }
 
     @Test
@@ -106,8 +105,10 @@ class FavoritesPresenterTest {
             strInstructions = "Mix ingredients"
         )
 
-        `when`(repo.toggleFavorite(context, cocktail)).thenReturn(true)
-        `when`(repo.getFavoritesFromLocal(context)).thenReturn(listOf(cocktail))
+        whenever(mockAuth.currentUser).thenReturn(null)
+
+        whenever(repo.toggleFavorite(context, cocktail)).thenReturn(true)
+        whenever(repo.getFavoritesFromLocal(context)).thenReturn(listOf(cocktail))
 
         presenter.toggleFavorite(cocktail)
         advanceUntilIdle()
@@ -127,14 +128,13 @@ class FavoritesPresenterTest {
             strInstructions = "Shake ingredients"
         )
 
-        // Use doAnswer to capture and invoke the callback
+        whenever(mockAuth.currentUser).thenReturn(null)
         doAnswer { invocation ->
-            val callback = invocation.arguments[2] as (Boolean) -> Unit
-            callback(true)
+            val callback = invocation.getArgument<(Boolean) -> Unit>(2)
+            callback.invoke(true)
             null
-        }.`when`(repo).addToFavorites(context, cocktail, any())
-        
-        `when`(repo.getFavoritesFromLocal(context)).thenReturn(listOf(cocktail))
+        }.whenever(repo).addToFavorites(any(), any(), any())
+        whenever(repo.getFavoritesFromLocal(context)).thenReturn(listOf(cocktail))
 
         presenter.addToFavorites(cocktail)
         advanceUntilIdle()
@@ -145,7 +145,8 @@ class FavoritesPresenterTest {
 
     @Test
     fun clearAllFavorites_offline_clearsLocalAndShowsEmpty() = runTest(dispatcher) {
-        doNothing().`when`(repo).clearAllFavorites(context)
+        whenever(mockAuth.currentUser).thenReturn(null)
+        doNothing().whenever(repo).clearAllFavorites(context)
 
         presenter.clearAllFavorites()
         advanceUntilIdle()

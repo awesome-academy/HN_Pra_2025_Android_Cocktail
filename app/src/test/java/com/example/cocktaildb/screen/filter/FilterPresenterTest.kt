@@ -33,7 +33,7 @@ class FilterPresenterTest {
             // Mock callback implementation
         }
         
-        presenter = FilterPresenter(filterCallback)
+        presenter = FilterPresenter(filterCallback, cocktailRepo)
         presenter.setView(view)
     }
 
@@ -48,7 +48,7 @@ class FilterPresenterTest {
         
         presenter.onCategorySelected(category)
         
-        verify(view).updateSelectedCategory(category)
+        assert(view.lastCategory == category)
     }
 
     @Test
@@ -57,7 +57,7 @@ class FilterPresenterTest {
         
         presenter.onAlcoholicSelected(alcoholic)
         
-        verify(view).updateSelectedAlcoholic(alcoholic)
+        assert(view.lastAlcoholic == alcoholic)
     }
 
     @Test
@@ -72,7 +72,7 @@ class FilterPresenterTest {
         // Apply filter
         presenter.onFilterApplied()
         
-        verify(view).dismissDialog()
+        assert(view.isDismissed)
     }
 
     @Test
@@ -85,14 +85,14 @@ class FilterPresenterTest {
             capturedAlcoholic = alcoholic
         }
         
-        val testPresenter = FilterPresenter(testCallback)
+        val testPresenter = FilterPresenter(testCallback, cocktailRepo)
         testPresenter.setView(view)
         
         testPresenter.onFilterApplied()
         
         assert(capturedCategory == null)
         assert(capturedAlcoholic == null)
-        verify(view).dismissDialog()
+        assert(view.isDismissed)
     }
 
     @Test
@@ -105,7 +105,7 @@ class FilterPresenterTest {
             capturedAlcoholic = alcoholic
         }
         
-        val testPresenter = FilterPresenter(testCallback)
+        val testPresenter = FilterPresenter(testCallback, cocktailRepo)
         testPresenter.setView(view)
         
         val category = "Cocktail"
@@ -117,7 +117,7 @@ class FilterPresenterTest {
         
         assert(capturedCategory == category)
         assert(capturedAlcoholic == alcoholic)
-        verify(view).dismissDialog()
+        assert(view.isDismissed)
     }
 
     @Test
@@ -183,4 +183,4 @@ class FilterPresenterTest {
             isDismissed = true
         }
     }
-} 
+}
