@@ -6,9 +6,10 @@ import android.net.Uri
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.bumptech.glide.Glide
@@ -26,6 +27,7 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
     private var selectedImageUri: Uri? = null
     private lateinit var ingredientsAdapter: IngredientsAdapter
     private val ingredients = mutableListOf<IngredientItem>()
+    private var ingredientNameAdapter: ArrayAdapter<String>? = null
 
     // Use Activity Result API instead of deprecated startActivityForResult
     private val imagePickerLauncher = registerForActivityResult(
@@ -55,6 +57,9 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
         val authRepository = AuthRepository(requireContext())
         presenter = CreateRecipePresenter(requireContext(), firebaseRepository, authRepository)
         presenter.setView(this)
+
+        // Load ingredient suggestions
+        presenter.loadIngredientSuggestions()
 
         // Setup RecyclerView for ingredients
         setupIngredientsRecyclerView()
@@ -187,5 +192,16 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
                 ingredientsAdapter.notifyItemRangeChanged(position, ingredients.size - position)
             }
         }
+    }
+
+    override fun showIngredientSuggestions(names: List<String>) {
+        if (!isAdded) return
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, names)
+        ingredientNameAdapter = adapter
+        val ac = viewBinding.editTextIngredientName
+        ac.setAdapter(adapter)
+        ac.threshold = 1
+        ac.setOnFocusChangeListener { _, hasFocus -> if (hasFocus) ac.showDropDown() }
+        ac.setOnClickListener { ac.showDropDown() }
     }
 }

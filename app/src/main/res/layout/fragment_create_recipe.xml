@@ -154,7 +154,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/recyclerViewIngredients">
 
-            <EditText
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/editTextIngredientName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -166,6 +166,8 @@
                 android:singleLine="true"
                 android:ellipsize="end"
                 android:maxLines="1"
+                android:completionThreshold="1"
+                android:inputType="text"
                 android:textColorHint="#AAAAAA" />
 
             <EditText
