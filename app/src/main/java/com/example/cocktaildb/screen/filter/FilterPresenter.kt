@@ -7,11 +7,11 @@ import java.util.concurrent.Executors
 import kotlin.collections.get
 
 class FilterPresenter(
-    private val onFilterApplied: (category: String?, alcoholic: String?) -> Unit
+    private val onFilterApplied: (category: String?, alcoholic: String?) -> Unit,
+    private val cocktailRepository: CocktailRepository = CocktailRepository()
 ) : FilterContract.Presenter {
 
     private var view: FilterContract.View? = null
-    private val cocktailRepository = CocktailRepository()
     private val executor = Executors.newSingleThreadExecutor()
 
     private var selectedCategory: String? = null

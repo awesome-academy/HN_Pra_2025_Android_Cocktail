@@ -8,9 +8,14 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.Dispatchers
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.ArgumentMatchers.anyBoolean
+import org.mockito.ArgumentMatchers.anyList
 import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
@@ -20,20 +25,25 @@ class MyRecipePresenterTest {
 
     private lateinit var presenter: MyRecipePresenter
     private lateinit var closeable: AutoCloseable
-    private lateinit var view: MyRecipeViewFake
 
     private val dispatcher = StandardTestDispatcher()
 
     @Mock lateinit var recipeService: RecipeFirebaseService
     @Mock lateinit var authRepo: AuthRepository
     @Mock lateinit var mockUser: FirebaseUser
+    @Mock lateinit var view: MyRecipeContract.View
 
     @Before
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
-        view = MyRecipeViewFake()
+        Dispatchers.setMain(dispatcher)
         
-        presenter = MyRecipePresenter(recipeService, authRepo)
+        presenter = MyRecipePresenter(
+            recipeFirebaseService = recipeService,
+            authRepository = authRepo,
+            mainDispatcher = dispatcher,
+            ioDispatcher = dispatcher
+        )
         presenter.setView(view)
     }
 
@@ -44,17 +54,25 @@ class MyRecipePresenterTest {
 
     @Test
     fun loadUserRecipes_noUser_showsError() = runTest(dispatcher) {
+        // Reset to clear any interactions from setUp
+        reset(view)
+        
         `when`(authRepo.getCurrentUser()).thenReturn(null)
 
         presenter.loadUserRecipes()
         advanceUntilIdle()
 
         verify(view).displayError("Please log in to view your recipes")
-        verify(view, never()).displayLoading(any())
+        verify(view, never()).displayLoading(eq(true))
+        verify(view, never()).displayLoading(eq(false))
+        verify(view, never()).showUserRecipes(anyList())
     }
 
     @Test
     fun loadUserRecipes_success_showsRecipes() = runTest(dispatcher) {
+        // Reset to clear any interactions from setUp
+        reset(view)
+        
         val recipes = listOf(
             Recipe(
                 id = "1",
@@ -82,11 +100,14 @@ class MyRecipePresenterTest {
         verify(view).displayLoading(true)
         verify(view).displayLoading(false)
         verify(view).showUserRecipes(recipes)
-        verify(view, never()).displayError(any())
+        verify(view, never()).displayError(anyString())
     }
 
     @Test
     fun loadUserRecipes_failure_showsErrorMessage() = runTest(dispatcher) {
+        // Reset to clear any interactions from setUp
+        reset(view)
+        
         `when`(authRepo.getCurrentUser()).thenReturn(mockUser)
         `when`(mockUser.uid).thenReturn("test_user_id")
         `when`(recipeService.getUserRecipes("test_user_id")).thenReturn(Result.failure(RuntimeException("Network error")))
@@ -97,11 +118,14 @@ class MyRecipePresenterTest {
         verify(view).displayLoading(true)
         verify(view).displayLoading(false)
         verify(view).displayError("Failed to load recipes: Network error")
-        verify(view, never()).showUserRecipes(any())
+        verify(view, never()).showUserRecipes(anyList())
     }
 
     @Test
     fun loadUserRecipes_exception_showsErrorMessage() = runTest(dispatcher) {
+        // Reset to clear any interactions from setUp
+        reset(view)
+        
         `when`(authRepo.getCurrentUser()).thenReturn(mockUser)
         `when`(mockUser.uid).thenReturn("test_user_id")
         `when`(recipeService.getUserRecipes("test_user_id")).thenThrow(RuntimeException("Database error"))
@@ -112,11 +136,14 @@ class MyRecipePresenterTest {
         verify(view).displayLoading(true)
         verify(view).displayLoading(false)
         verify(view).displayError("Error loading recipes: Database error")
-        verify(view, never()).showUserRecipes(any())
+        verify(view, never()).showUserRecipes(anyList())
     }
 
     @Test
     fun refreshUserRecipes_resetsCacheAndReloads() = runTest(dispatcher) {
+        // Reset to clear any interactions from setUp
+        reset(view)
+        
         val recipes = listOf(
             Recipe(
                 id = "1",
@@ -159,8 +186,11 @@ class MyRecipePresenterTest {
         presenter.loadUserRecipes()
         advanceUntilIdle()
 
-        // Create new view
-        val newView = MyRecipeViewFake()
+        // Reset view interactions
+        reset(view)
+        
+        // Create new view mock
+        val newView = mock(MyRecipeContract.View::class.java)
         presenter.setView(newView)
 
         // Should show cached data immediately
@@ -169,28 +199,13 @@ class MyRecipePresenterTest {
 
     @Test
     fun onStop_cancelsJobAndClearsView() {
+        reset(view)
+        
         presenter.onStop()
 
         // Should not crash when calling methods
         presenter.loadUserRecipes()
-        // No verification needed as view is null
-    }
 
-    private class MyRecipeViewFake : MyRecipeContract.View {
-        var lastRecipes: List<Recipe>? = null
-        var lastError: String? = null
-        var isLoading = false
-
-        override fun displayLoading(show: Boolean) {
-            isLoading = show
-        }
-
-        override fun showUserRecipes(recipes: List<Recipe>) {
-            lastRecipes = recipes
-        }
-
-        override fun displayError(error: String) {
-            lastError = error
-        }
+        verifyNoInteractions(view)
     }
 } 

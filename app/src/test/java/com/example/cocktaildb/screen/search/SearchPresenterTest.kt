@@ -15,9 +15,10 @@ import io.mockk.junit4.MockKRule
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
-import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -31,6 +32,7 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = "src/main/AndroidManifest.xml")
 class SearchPresenterTest {
@@ -39,15 +41,14 @@ class SearchPresenterTest {
     val mockkRule = MockKRule(this)
 
     private lateinit var presenter: SearchPresenter
-
-    // Mocks
     private lateinit var cocktailRepository: CocktailRepository
     private lateinit var authRepository: AuthRepository
     private lateinit var historyFirebaseService: HistoryFirebaseService
     private lateinit var searchHistoryService: SearchHistoryService
     private lateinit var view: SearchContract.View
 
-    private val testDispatcher = StandardTestDispatcher()
+    private val testScheduler = TestCoroutineScheduler()
+    private val testDispatcher = StandardTestDispatcher(testScheduler)
 
     @Before
     fun setUp() {
@@ -63,9 +64,7 @@ class SearchPresenterTest {
             cocktailRepository,
             authRepository,
             historyFirebaseService,
-            searchHistoryService,
-            mainDispatcher = testDispatcher,
-            ioDispatcher = testDispatcher
+            searchHistoryService
         )
         presenter.setView(view)
     }
@@ -77,93 +76,76 @@ class SearchPresenterTest {
     }
 
     @Test
-    fun `searchCocktails with empty query loads all cocktails and updates view`() = runTest(testDispatcher) {
-        // Given
+    fun `searchCocktails with empty query loads all cocktails and updates view`() {
         val cocktails = makeCocktails(15)
         every { cocktailRepository.getCocktails() } returns cocktails
 
-        // When
         presenter.searchCocktails("")
-        advanceUntilIdle()
+        Thread.sleep(60)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
 
-        // Then
         verify { view.showLoading() }
         verify { view.hideLoading() }
-        verify { view.showCocktails(match { it.size == 10 }) } // page size = 10
+        verify { view.showCocktails(match { it.size == 10 }) }
         verify { view.updatePagination(any(), any(), any(), any()) }
         verify { view.showPagination(true) }
     }
 
     @Test
-    fun `filterByCategory without current search uses repository filter and updates view`() = runTest(testDispatcher) {
-        // Given
+    fun `filterByCategory without current search uses repository filter and updates view`() {
         val filtered = makeCocktails(8, category = "Ordinary Drink")
         every { cocktailRepository.filterByCategory("Ordinary Drink") } returns filtered
 
-        // When
         presenter.filterByCategory("Ordinary Drink")
-        advanceUntilIdle()
 
-        // Then
+        Thread.sleep(60)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
         verify { view.showLoading() }
         verify { view.hideLoading() }
         verify { view.showCocktails(match { it.size == 8 }) }
     }
 
     @Test
-    fun `pagination nextPage after initial search shows next items`() = runTest(testDispatcher) {
-        // Given
+    fun `pagination nextPage after initial search shows next items`() {
         val cocktails = makeCocktails(25)
         every { cocktailRepository.getCocktails() } returns cocktails
 
-        // Seed data
         presenter.searchCocktails("")
-        advanceUntilIdle()
-
-        // When
+        Thread.sleep(60)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
         presenter.nextPage()
 
-        // Then
-        verify { view.showCocktails(match { it.size == 10 }) } // second page still 10 items
+        verify { view.showCocktails(match { it.size == 10 }) }
         verify { view.updatePagination(any(), any(), any(), any()) }
     }
 
     @Test
     fun `onSearchTextChanged shows suggestions after debounce`() = runTest(testDispatcher) {
-        // Given
         coEvery { searchHistoryService.getSuggestions("mo") } returns listOf("mojito", "mocha")
-
-        // When
         presenter.onSearchTextChanged("mo")
 
-        // Debounce 300ms
-        testDispatcher.scheduler.advanceTimeBy(300)
-        advanceUntilIdle()
-
-        // Then
+        testScheduler.advanceTimeBy(300)
+        testScheduler.runCurrent()
         verify { view.showSearchSuggestions(listOf("mojito", "mocha")) }
     }
 
     @Test
     fun `onSearchSubmitted saves query and triggers search`() = runTest(testDispatcher) {
-        // Given
         val cocktails = makeCocktails(3)
         coEvery { searchHistoryService.addSearchQuery("margarita") } returns Unit
         every { cocktailRepository.searchCocktails("margarita") } returns cocktails
 
-        // When
         presenter.onSearchSubmitted("margarita")
 
-        // Allow coroutine save and background search to complete
-        advanceUntilIdle()
-
-        // Then
+        testScheduler.runCurrent()
+        Thread.sleep(60)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
         coVerify { searchHistoryService.addSearchQuery("margarita") }
         verify { view.hideSearchSuggestions() }
         verify { view.showCocktails(match { it.size == 3 }) }
     }
 
-    // Helpers
     private fun makeCocktails(count: Int, category: String? = null, alcoholic: String? = null): List<Cocktail> {
         return (1..count).map { i ->
             Cocktail(

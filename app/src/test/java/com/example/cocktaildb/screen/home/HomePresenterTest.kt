@@ -106,4 +106,4 @@ class HomePresenterTest {
             lastMessage = message
         }
     }
-} 
+}
