@@ -16,6 +16,8 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -61,7 +63,9 @@ class SearchPresenterTest {
             cocktailRepository,
             authRepository,
             historyFirebaseService,
-            searchHistoryService
+            searchHistoryService,
+            mainDispatcher = testDispatcher,
+            ioDispatcher = testDispatcher
         )
         presenter.setView(view)
     }
@@ -73,18 +77,16 @@ class SearchPresenterTest {
     }
 
     @Test
-    fun `searchCocktails with empty query loads all cocktails and updates view`() {
+    fun `searchCocktails with empty query loads all cocktails and updates view`() = runTest(testDispatcher) {
         // Given
         val cocktails = makeCocktails(15)
         every { cocktailRepository.getCocktails() } returns cocktails
 
         // When
         presenter.searchCocktails("")
+        advanceUntilIdle()
 
-        // Then - allow background executor to run and main looper to process posts
-        Thread.sleep(60)
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
-
+        // Then
         verify { view.showLoading() }
         verify { view.hideLoading() }
         verify { view.showCocktails(match { it.size == 10 }) } // page size = 10
@@ -93,33 +95,30 @@ class SearchPresenterTest {
     }
 
     @Test
-    fun `filterByCategory without current search uses repository filter and updates view`() {
+    fun `filterByCategory without current search uses repository filter and updates view`() = runTest(testDispatcher) {
         // Given
         val filtered = makeCocktails(8, category = "Ordinary Drink")
         every { cocktailRepository.filterByCategory("Ordinary Drink") } returns filtered
 
         // When
         presenter.filterByCategory("Ordinary Drink")
+        advanceUntilIdle()
 
         // Then
-        Thread.sleep(60)
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
-
         verify { view.showLoading() }
         verify { view.hideLoading() }
         verify { view.showCocktails(match { it.size == 8 }) }
     }
 
     @Test
-    fun `pagination nextPage after initial search shows next items`() {
+    fun `pagination nextPage after initial search shows next items`() = runTest(testDispatcher) {
         // Given
         val cocktails = makeCocktails(25)
         every { cocktailRepository.getCocktails() } returns cocktails
 
         // Seed data
         presenter.searchCocktails("")
-        Thread.sleep(60)
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        advanceUntilIdle()
 
         // When
         presenter.nextPage()
@@ -130,7 +129,7 @@ class SearchPresenterTest {
     }
 
     @Test
-    fun `onSearchTextChanged shows suggestions after debounce`() = runTest {
+    fun `onSearchTextChanged shows suggestions after debounce`() = runTest(testDispatcher) {
         // Given
         coEvery { searchHistoryService.getSuggestions("mo") } returns listOf("mojito", "mocha")
 
@@ -139,13 +138,14 @@ class SearchPresenterTest {
 
         // Debounce 300ms
         testDispatcher.scheduler.advanceTimeBy(300)
+        advanceUntilIdle()
 
         // Then
         verify { view.showSearchSuggestions(listOf("mojito", "mocha")) }
     }
 
     @Test
-    fun `onSearchSubmitted saves query and triggers search`() = runTest {
+    fun `onSearchSubmitted saves query and triggers search`() = runTest(testDispatcher) {
         // Given
         val cocktails = makeCocktails(3)
         coEvery { searchHistoryService.addSearchQuery("margarita") } returns Unit
@@ -155,9 +155,7 @@ class SearchPresenterTest {
         presenter.onSearchSubmitted("margarita")
 
         // Allow coroutine save and background search to complete
-        testDispatcher.scheduler.advanceUntilIdle()
-        Thread.sleep(60)
-        Shadows.shadowOf(Looper.getMainLooper()).idle()
+        advanceUntilIdle()
 
         // Then
         coVerify { searchHistoryService.addSearchQuery("margarita") }

@@ -14,13 +14,15 @@ import kotlinx.coroutines.*
 class FavoritesPresenter(
     private val context: Context,
     private val cocktailRepository: CocktailRepository,
-    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : FavoritesContract.Presenter {
 
     private var view: FavoritesContract.View? = null
 
     private val presenterJob = SupervisorJob()
-    private val uiScope = CoroutineScope(Dispatchers.Main + presenterJob)
+    private val uiScope = CoroutineScope(mainDispatcher + presenterJob)
 
     private val TAG = "FavoritesPresenter"
 
@@ -79,7 +81,7 @@ class FavoritesPresenter(
         uiScope.launch {
             try {
 
-                val firebaseResult = withContext(Dispatchers.IO) {
+                val firebaseResult = withContext(ioDispatcher) {
                     cocktailRepository.getUserFavoritesFromFirebase(userId)
                 }
 
@@ -89,21 +91,21 @@ class FavoritesPresenter(
                 }
 
 
-                val cocktailsFromFirebase: List<Cocktail> = withContext(Dispatchers.IO) {
+                val cocktailsFromFirebase: List<Cocktail> = withContext(ioDispatcher) {
                     firebaseFavorites.mapNotNull { fav ->
                         runCatching { cocktailRepository.getCocktailById(fav.cocktailId) }.getOrNull()
                     }
                 }
 
 
-                val localFavorites = withContext(Dispatchers.IO) {
+                val localFavorites = withContext(ioDispatcher) {
                     cocktailRepository.getFavoritesFromLocal(context)
                 }
 
                 if (cocktailsFromFirebase.isEmpty() && localFavorites.isNotEmpty()) {
                     // Trường hợp user vừa online sau khi xài offline → migrate local lên Firebase
                     Log.d(TAG, "Firebase empty & Local has ${localFavorites.size} → migrate up")
-                    withContext(Dispatchers.IO) {
+                    withContext(ioDispatcher) {
                         localFavorites.take(MAX_FAVORITES_ITEMS).forEach { c ->
                             FavoritesManager.addFavoriteToFirestore(c) { /* ignore per-item result */ }
                         }
@@ -115,7 +117,7 @@ class FavoritesPresenter(
                 } else {
 
                     val finalFavorites = deduplicateById(cocktailsFromFirebase)
-                    withContext(Dispatchers.IO) {
+                    withContext(ioDispatcher) {
                         cocktailRepository.saveFavoritesToLocal(context, finalFavorites)
                     }
                     cachedFavorites = finalFavorites
@@ -136,7 +138,7 @@ class FavoritesPresenter(
     private fun loadFromLocalOnly() {
         uiScope.launch {
             try {
-                val favorites = withContext(Dispatchers.IO) {
+                val favorites = withContext(ioDispatcher) {
                     cocktailRepository.getFavoritesFromLocal(context)
                 }
                 cachedFavorites = favorites
@@ -169,7 +171,7 @@ class FavoritesPresenter(
         uiScope.launch {
             try {
 
-                val ok = withContext(Dispatchers.IO) {
+                val ok = withContext(ioDispatcher) {
                     suspendCancellableCoroutine<Boolean> { cont ->
                         cocktailRepository.addToFavorites(context, cocktail) { success ->
                             if (cont.isActive) cont.resume(success, onCancellation = null)
@@ -196,7 +198,7 @@ class FavoritesPresenter(
 
         uiScope.launch {
             try {
-                val ok = withContext(Dispatchers.IO) {
+                val ok = withContext(ioDispatcher) {
                     suspendCancellableCoroutine<Boolean> { cont ->
                         cocktailRepository.removeFromFavorites(context, cocktail) { success ->
                             if (cont.isActive) cont.resume(success, onCancellation = null)
@@ -219,7 +221,7 @@ class FavoritesPresenter(
 
     override fun toggleFavorite(cocktail: Cocktail) {
         uiScope.launch {
-            val state = withContext(Dispatchers.IO) {
+            val state = withContext(ioDispatcher) {
                 cocktailRepository.toggleFavorite(context, cocktail) // trả về Boolean
             }
             Log.d(TAG, "Favorite toggled → $state")
@@ -232,10 +234,10 @@ class FavoritesPresenter(
         uiScope.launch {
             try {
                 val currentUser = firebaseAuth.currentUser
-                withContext(Dispatchers.IO) { cocktailRepository.clearAllFavorites(context) }
+                withContext(ioDispatcher) { cocktailRepository.clearAllFavorites(context) }
 
                 if (currentUser != null && isNetworkAvailable()) {
-                    val result = withContext(Dispatchers.IO) {
+                    val result = withContext(ioDispatcher) {
                         cocktailRepository.clearAllFavoritesFromFirebase(currentUser.uid)
                     }
                     if (result.isSuccess) {

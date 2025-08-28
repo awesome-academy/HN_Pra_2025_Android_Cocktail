@@ -15,6 +15,7 @@ import com.example.cocktaildb.R
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.service.HistoryFirebaseService
+import com.example.cocktaildb.data.service.RecipeFirebaseService
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource
 import com.example.cocktaildb.databinding.FragmentHomeBinding
@@ -56,8 +57,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), HomeContract.View {
         val cocktailRepository = CocktailRepository(CocktailRemoteDataSource())
         val authRepository = AuthRepository(requireContext())
         val historyFirebaseService = HistoryFirebaseService()
+        val recipeFirebaseService = RecipeFirebaseService()
 
-        presenter = HomePresenter(cocktailRepository, authRepository, historyFirebaseService)
+        presenter = HomePresenter(cocktailRepository, authRepository, historyFirebaseService, recipeFirebaseService)
         presenter.setView(this)
 
         // Initialize RecyclerView
