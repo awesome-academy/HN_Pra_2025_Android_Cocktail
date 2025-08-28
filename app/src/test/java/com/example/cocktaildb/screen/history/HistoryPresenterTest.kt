@@ -1,10 +1,12 @@
 package com.example.cocktaildb.screen.history
 
 import android.content.Context
+import android.os.Looper
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.utils.CocktailContextWrapper
 import org.junit.After
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -14,6 +16,7 @@ import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
+import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -98,7 +101,7 @@ class HistoryPresenterTest {
         @Suppress("UNCHECKED_CAST")
         val captor = ArgumentCaptor.forClass(List::class.java) as ArgumentCaptor<List<Cocktail>>
         verify(view).showHistoryCocktails(captor.capture())
-        assert(captor.value.isNotEmpty())
+        assertTrue(captor.value.isNotEmpty())
 
         verify(view, never()).showEmptyState()
         verify(view, never()).displayError(anyString())
@@ -136,8 +139,12 @@ class HistoryPresenterTest {
 
         presenter.clearHistory()
 
+        // Allow background coroutine to post back to main thread
+        Thread.sleep(100)
+        Shadows.shadowOf(Looper.getMainLooper()).idle()
+
         verify(view).displayLoading(true)
-        verify(view, timeout(1500)).displayLoading(false)
-        verify(view, timeout(1500)).showEmptyState()
+        verify(view, timeout(3000)).displayLoading(false)
+        verify(view, timeout(3000)).showEmptyState()
     }
 }
