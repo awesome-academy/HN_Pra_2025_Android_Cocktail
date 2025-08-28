@@ -167,7 +167,10 @@ class CreateRecipeFragment : BaseFragment<FragmentCreateRecipeBinding>(), Create
 
     override fun showLoading(show: Boolean) {
         viewBinding.buttonSaveRecipe.isEnabled = !show
-        // Add a progress indicator if needed
+        viewBinding.buttonSaveRecipe.text = if (show) "Saving..." else "Save my recipes"
+        viewBinding.progressCreating.visibility = if (show) View.VISIBLE else View.GONE
+        viewBinding.buttonAddNewIngredient.isEnabled = !show
+        viewBinding.layoutNewIngredient.isEnabled = !show
     }
 
     override fun showSuccess(message: String) {
