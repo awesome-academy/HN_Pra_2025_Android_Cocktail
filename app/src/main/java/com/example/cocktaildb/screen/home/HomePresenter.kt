@@ -9,6 +9,7 @@ import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.data.service.RecipeFirebaseService
 import com.example.cocktaildb.data.manager.SharedCocktailsCacheManager
 import com.example.cocktaildb.utils.base.BaseFragment
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -19,12 +20,14 @@ import kotlinx.coroutines.cancel
 class HomePresenter(
     private val cocktailRepository: CocktailRepository,
     private val authRepository: AuthRepository,
-    private val historyFirebaseService: HistoryFirebaseService
+    private val historyFirebaseService: HistoryFirebaseService,
+    private val recipeFirebaseService: RecipeFirebaseService,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : HomeContract.Presenter {
 
     private var view: HomeContract.View? = null
-    private val presenterScope = CoroutineScope(Dispatchers.Main + Job())
-    private val recipeFirebaseService = RecipeFirebaseService()
+    private val presenterScope = CoroutineScope(mainDispatcher + Job())
 
     private var sharedCacheManager: SharedCocktailsCacheManager? = null
     private var cachedSharedCocktails: List<Cocktail>? = null
@@ -52,7 +55,7 @@ class HomePresenter(
 
         presenterScope.launch {
             try {
-                val cocktails = withContext(Dispatchers.IO) {
+                val cocktails = withContext(ioDispatcher) {
                     cocktailRepository.fetchCocktailsFromApi()
                 }
                 view?.showCocktails(cocktails)
@@ -86,7 +89,7 @@ class HomePresenter(
         isLoadingShared = true
         presenterScope.launch {
             try {
-                val shared = withContext(Dispatchers.IO) {
+                val shared = withContext(ioDispatcher) {
                     recipeFirebaseService.getSharedRecipes(limit = 20)
                 }
                 shared.onSuccess { list ->

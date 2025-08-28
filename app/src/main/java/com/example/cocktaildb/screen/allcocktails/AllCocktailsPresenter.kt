@@ -5,6 +5,7 @@ import com.example.cocktaildb.data.repository.AuthRepository
 import com.example.cocktaildb.data.repository.CocktailRepository
 import com.example.cocktaildb.data.service.HistoryFirebaseService
 import com.example.cocktaildb.utils.base.BasePresenter
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -13,11 +14,13 @@ import kotlinx.coroutines.withContext
 class AllCocktailsPresenter(
     private val cocktailRepository: CocktailRepository,
     private val authRepository: AuthRepository,
-    private val historyFirebaseService: HistoryFirebaseService
+    private val historyFirebaseService: HistoryFirebaseService,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) : BasePresenter<AllCocktailsContract.View> {
 
     private var view: AllCocktailsContract.View? = null
-    private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private val coroutineScope = CoroutineScope(mainDispatcher)
     
     private var allCocktails: MutableList<Cocktail> = mutableListOf()
     private var filteredCocktails: MutableList<Cocktail> = mutableListOf()
@@ -73,7 +76,7 @@ class AllCocktailsPresenter(
         view?.showLoadingState()
         coroutineScope.launch {
             try {
-                val cocktails = withContext(Dispatchers.IO) {
+                val cocktails = withContext(ioDispatcher) {
                     cocktailRepository.getAllCocktails()
                 }
                 android.util.Log.d("AllCocktailsPresenter", "Loaded ${cocktails.size} cocktails from API")
@@ -102,7 +105,7 @@ class AllCocktailsPresenter(
         // Load additional cocktails for pagination
         coroutineScope.launch {
             try {
-                val moreCocktails = withContext(Dispatchers.IO) {
+                val moreCocktails = withContext(ioDispatcher) {
                     cocktailRepository.loadMoreCocktails()
                 }
                 android.util.Log.d("AllCocktailsPresenter", "Loaded ${moreCocktails.size} additional cocktails")
@@ -172,7 +175,7 @@ class AllCocktailsPresenter(
             try {
                 val currentUser = authRepository.getCurrentUser()
                 if (currentUser != null) {
-                    withContext(Dispatchers.IO) {
+                    withContext(ioDispatcher) {
                         historyFirebaseService.addHistory(currentUser.uid, cocktail.idDrink)
                     }
                 }
