@@ -13,11 +13,11 @@ import kotlinx.coroutines.*
 
 class FavoritesPresenter(
     private val context: Context,
-    private val cocktailRepository: CocktailRepository
+    private val cocktailRepository: CocktailRepository,
+    private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
 ) : FavoritesContract.Presenter {
 
     private var view: FavoritesContract.View? = null
-    private val auth = FirebaseAuth.getInstance()
 
     private val presenterJob = SupervisorJob()
     private val uiScope = CoroutineScope(Dispatchers.Main + presenterJob)
@@ -51,7 +51,7 @@ class FavoritesPresenter(
         isLoading = true
         view?.displayLoading(true)
 
-        val currentUser = auth.currentUser
+        val currentUser = firebaseAuth.currentUser
         if (currentUser == null || !isNetworkAvailable()) {
             Log.d(TAG, "loadFavorites: No user or no network → load local only")
             loadFromLocalOnly()
@@ -231,7 +231,7 @@ class FavoritesPresenter(
     override fun clearAllFavorites() {
         uiScope.launch {
             try {
-                val currentUser = auth.currentUser
+                val currentUser = firebaseAuth.currentUser
                 withContext(Dispatchers.IO) { cocktailRepository.clearAllFavorites(context) }
 
                 if (currentUser != null && isNetworkAvailable()) {
@@ -259,7 +259,7 @@ class FavoritesPresenter(
     }
 
     override fun syncFavoritesIfNeeded() {
-        val currentUser = auth.currentUser
+        val currentUser = firebaseAuth.currentUser
         if (currentUser != null && isNetworkAvailable()) {
             view?.showSyncStatus("Syncing favorites...")
             syncFirebaseWithLocal(currentUser.uid)
