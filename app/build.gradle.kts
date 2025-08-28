@@ -95,10 +95,13 @@ dependencies {
 
     // Glide for image loading
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    
 
 
     testImplementation(libs.junit)
+    testImplementation("io.mockk:mockk:1.13.13")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
+    testImplementation("org.robolectric:robolectric:4.12.2")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
