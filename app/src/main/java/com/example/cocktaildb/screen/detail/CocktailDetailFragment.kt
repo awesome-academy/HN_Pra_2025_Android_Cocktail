@@ -589,7 +589,24 @@ class CocktailDetailFragment : BaseFragment<FragmentCocktailDetailBinding>(), Co
             putStringArray(KEY_COCKTAIL_INGREDIENTS, cocktail.ingredients.toTypedArray())
             putStringArray(KEY_COCKTAIL_MEASURES, cocktail.measures.toTypedArray())
         }
-        findNavController().navigate(R.id.action_cocktailDetailFragment_self, args)
+        
+        try {
+            // Try to use navigation controller (when fragment is in main navigation)
+            findNavController().navigate(R.id.action_cocktailDetailFragment_self, args)
+        } catch (e: Exception) {
+            Log.w(TAG, "Navigation failed, using fallback: ${e.message}")
+            try {
+                // Fallback: update current fragment arguments and reload data
+                // This handles the case when fragment is used as a child fragment
+                arguments = args
+                loadCocktailData()
+                // Note: loadCocktailData() already calls presenter.loadRelatedCocktails()
+            } catch (fallbackException: Exception) {
+                Log.e(TAG, "Fallback also failed: ${fallbackException.message}")
+                // Show error message to user
+                showMessage(getString(R.string.error_opening_recipe_details))
+            }
+        }
     }
 
     override fun showRelatedCocktails(cocktails: List<Cocktail>) {
