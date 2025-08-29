@@ -23,9 +23,12 @@ class ProfilePresenterTest {
     private lateinit var context: Context
     private lateinit var closeable: AutoCloseable
 
-    @Mock lateinit var cocktailRepository: CocktailRepository
-    @Mock lateinit var authRepository: AuthRepository
-    @Mock lateinit var view: ProfileContract.View
+    @Mock
+    lateinit var cocktailRepository: CocktailRepository
+    @Mock
+    lateinit var authRepository: AuthRepository
+    @Mock
+    lateinit var view: ProfileContract.View
 
     private lateinit var presenter: ProfilePresenter
 
@@ -33,15 +36,14 @@ class ProfilePresenterTest {
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
         context = mockk<Context>(relaxed = true)
-        
+
         // Mock SharedPreferences
         val mockPrefs = mockk<SharedPreferences>(relaxed = true)
         every { context.getSharedPreferences(any(), any()) } returns mockPrefs
         every { mockPrefs.getString(any(), any()) } returns ""
         every { mockPrefs.edit() } returns mockk(relaxed = true)
-        
+
         presenter = ProfilePresenter(context, cocktailRepository, authRepository)
-        presenter.setView(view)
     }
 
     @After
@@ -49,28 +51,32 @@ class ProfilePresenterTest {
         closeable.close()
     }
 
-    // 1) loadUserProfile
+    // 1) loadUserProfile - test chỉ method này thôi
     @Test
     fun loadUserProfile_showsGuest_whenNoUserLoggedIn() {
         `when`(authRepository.getCurrentUser()).thenReturn(null)
 
+        // Manually set view without triggering loadData()
+        val viewField = ProfilePresenter::class.java.getDeclaredField("view")
+        viewField.isAccessible = true
+        viewField.set(presenter, view)
 
-        presenter.setView(view = view)
+        // Call only loadUserProfile() method
+        presenter.loadUserProfile()
 
-
+        // Verify calls from loadUserProfile() only
+        verify(view).displayLoading(true)
         verify(view).displayLoading(false)
         verify(view).showUserProfile(
             userName = "Guest User",
             userBio = "Please sign in to see your profile",
             profileImageUrl = null
         )
-
     }
 
     // 2) onMyRecipesClicked
     @Test
     fun onMyRecipesClicked_navigates() {
-
         presenter.setView(view)
         presenter.onMyRecipesClicked()
 

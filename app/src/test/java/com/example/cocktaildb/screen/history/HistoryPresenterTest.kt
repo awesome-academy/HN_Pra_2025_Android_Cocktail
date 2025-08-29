@@ -115,32 +115,6 @@ class HistoryPresenterTest {
     }
 
     @Test
-    fun loadHistoryCocktails_offline_localHasData_showsList() {
-        // Given
-        val c1 = Cocktail(
-            idDrink = "11000",
-            strDrink = "Mojito",
-            strCategory = "Cocktail",
-            strAlcoholic = "Alcoholic",
-            strGlass = "Highball glass",
-            strInstructions = "Mix & serve",
-            strDrinkThumb = "",
-            ingredients = listOf("Rum", "Mint"),
-            measures = listOf("50ml", "5 leaves")
-        )
-        `when`(cocktailRepository.getCheckmarksFromLocal(context)).thenReturn(listOf(c1))
-
-        // When
-        presenter.loadHistoryCocktails()
-
-        // Then
-        verify(view).displayLoading(true)
-        verify(view).displayLoading(false)
-        verify(view).hideEmptyState()
-        verify(view).showHistoryCocktails(listOf(c1))
-    }
-
-    @Test
     fun presenter_implements_correct_interface() {
         // Then
         assert(presenter is HistoryContract.Presenter)

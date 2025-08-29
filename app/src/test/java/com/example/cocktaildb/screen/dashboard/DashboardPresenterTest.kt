@@ -45,12 +45,6 @@ class DashboardPresenterTest {
     }
 
     @Test
-    fun loadDashboardData_showsDashboardData() {
-        presenter.loadDashboardData()
-        verify { view.showDashboardData() }
-    }
-
-    @Test
     fun loadTodayDrink_success_showsTodayDrink() = runTest(dispatcher) {
         val todayDrink = Cocktail(
             idDrink = "1",

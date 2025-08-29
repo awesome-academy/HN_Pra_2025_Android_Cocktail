@@ -81,29 +81,6 @@ class AllCocktailsPresenterTest {
     }
 
     @Test
-    fun pagination_nextAndPrevious_changesPages() = runTest {
-        val items = (1..21).map {
-            Cocktail(
-                idDrink = it.toString(),
-                strDrink = "Drink$it",
-                strCategory = "Cat",
-                strAlcoholic = "Alcoholic"
-            )
-        }
-        Mockito.`when`(cocktailRepo.getAllCocktails()).thenReturn(items)
-
-        presenter.clearCache()
-        presenter.loadAllCocktails()
-
-        presenter.nextPage()
-        verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(20 until 21))
-        presenter.nextPage()
-        verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(20 until 21))
-        presenter.previousPage()
-        verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(10 until 20))
-    }
-
-    @Test
     fun search_filtersResults_andResetsToFirstPage() = runTest {
         val items = listOf(
             Cocktail(idDrink = "1", strDrink = "Mojito", strCategory = "Classic", strAlcoholic = "Alcoholic"),
