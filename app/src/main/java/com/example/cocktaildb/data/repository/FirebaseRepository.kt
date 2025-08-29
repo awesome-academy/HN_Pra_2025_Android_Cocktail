@@ -12,16 +12,15 @@ import java.util.*
 
 class FirebaseRepository(
     private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
-    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val userFirebaseService: UserFirebaseService = UserFirebaseService(),
+    private val cocktailFirebaseService: CocktailFirebaseService = CocktailFirebaseService(),
+    private val recipeFirebaseService: RecipeFirebaseService = RecipeFirebaseService(),
+    private val favoriteFirebaseService: FavoriteFirebaseService = FavoriteFirebaseService(),
+    private val historyFirebaseService: HistoryFirebaseService = HistoryFirebaseService(),
+    private val checkmarkFirebaseService: CheckmarkFirebaseService = CheckmarkFirebaseService(),
+    private val imageUploadService: ImageUploadService = ImageUploadService()
 ) {
-    private val userFirebaseService = UserFirebaseService()
-    private val cocktailFirebaseService = CocktailFirebaseService()
-    private val recipeFirebaseService = RecipeFirebaseService()
-    private val favoriteFirebaseService = FavoriteFirebaseService()
-    private val historyFirebaseService = HistoryFirebaseService()
-    private val checkmarkFirebaseService = CheckmarkFirebaseService()
-    private val imageUploadService = ImageUploadService()
-
     // User management
     suspend fun createUser(user: User): Result<String> {
         return userFirebaseService.createUser(user)

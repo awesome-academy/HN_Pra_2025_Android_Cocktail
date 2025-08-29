@@ -39,7 +39,7 @@ class DashboardFragment : BaseFragment<FragmentDashboardBinding>(), DashboardCon
 
     override fun initView() {
         // Initialize presenter with dependency injection
-        val todayDrinkManager = TodayDrinkManager(requireContext())
+        val todayDrinkManager = TodayDrinkManager.create(requireContext())
         presenter = DashboardPresenter(todayDrinkManager) // Default dispatchers được sử dụng
         presenter.setView(this)
 

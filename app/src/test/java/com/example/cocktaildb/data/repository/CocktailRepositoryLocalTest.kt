@@ -1,9 +1,12 @@
 package com.example.cocktaildb.data.repository
 
 import android.content.Context
+import android.content.SharedPreferences
 import com.example.cocktaildb.data.model.Cocktail
 import com.example.cocktaildb.data.service.CheckmarkFirebaseService
 import com.example.cocktaildb.data.service.FavoriteFirebaseService
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -11,7 +14,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
@@ -26,7 +28,14 @@ class CocktailRepositoryLocalTest {
 
     @Before
     fun setUp() {
-        context = RuntimeEnvironment.getApplication()
+        context = mock(Context::class.java)
+        
+        // Mock SharedPreferences
+        val mockPrefs = mockk<SharedPreferences>(relaxed = true)
+        every { context.getSharedPreferences(any(), any()) } returns mockPrefs
+        every { mockPrefs.getString(any(), any()) } returns ""
+        every { mockPrefs.edit() } returns mockk(relaxed = true)
+        
         repo = CocktailRepository(
             dataSource = com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource(),
             favoriteFirebaseService = fakeFavoriteService,
@@ -69,10 +78,16 @@ class CocktailRepositoryLocalTest {
 
     @Test
     fun history_encodeDecode_roundTrip() {
-        val sp = context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE)
-        val entry = listOf("10", "NameX", "http://img/x.jpg").joinToString("|:|")
-        sp.edit().putString("cocktail_history", entry).apply()
-
+        // Mock SharedPreferences for this specific test
+        val mockPrefs = mockk<SharedPreferences>(relaxed = true)
+        val mockEditor = mockk<SharedPreferences.Editor>(relaxed = true)
+        
+        every { context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE) } returns mockPrefs
+        every { mockPrefs.getString("cocktail_history", "") } returns "10|:|NameX|:|http://img/x.jpg"
+        every { mockPrefs.edit() } returns mockEditor
+        every { mockEditor.putString(any(), any()) } returns mockEditor
+        every { mockEditor.apply() } returns Unit
+        
         val list = repo.getHistoryCocktails(context)
         assertEquals(1, list.size)
         assertEquals("10", list[0].idDrink)

@@ -39,7 +39,7 @@ class TodayDrinkActivity : BaseActivity<ActivityTodayDrinkBinding>() {
     }
 
     override fun initView() {
-        todayDrinkManager = TodayDrinkManager(this)
+        todayDrinkManager = TodayDrinkManager.create(this)
         setupClickListeners()
         loadTodayDrink()
     }

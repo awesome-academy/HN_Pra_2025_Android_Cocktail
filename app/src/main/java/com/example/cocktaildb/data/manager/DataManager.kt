@@ -19,6 +19,14 @@ import kotlinx.coroutines.launch
 object DataManager {
     private const val TAG = "DataManager"
     private var isDataLoading = false
+    
+    // Method to set services for testing
+    private var recipeFirebaseService: RecipeFirebaseService = RecipeFirebaseService()
+    
+    fun setRecipeFirebaseService(service: RecipeFirebaseService) {
+        recipeFirebaseService = service
+    }
+
     fun autoLoadDataAfterLogin(context: Context, lifecycleOwner: LifecycleOwner) {
         if (isDataLoading) {
             Log.d(TAG, context.getString(R.string.msg_data_loading_in_progress))
@@ -46,7 +54,6 @@ object DataManager {
 
                 val cocktailRepository = CocktailRepository(CocktailRemoteDataSource())
                 val contextWrapper = CocktailContextWrapper(context, lifecycleOwner)
-                val recipeFirebaseService = RecipeFirebaseService()
 
                 val favoritesJob = CoroutineScope(Dispatchers.IO).launch {
                     try {

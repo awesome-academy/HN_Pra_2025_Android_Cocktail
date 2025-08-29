@@ -11,9 +11,9 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
-class TodayDrinkManager(context: Context) {
-    
-    private val prefs: SharedPreferences = context.getSharedPreferences("today_drink_prefs", Context.MODE_PRIVATE)
+class TodayDrinkManager(
+    private val prefs: SharedPreferences
+) {
     
     companion object {
         private const val KEY_TODAY_DRINK = "today_drink"
@@ -28,6 +28,12 @@ class TodayDrinkManager(context: Context) {
         private const val JSON_STR_DRINK_THUMB = "strDrinkThumb"
         private const val JSON_INGREDIENTS = "ingredients"
         private const val JSON_MEASURES = "measures"
+        
+        // Factory method for production use
+        fun create(context: Context): TodayDrinkManager {
+            val prefs = context.getSharedPreferences("today_drink_prefs", Context.MODE_PRIVATE)
+            return TodayDrinkManager(prefs)
+        }
     }
     
     suspend fun getTodayDrink(): Cocktail? = withContext(Dispatchers.IO) {
