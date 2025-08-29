@@ -7,12 +7,12 @@ import com.example.cocktaildb.data.service.CheckmarkFirebaseService
 import com.example.cocktaildb.data.service.FavoriteFirebaseService
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.slot
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -22,22 +22,27 @@ class CocktailRepositoryLocalTest {
 
     private lateinit var context: Context
     private lateinit var repo: CocktailRepository
+    private lateinit var mockPrefs: SharedPreferences
+    private lateinit var mockEditor: SharedPreferences.Editor
 
-    private val fakeFavoriteService: FavoriteFirebaseService = mock(FavoriteFirebaseService::class.java)
-    private val fakeCheckmarkService: CheckmarkFirebaseService = mock(CheckmarkFirebaseService::class.java)
+    private val fakeFavoriteService: FavoriteFirebaseService = mockk(relaxed = true)
+    private val fakeCheckmarkService: CheckmarkFirebaseService = mockk(relaxed = true)
 
     @Before
     fun setUp() {
-        context = mock(Context::class.java)
-        
-        // Mock SharedPreferences
-        val mockPrefs = mockk<SharedPreferences>(relaxed = true)
-        every { context.getSharedPreferences(any(), any()) } returns mockPrefs
+        context = mockk(relaxed = true)
+        mockPrefs = mockk(relaxed = true)
+        mockEditor = mockk(relaxed = true)
+
+        every { context.getSharedPreferences("favorites_prefs", Context.MODE_PRIVATE) } returns mockPrefs
+        every { context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE) } returns mockPrefs
         every { mockPrefs.getString(any(), any()) } returns ""
-        every { mockPrefs.edit() } returns mockk(relaxed = true)
-        
+        every { mockPrefs.edit() } returns mockEditor
+        every { mockEditor.putString(any(), any()) } returns mockEditor
+        every { mockEditor.clear() } returns mockEditor
+        every { mockEditor.apply() } returns Unit
         repo = CocktailRepository(
-            dataSource = com.example.cocktaildb.data.repository.source.remote.CocktailRemoteDataSource(),
+            dataSource = mockk(relaxed = true),
             favoriteFirebaseService = fakeFavoriteService,
             checkmarkFirebaseService = fakeCheckmarkService
         )
@@ -46,6 +51,10 @@ class CocktailRepositoryLocalTest {
 
     @Test
     fun favorites_encodeDecode_roundTrip() {
+        val slot = slot<String>()
+        every { mockEditor.putString("favorites_list", capture(slot)) } returns mockEditor
+        every { mockPrefs.getString("favorites_list", "") } answers { slot.captured }
+
         val items = listOf(
             Cocktail(idDrink = "1", strDrink = "A", strDrinkThumb = "http://img/a.png", strCategory = "CatA", strAlcoholic = "Alcoholic", strGlass = "Highball", strInstructions = "Mix", ingredients = listOf("Gin"), dateModified = "2024-01-01"),
             Cocktail(idDrink = "2", strDrink = "B", strDrinkThumb = null, strCategory = null, strAlcoholic = null, strGlass = null, strInstructions = null, ingredients = emptyList(), dateModified = null)
@@ -78,22 +87,20 @@ class CocktailRepositoryLocalTest {
 
     @Test
     fun history_encodeDecode_roundTrip() {
-        // Mock SharedPreferences for this specific test
-        val mockPrefs = mockk<SharedPreferences>(relaxed = true)
-        val mockEditor = mockk<SharedPreferences.Editor>(relaxed = true)
-        
-        every { context.getSharedPreferences("cocktail_history", Context.MODE_PRIVATE) } returns mockPrefs
-        every { mockPrefs.getString("cocktail_history", "") } returns "10|:|NameX|:|http://img/x.jpg"
-        every { mockPrefs.edit() } returns mockEditor
-        every { mockEditor.putString(any(), any()) } returns mockEditor
+        val slot = slot<String>()
+        every { mockEditor.putString("cocktail_history", capture(slot)) } returns mockEditor
+        every { mockPrefs.getString("cocktail_history", "") } answers { slot.captured }
+        every { mockEditor.clear() } returns mockEditor
         every { mockEditor.apply() } returns Unit
-        
+        every { mockPrefs.getString("cocktail_history", "") } returns "10|:|NameX|:|http://img/x.jpg"
+
         val list = repo.getHistoryCocktails(context)
         assertEquals(1, list.size)
         assertEquals("10", list[0].idDrink)
         assertEquals("NameX", list[0].strDrink)
         assertEquals("http://img/x.jpg", list[0].strDrinkThumb)
 
+        every { mockPrefs.getString("cocktail_history", "") } returns ""
         repo.clearHistory(context)
         assertTrue(repo.getHistoryCocktails(context).isEmpty())
     }

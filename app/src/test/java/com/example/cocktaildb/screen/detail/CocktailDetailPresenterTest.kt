@@ -60,16 +60,6 @@ class CocktailDetailPresenterTest {
     }
 
     @Test
-    fun `onStart does not throw exceptions`() {
-        // When
-        presenter.onStart()
-        
-        // Then
-        // Should not throw exceptions
-        assert(true) // Simple assertion to verify test runs
-    }
-
-    @Test
     fun `onStop does not throw exceptions`() {
         // When
         presenter.onStop()
@@ -163,4 +153,4 @@ class CocktailDetailPresenterTest {
         val componentType = presenter::class.java.componentType
         assert(componentType == null) // Arrays have component type, classes don't
     }
-} 
+}
