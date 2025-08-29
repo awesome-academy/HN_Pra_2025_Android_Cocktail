@@ -16,7 +16,7 @@ typealias CheckmarkCallback = (Boolean) -> Unit
 object CheckmarkManager {
     private val TAG = "CheckmarkManager"
     private val auth = FirebaseAuth.getInstance()
-    private val checkmarkService = CheckmarkFirebaseService()
+    private var checkmarkService: CheckmarkFirebaseService = CheckmarkFirebaseService()
     private var checkmarkManagerJob: Job? = null
 
     // Cache of checkmarked cocktail IDs
@@ -26,6 +26,11 @@ object CheckmarkManager {
     private var initialized = false
 
     fun isInitialized(): Boolean = initialized
+
+    // Method to set service for testing
+    fun setCheckmarkService(service: CheckmarkFirebaseService) {
+        checkmarkService = service
+    }
 
 
     fun toggleCheckmark(cocktail: Cocktail, callback: CheckmarkCallback) {
@@ -86,8 +91,7 @@ object CheckmarkManager {
             try {
                 // Get user's checkmarks from Firestore
                 val result = withContext(Dispatchers.IO) {
-                    val service = CheckmarkFirebaseService()
-                    service.getUserCheckmarks(currentUser.uid)
+                    checkmarkService.getUserCheckmarks(currentUser.uid)
                 }
 
                 if (result.isSuccess) {

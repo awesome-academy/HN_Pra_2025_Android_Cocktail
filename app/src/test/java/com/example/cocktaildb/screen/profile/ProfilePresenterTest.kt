@@ -11,8 +11,10 @@ import org.mockito.Mock
 import org.mockito.Mockito.*
 import org.mockito.MockitoAnnotations
 import org.robolectric.RobolectricTestRunner
-import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
+import android.content.SharedPreferences
+import io.mockk.every
+import io.mockk.mockk
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -30,8 +32,16 @@ class ProfilePresenterTest {
     @Before
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
-        context = RuntimeEnvironment.getApplication()
+        context = mockk<Context>(relaxed = true)
+        
+        // Mock SharedPreferences
+        val mockPrefs = mockk<SharedPreferences>(relaxed = true)
+        every { context.getSharedPreferences(any(), any()) } returns mockPrefs
+        every { mockPrefs.getString(any(), any()) } returns ""
+        every { mockPrefs.edit() } returns mockk(relaxed = true)
+        
         presenter = ProfilePresenter(context, cocktailRepository, authRepository)
+        presenter.setView(view)
     }
 
     @After

@@ -20,6 +20,9 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.Shadows
 import org.robolectric.annotation.Config
 import com.google.firebase.auth.FirebaseAuth
+import android.content.SharedPreferences
+import io.mockk.every
+import io.mockk.mockk
 
 @RunWith(RobolectricTestRunner::class)
 @Config(manifest = Config.NONE)
@@ -38,24 +41,14 @@ class CheckmarkPresenterTest {
     @Before
     fun setUp() {
         closeable = MockitoAnnotations.openMocks(this)
-        context = RuntimeEnvironment.getApplication()
-
-        // Mock static FirebaseAuth.getInstance() to avoid real Firebase components
-        firebaseAuthStatic = mockStatic(FirebaseAuth::class.java)
-        mockAuth = mock(FirebaseAuth::class.java)
-        firebaseAuthStatic.`when`<FirebaseAuth> { FirebaseAuth.getInstance() }.thenReturn(mockAuth)
-        `when`(mockAuth.currentUser).thenReturn(null) // Force offline branch
-
-        // Optional: initialize FirebaseApp to satisfy any internal checks (not strictly needed with static mock)
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            val options = FirebaseOptions.Builder()
-                .setApplicationId("1:1234567890:android:abcdef123456")
-                .setApiKey("fake-api-key")
-                .setProjectId("test-project")
-                .build()
-            FirebaseApp.initializeApp(context, options)
-        }
-
+        context = mockk<Context>(relaxed = true)
+        
+        // Mock SharedPreferences
+        val mockPrefs = mockk<SharedPreferences>(relaxed = true)
+        every { context.getSharedPreferences(any(), any()) } returns mockPrefs
+        every { mockPrefs.getString(any(), any()) } returns ""
+        every { mockPrefs.edit() } returns mockk(relaxed = true)
+        
         presenter = CheckmarkPresenter(context, cocktailRepository)
         presenter.setView(view)
     }
@@ -88,7 +81,7 @@ class CheckmarkPresenterTest {
     @Test
     fun loadCheckmarks_offline_loadsLocalList() {
         val localList = listOf(dummyCocktail("10", "Local A"), dummyCocktail("11", "Local B"))
-        `when`(cocktailRepository.getCheckmarksFromLocal(context)).thenReturn(localList)
+        every { cocktailRepository.getCheckmarksFromLocal(context) } returns localList
 
         presenter.loadCheckmarks()
 

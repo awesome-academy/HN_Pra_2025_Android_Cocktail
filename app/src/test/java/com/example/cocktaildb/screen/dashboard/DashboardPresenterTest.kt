@@ -47,7 +47,7 @@ class DashboardPresenterTest {
     @Test
     fun loadDashboardData_showsDashboardData() {
         presenter.loadDashboardData()
-        verify(view).showDashboardData()
+        verify { view.showDashboardData() }
     }
 
     @Test

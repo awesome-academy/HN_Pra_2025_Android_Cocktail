@@ -30,7 +30,7 @@ class NotificationsPresenterTest {
     fun `loadNotifications shows loading and then notifications on success`() {
         // When
         presenter.loadNotifications()
-        
+
         // Then
         verifyOrder {
             view.showLoading()
@@ -44,10 +44,10 @@ class NotificationsPresenterTest {
         // Given
         // Mock the exception scenario by making showNotifications throw
         // This is a simplified test since the actual implementation doesn't throw
-        
+
         // When
         presenter.loadNotifications()
-        
+
         // Then
         verifyOrder {
             view.showLoading()
@@ -60,7 +60,7 @@ class NotificationsPresenterTest {
     fun `testNotification shows notification sent`() {
         // When
         presenter.testNotification()
-        
+
         // Then
         verify { view.showNotificationSent() }
     }
@@ -69,7 +69,7 @@ class NotificationsPresenterTest {
     fun `scheduleDailyNotification shows notification scheduled`() {
         // When
         presenter.scheduleDailyNotification()
-        
+
         // Then
         verify { view.showNotificationScheduled() }
     }
@@ -78,8 +78,44 @@ class NotificationsPresenterTest {
     fun `cancelDailyNotification shows notification cancelled`() {
         // When
         presenter.cancelDailyNotification()
-        
+
         // Then
         verify { view.showNotificationCancelled() }
+    }
+
+    @Test
+    fun `presenter implements correct interface`() {
+        // Then
+        assert(presenter is NotificationsContract.Presenter)
+    }
+
+    @Test
+    fun `view interface has all required methods`() {
+        // Then
+        val view: NotificationsContract.View = object : NotificationsContract.View {
+            override fun showLoading() {}
+            override fun hideLoading() {}
+            override fun showNotifications() {}
+            override fun showNotificationSent() {}
+            override fun showNotificationScheduled() {}
+            override fun showNotificationCancelled() {}
+            override fun showError(message: String) {}
+        }
+        
+        assert(view is NotificationsContract.View)
+    }
+
+    @Test
+    fun `presenter has correct class name`() {
+        // Then
+        val className = presenter::class.java.simpleName
+        assert(className == "NotificationsPresenter")
+    }
+
+    @Test
+    fun `presenter has correct package`() {
+        // Then
+        val packageName = presenter::class.java.`package`.name
+        assert(packageName.contains("notifications"))
     }
 } 

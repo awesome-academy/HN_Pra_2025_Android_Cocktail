@@ -106,7 +106,6 @@ class FavoritesPresenterTest {
         )
 
         whenever(mockAuth.currentUser).thenReturn(null)
-
         whenever(repo.toggleFavorite(context, cocktail)).thenReturn(true)
         whenever(repo.getFavoritesFromLocal(context)).thenReturn(listOf(cocktail))
 

@@ -17,15 +17,15 @@ import kotlinx.coroutines.withContext
 
 class CocktailDetailPresenter(
     private val repository: CocktailRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val checkmarkService: CheckmarkFirebaseService = CheckmarkFirebaseService(),
+    private val historyFirebaseService: HistoryFirebaseService = HistoryFirebaseService()
 ) : CocktailDetailContract.Presenter {
     companion object {
         private const val RELATED_COCKTAIL_LIMIT = 6
     }
 
     private var view: CocktailDetailContract.View? = null
-    private val checkmarkService = CheckmarkFirebaseService()
-    private val historyFirebaseService = HistoryFirebaseService()
     private var presenterJob: Job? = null
     private val TAG = "CocktailDetailPresenter"
 

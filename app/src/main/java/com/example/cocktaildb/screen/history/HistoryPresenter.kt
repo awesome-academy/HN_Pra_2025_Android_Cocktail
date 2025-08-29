@@ -16,12 +16,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 class HistoryPresenter(
     private val cocktailRepository: CocktailRepository,
-    private val contextWrapper: CocktailContextWrapper
+    private val contextWrapper: CocktailContextWrapper,
+    private val historyFirebaseService: HistoryFirebaseService = HistoryFirebaseService(),
+    private val authRepository: AuthRepository = AuthRepository()
 ) : HistoryContract.Presenter {
 
     private var view: HistoryContract.View? = null
-    private val historyFirebaseService = HistoryFirebaseService()
-    private val authRepository = AuthRepository()
 
 
     override fun setView(view: HistoryContract.View?) {

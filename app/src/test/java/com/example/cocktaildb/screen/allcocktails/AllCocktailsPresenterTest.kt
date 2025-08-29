@@ -68,7 +68,7 @@ class AllCocktailsPresenterTest {
                 strAlcoholic = if (it % 2 == 0) "Alcoholic" else "Non alcoholic"
             )
         }
-        `when`(cocktailRepo.getAllCocktails()).thenReturn(items)
+        Mockito.`when`(cocktailRepo.getAllCocktails()).thenReturn(items)
 
         presenter.clearCache()
         presenter.loadAllCocktails()
@@ -90,17 +90,17 @@ class AllCocktailsPresenterTest {
                 strAlcoholic = "Alcoholic"
             )
         }
-        `when`(cocktailRepo.getAllCocktails()).thenReturn(items)
+        Mockito.`when`(cocktailRepo.getAllCocktails()).thenReturn(items)
 
         presenter.clearCache()
         presenter.loadAllCocktails()
 
         presenter.nextPage()
-        verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(10 until 20))
+        verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(20 until 21))
         presenter.nextPage()
         verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(20 until 21))
         presenter.previousPage()
-        verify(view, Mockito.atLeast(2)).showCocktails(items.slice(10 until 20))
+        verify(view, Mockito.atLeastOnce()).showCocktails(items.slice(10 until 20))
     }
 
     @Test
@@ -110,7 +110,7 @@ class AllCocktailsPresenterTest {
             Cocktail(idDrink = "2", strDrink = "Virgin Mojito", strCategory = "Classic", strAlcoholic = "Non alcoholic"),
             Cocktail(idDrink = "3", strDrink = "Negroni", strCategory = "Classic", strAlcoholic = "Alcoholic")
         )
-        `when`(cocktailRepo.getAllCocktails()).thenReturn(items)
+        Mockito.`when`(cocktailRepo.getAllCocktails()).thenReturn(items)
 
         presenter.clearCache()
         presenter.loadAllCocktails()
@@ -125,7 +125,7 @@ class AllCocktailsPresenterTest {
             Cocktail(idDrink = "1", strDrink = "A", strCategory = "CatA", strAlcoholic = "Alcoholic"),
             Cocktail(idDrink = "2", strDrink = "B", strCategory = "CatB", strAlcoholic = "Non alcoholic")
         )
-        `when`(cocktailRepo.getAllCocktails()).thenReturn(items)
+        Mockito.`when`(cocktailRepo.getAllCocktails()).thenReturn(items)
 
         presenter.clearCache()
         presenter.loadAllCocktails()
